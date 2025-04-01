@@ -8,46 +8,23 @@ import {
   ActivityIndicator,
   TouchableOpacity,
 } from "react-native";
-import { WebView } from "react-native-webview";
-const Index = () => {
-  const vocabSources = {
-    vocabA: {
-      uri: "https://drive.google.com/file/d/1JTSBP7gx3Vk1UvMJc7-mDOxPmQKkVwmI/view?usp=drive_link",
-    },
-    vocabB: {
-      uri: "https://drive.google.com/file/d/1jez4iBC_oOHxa2YsPW-NQZS1AX8xyFJa/view?usp=drive_link",
-    },
-  };
-  const [vocabSource, setVocabSource] = useState(vocabSources.vocabA);
+import useDidMountEffect from "@/effects/useDidMountEffect";
+import CustomOpacityButton from "@/components/customOpacityButton";
+import VocabPage from "./vocabPage";
 
-  useEffect(() => {
-    router.push({ pathname: "/(tabs)/learners/vocab", params: vocabSource });
-  }, [vocabSource]);
+const Index = () => {
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  const pages = [<VocabPage />];
 
   return (
-    <View className="flex-1 justify-start items-center mt-10">
-      <TouchableOpacity
-        key={vocabSources.vocabB.uri}
+    <View className="flex-1 justify-start items-center">
+      <CustomOpacityButton
         onPress={() => {
-          setVocabSource(vocabSources.vocabA);
+          router.push("/(tabs)/learners/vocabPage");
         }}
-        className="w-1/2 bg-secondary min-h-14 rounded-full"
-      >
-        <View className="flex-1 justify-center items-center">
-          <Text className="text-white text-xl">Vocab A</Text>
-        </View>
-      </TouchableOpacity>
-      <TouchableOpacity
-        key={vocabSources.vocabA.uri}
-        onPress={() => {
-          setVocabSource(vocabSources.vocabB);
-        }}
-        className="w-1/2 bg-secondary min-h-14 rounded-full mt-5"
-      >
-        <View className="flex-1 justify-center items-center">
-          <Text className="text-white text-xl">Vocab B</Text>
-        </View>
-      </TouchableOpacity>
+        title="vocabPage"
+      />
     </View>
   );
 };

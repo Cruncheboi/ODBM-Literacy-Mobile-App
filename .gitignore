@@ -25,6 +25,10 @@ npm-debug.*
 yarn-debug.*
 yarn-error.*
 
+#android
+android/app/credentials.json
+android/app/debug.keystore
+
 # macOS
 .DS_Store
 *.pem

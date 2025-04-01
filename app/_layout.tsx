@@ -29,21 +29,19 @@ export default function RootLayout() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-primary">
-      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-        <StatusBar
-          style="auto"
-          backgroundColor={colorScheme === "dark" ? "black" : "white"}
-        />
-        <Stack
-          screenOptions={{
-            animation: "fade_from_bottom",
-          }}
-        >
-          <Stack.Screen name="index" options={{ headerShown: false }} />
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        </Stack>
-      </ThemeProvider>
-    </SafeAreaView>
+    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+      <StatusBar
+        style="auto"
+        backgroundColor={colorScheme === "dark" ? "black" : "white"}
+      />
+      <Stack
+        screenOptions={{
+          animation: "fade_from_bottom",
+        }}
+      >
+        <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      </Stack>
+    </ThemeProvider>
   );
 }

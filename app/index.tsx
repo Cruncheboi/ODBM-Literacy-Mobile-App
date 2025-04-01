@@ -1,4 +1,3 @@
-import CustomButton from "@/components/customButton";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { Text, View, Image, TouchableHighlight } from "react-native";
@@ -24,11 +23,6 @@ export default function Index() {
       >
         <Text className="text-xl text-white font-bold">Begin</Text>
       </TouchableHighlight>
-      {/* <CustomButton
-        title="Begin Learning"
-        underlayColor="#d46124"
-        onPress={handlePress}
-      /> */}
     </View>
   );
 }
