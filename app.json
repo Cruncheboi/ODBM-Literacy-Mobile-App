@@ -34,9 +34,7 @@
           "backgroundColor": "#ffffff"
         }
       ],
-      "expo-font",
-      "@config-plugins/react-native-pdf",
-      "@config-plugins/react-native-blob-util"
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true

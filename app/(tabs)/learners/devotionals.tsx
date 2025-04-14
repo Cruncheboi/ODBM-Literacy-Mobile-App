@@ -64,7 +64,6 @@ const Fragments = () => {
       className="flex-1 bg-odbm-gray-digital"
       contentContainerClassName="justify-start items-center"
     >
-      <Text className="text-odbm-gray-light text-xl">fragments</Text>
       {sources.map(({ name, source }) => {
         return (
           <CustomOpacityButton

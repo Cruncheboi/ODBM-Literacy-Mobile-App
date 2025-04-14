@@ -1,6 +1,5 @@
-import { router, Stack } from "expo-router";
-import { View, Text, TouchableOpacity } from "react-native";
-import Ionicons from "@expo/vector-icons/Ionicons";
+import { Stack } from "expo-router";
+import CustomBackButton from "@/components/customBackButton";
 
 const Layout = () => {
   return (
@@ -8,24 +7,7 @@ const Layout = () => {
       <Stack.Screen
         name="pdfViewer"
         options={{
-          headerLeft: () => {
-            return (
-              <View className="flex justify-center items-center">
-                <TouchableOpacity
-                  onPressOut={() => {
-                    router.back();
-                  }}
-                >
-                  <Ionicons
-                    name="arrow-back"
-                    size={32}
-                    color="white"
-                    className="pr-2"
-                  />
-                </TouchableOpacity>
-              </View>
-            );
-          },
+          headerLeft: () => <CustomBackButton />,
           headerTitle: "PDF Viewer",
         }}
       />

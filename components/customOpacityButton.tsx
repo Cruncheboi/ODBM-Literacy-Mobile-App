@@ -1,20 +1,31 @@
 import { View, Text, TouchableOpacity } from "react-native";
 import React from "react";
-
+import cn from "@/utility_functions/cn";
 interface Props {
   onPress: () => void;
   title: string;
-  buttonStyles?: string;
+  className?: string;
+  disabled?: boolean;
 }
 
-const CustomOpacityButton = ({ onPress, title, buttonStyles }: Props) => {
+const CustomOpacityButton = ({
+  onPress,
+  title,
+  className,
+  disabled = false,
+}: Props) => {
   return (
     <TouchableOpacity
+      disabled={disabled}
       onPress={onPress}
-      className={`w-3/4 bg-highlight min-h-14 rounded-full my-5 shadow-[100px_100px_50px] shadow-highlight ${buttonStyles}`}
+      className={cn(
+        "w-3/4 bg-highlight min-h-14 rounded-full my-5 elevation-lg shadow-highlight",
+        className,
+        disabled && "opacity-50"
+      )}
     >
       <View className="flex-1 justify-center items-center">
-        <Text className="text-white text-xl font-semibold">{title}</Text>
+        <Text className="dark:text-white text-xl font-semibold">{title}</Text>
       </View>
     </TouchableOpacity>
   );

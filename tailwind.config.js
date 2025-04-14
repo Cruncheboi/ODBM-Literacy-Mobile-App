@@ -8,14 +8,16 @@ module.exports = {
       colors: {
         primary: "#0a0a0a",
         secondary: "#d46124",
-        highlight: "#f5ae1e",
+        highlight: "#FAB432",
         shadow: "#916813",
         odbm: {
           gold: "#FAB432",
           pale: "#E5DBB8",
+          light: "#f5f5f5",
           gray: "#58595B",
           "gray-light": "#D5E2E9",
           "gray-digital": "#222222",
+          "gray-dark": "#0f0f0f"
         }
       },
       fontFamily: {

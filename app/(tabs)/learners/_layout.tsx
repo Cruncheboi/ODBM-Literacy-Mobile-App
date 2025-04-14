@@ -1,17 +1,28 @@
-import { Stack, useNavigation } from "expo-router";
-import { View, Text } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Drawer } from "expo-router/drawer";
 import React from "react";
-import "@/global.css";
+import { useColorScheme } from "nativewind";
+import getThemeMainColor, {
+  getThemeFontColor,
+} from "@/utility_functions/themeColor";
+
 const Layout = () => {
+  const { colorScheme } = useColorScheme();
   return (
     <GestureHandlerRootView style={{ flex: 1 }} collapsableChildren={false}>
       <Drawer
         screenOptions={{
           drawerType: "slide",
-          drawerActiveBackgroundColor: "var(--highlight)",
+          drawerActiveBackgroundColor: "#FAB432",
           drawerActiveTintColor: "white",
+          drawerStyle: {
+            backgroundColor: getThemeMainColor(colorScheme),
+          },
+          headerStyle: {
+            backgroundColor: getThemeMainColor(colorScheme),
+          },
+          headerTintColor: getThemeFontColor(colorScheme),
+          drawerInactiveTintColor: getThemeFontColor(colorScheme),
         }}
         initialRouteName="index"
         backBehavior="history"
@@ -24,7 +35,7 @@ const Layout = () => {
           }}
         />
         <Drawer.Screen
-          name="vocabPage"
+          name="vocabulary"
           options={{ headerTitle: "Vocabulary", drawerLabel: "Vocabulary" }}
         />
         <Drawer.Screen
@@ -72,6 +83,13 @@ const Layout = () => {
         />
         <Drawer.Screen
           name="(pdfs)"
+          options={{
+            headerShown: false,
+            drawerItemStyle: { display: "none" },
+          }}
+        />
+        <Drawer.Screen
+          name="(quiz)"
           options={{
             headerShown: false,
             drawerItemStyle: { display: "none" },

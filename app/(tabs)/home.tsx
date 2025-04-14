@@ -1,12 +1,11 @@
-import { View, Text } from "react-native";
+import { View, Text, Animated, Switch } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useColorScheme } from "nativewind";
+// import "@/styles/homeStyles.css";
 const Home = () => {
+  const { colorScheme, toggleColorScheme } = useColorScheme();
   return (
-    <SafeAreaView>
-      <View className="flex-1">
-        <Text className="text-white">Home</Text>
-      </View>
-    </SafeAreaView>
+    <SafeAreaView className="flex-1 dark:bg-odbm-gray-digital"></SafeAreaView>
   );
 };
 export default Home;

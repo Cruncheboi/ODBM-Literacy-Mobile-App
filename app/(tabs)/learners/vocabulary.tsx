@@ -1,6 +1,6 @@
 import CustomOpacityButton from "@/components/customOpacityButton";
-import { router, useNavigation } from "expo-router";
-import { TouchableOpacity, View, Text } from "react-native";
+import { router } from "expo-router";
+import { View } from "react-native";
 
 const sources = [
   {
@@ -29,14 +29,9 @@ const sources = [
   },
 ];
 
-const VocabPage = () => {
-  // const navigation = useNavigation();
-  // console.log(navigation.getState()?.history);
+const Vocabulary = () => {
   return (
     <View className="flex-1 w-full bg-gray-800 justify-start items-center">
-      {/* <Text className="text-5xl underline text-highlight font-bold mt-10">
-        Vocabulary
-      </Text> */}
       {sources.map(({ name, source }) => {
         return (
           <CustomOpacityButton
@@ -54,4 +49,4 @@ const VocabPage = () => {
     </View>
   );
 };
-export default VocabPage;
+export default Vocabulary;
