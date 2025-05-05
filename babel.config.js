@@ -5,6 +5,9 @@ module.exports = function (api) {
       ["babel-preset-expo", { jsxImportSource: "nativewind" }],
       "nativewind/babel",
     ],
-    // plugins: ["transform-remove-console"]
+    plugins: [
+      // "transform-remove-console",
+      'react-native-reanimated/plugin', // must be last
+    ]
   };
 };

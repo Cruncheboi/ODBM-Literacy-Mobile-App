@@ -4,7 +4,7 @@ import { Text, View, Image, TouchableHighlight } from "react-native";
 
 export default function Index() {
   const handlePress = async () => {
-    router.push("/(tabs)/home");
+    router.replace("/(tabs)/home");
   };
 
   return (

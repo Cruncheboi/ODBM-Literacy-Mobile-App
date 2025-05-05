@@ -4,7 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 const Settings = () => {
   const { colorScheme, toggleColorScheme } = useColorScheme();
   return (
-    <SafeAreaView className="flex-1 flex justify-start items-center dark:bg-odbm-gray-digital">
+    <View className="flex-1 flex justify-start items-center py-safe dark:bg-odbm-gray-digital">
       <View className="flex-row gap-5">
         <Text className="dark:text-white text-lg">Switch Default Theme</Text>
         <Switch
@@ -12,7 +12,7 @@ const Settings = () => {
           onValueChange={toggleColorScheme}
         />
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 export default Settings;

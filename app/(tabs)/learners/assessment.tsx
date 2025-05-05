@@ -1,8 +1,10 @@
+import CustomHeader from "@/components/customHeader";
 import CustomOpacityButton from "@/components/customOpacityButton";
 import Quiz from "@/components/quiz";
 import { router } from "expo-router";
 import React, { createContext } from "react";
 import { View, Text, ScrollView, StyleSheet } from "react-native";
+import Animated, { FadeInLeft } from "react-native-reanimated";
 
 const passage = {
   book: "Mark",
@@ -122,7 +124,7 @@ const passage = {
 const quiz = [
   {
     question:
-      "The passage states that after Jesus walked on water and got into the boat, the wind stopped, and the disciples were amazed. What reason is given in the text for their amazement despite witnessing the feeding of the five thousand?",
+      "After the apostles returned, what did Jesus suggest they do because they were so busy?",
     choices: [
       "Go and preach to more villages.",
       "Go to a place by themselves and rest.",
@@ -169,18 +171,26 @@ export const PassageContext = createContext<Passage>(passage);
 const Assesment = () => {
   return (
     <PassageContext.Provider value={passage}>
+      {/* <CustomHeader
+        title="Placement Assessment"
+        contentContainerClassName="w-full bg-black"
+      > */}
       <ScrollView
         className="flex-1 dark:bg-odbm-gray-digital"
         contentContainerStyle={styles.container}
       >
-        <View className="w-10/12 h-full mt-2 flex justify-between gap-5">
+        {/* Passage */}
+        <View className="w-10/12 mt-2 justify-start gap-5">
           <View className="gap-2">
-            <Text className="dark:text-white text-xl">
+            <Animated.Text
+              className="dark:text-white text-xl"
+              entering={FadeInLeft.delay(100)}
+            >
               Read the passage below from
               {"\n"}
               {passage.book} {passage.chapter}:{passage.verses[0].verseNumber}-
               {passage.verses[passage.verses.length - 1].verseNumber}.
-            </Text>
+            </Animated.Text>
             <CustomOpacityButton
               title="View Passage"
               className="w-full bg-odbm-light dark:bg-slate-600"
@@ -188,30 +198,13 @@ const Assesment = () => {
                 router.push("/(tabs)/learners/(quiz)/passageViewer");
               }}
             />
-            {/* Passage */}
-            {/* <ScrollView
-            nestedScrollEnabled
-            className="max-h-52 bg-slate-800 rounded-xl border border-l-4 border-r-2 border-b-[6px] border-odbm-gray-light"
-          >
-            <Text className="text-white px-3 py-2">
-              {passage.verses.map(({ verseNumber, verse }, index) => {
-                return (
-                  <React.Fragment key={index}>
-                    <View key={index} className="px-[2px]">
-                      <Text key={verseNumber} className="text-xs text-gray-500">
-                        {verseNumber}
-                      </Text>
-                    </View>
-                    <Text key={verse}>{verse}</Text>
-                  </React.Fragment>
-                );
-              })}
-            </Text>
-          </ScrollView> */}
           </View>
+        </View>
+        <View className="w-10/12 flex-1 justify-end">
           <Quiz questions={quiz} />
         </View>
       </ScrollView>
+      {/* </CustomHeader> */}
     </PassageContext.Provider>
   );
 };
@@ -219,7 +212,9 @@ export default Assesment;
 
 const styles = StyleSheet.create({
   container: {
-    justifyContent: "flex-start",
+    justifyContent: "space-between",
     alignItems: "center",
+    flexDirection: "column",
+    flexGrow: 1,
   },
 });

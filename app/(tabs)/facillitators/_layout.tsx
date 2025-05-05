@@ -1,6 +1,17 @@
 import { Stack } from "expo-router";
-import { View, Text } from "react-native";
+
 const Layout = () => {
-  return <Stack screenOptions={{ headerShown: false }} />;
+  return (
+    <Stack
+      initialRouteName="index"
+      screenOptions={{
+        headerShown: false,
+        statusBarBackgroundColor: "transparent",
+        animation: "ios_from_right",
+      }}
+    >
+      <Stack.Screen name="index" />
+    </Stack>
+  );
 };
 export default Layout;

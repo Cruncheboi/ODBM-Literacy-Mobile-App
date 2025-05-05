@@ -26,7 +26,9 @@ export default function TabLayout() {
         // ),
         tabBarInactiveBackgroundColor: getThemeMainColor(colorScheme),
         tabBarActiveBackgroundColor: getThemeMainColor(colorScheme),
+        headerShown: false,
       }}
+      backBehavior="initialRoute"
     >
       <Tabs.Screen
         name="index"
@@ -38,7 +40,6 @@ export default function TabLayout() {
         name="home"
         options={{
           title: "Home",
-          headerShown: false,
           tabBarIcon: ({ color, size }) => {
             return <FontAwesome5 name="home" size={size} color={color} />;
           },
@@ -48,7 +49,6 @@ export default function TabLayout() {
         name="learners"
         options={{
           title: "Learners",
-          headerShown: false,
           tabBarIcon: ({ color, size }) => {
             return <FontAwesome5 name="book-open" size={size} color={color} />;
           },
@@ -58,7 +58,6 @@ export default function TabLayout() {
         name="facillitators"
         options={{
           title: "Facillitators",
-          headerShown: false,
           tabBarIcon: ({ color, size }) => {
             return (
               <FontAwesome6 name="people-line" size={size} color={color} />
@@ -70,7 +69,6 @@ export default function TabLayout() {
         name="settings"
         options={{
           title: "Settings",
-          headerShown: false,
           tabBarIcon: ({ color, size }) => {
             return (
               <Ionicons name="settings-outline" size={size} color={color} />

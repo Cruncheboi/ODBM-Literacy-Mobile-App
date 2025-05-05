@@ -6,6 +6,7 @@ interface Props {
   title: string;
   className?: string;
   disabled?: boolean;
+  textStyles?: string;
 }
 
 const CustomOpacityButton = ({
@@ -13,6 +14,7 @@ const CustomOpacityButton = ({
   title,
   className,
   disabled = false,
+  textStyles,
 }: Props) => {
   return (
     <TouchableOpacity
@@ -25,7 +27,11 @@ const CustomOpacityButton = ({
       )}
     >
       <View className="flex-1 justify-center items-center">
-        <Text className="dark:text-white text-xl font-semibold">{title}</Text>
+        <Text
+          className={cn("dark:text-white text-xl font-semibold", textStyles)}
+        >
+          {title}
+        </Text>
       </View>
     </TouchableOpacity>
   );
