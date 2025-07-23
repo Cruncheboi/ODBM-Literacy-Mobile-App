@@ -1,14 +1,10 @@
-import { View, Text, FlatList } from "react-native";
+import { View, Text, useWindowDimensions } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { useColorScheme } from "nativewind";
-import { getThemeFontColor } from "@/utility_functions/themeColor";
 import Animated, {
   Easing,
   FadeIn,
-  FadeInDown,
-  FadeInLeft,
-  FadeInUp,
   LinearTransition,
   ReduceMotion,
   useAnimatedStyle,
@@ -31,10 +27,13 @@ const CustomNavigationDropdown = ({ title, data }: Props) => {
   const listHeight = useSharedValue(0);
   const { colorScheme } = useColorScheme();
   const [showDropdown, setShowDropdown] = useState(false);
+  const { height } = useWindowDimensions();
   const iconSize = 34;
 
+  const dropdownHeight = Math.round(height * 0.75);
+
   useEffect(() => {
-    listHeight.value = withTiming(showDropdown ? 200 : 0, {
+    listHeight.value = withTiming(showDropdown ? dropdownHeight : 0, {
       duration: 200,
       easing: Easing.inOut(Easing.quad),
       reduceMotion: ReduceMotion.System,

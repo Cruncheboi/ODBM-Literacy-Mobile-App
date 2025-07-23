@@ -14,7 +14,7 @@ const PdfViewer = () => {
   console.log(uri);
 
   return (
-    <View className="absolute py-safe top-0 left-0 w-full h-full z-10">
+    <View className="absolute top-0 left-0 w-full h-full z-10">
       <Pdf source={{ uri: uri }}></Pdf>
     </View>
   );

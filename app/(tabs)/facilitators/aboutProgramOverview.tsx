@@ -12,7 +12,7 @@ const AboutProgramOverview = () => {
       <CustomOpacityButton
         className="w-full absolute bottom-0 left-0"
         title="Next"
-        onPress={() => router.push("/(tabs)/facillitators/aboutAcquisition")}
+        onPress={() => router.push("/(tabs)/facilitators/aboutAcquisition")}
       />
     </CustomHeader>
   );

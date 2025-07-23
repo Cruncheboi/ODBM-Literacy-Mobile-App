@@ -1,14 +1,7 @@
 import CustomBackButton from "@/components/customBackButton";
 import { Stack, useFocusEffect } from "expo-router";
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import React, { useCallback, useState } from "react";
 import { View, Text, ScrollView } from "react-native";
-import { PassageContext } from "../assessment";
 import getThemeMainColor, {
   getThemeFontColor,
 } from "@/utility_functions/themeColor";
@@ -17,12 +10,14 @@ import Animated, {
   FadeIn,
   useAnimatedStyle,
   useSharedValue,
-  withDelay,
-  withTiming,
 } from "react-native-reanimated";
+import { useAppSelector } from "@/redux/hooks";
 
 const PassageViewer = () => {
-  const { book, chapter, verses } = useContext(PassageContext);
+  // const { book, chapter, verses } = useContext(PassageContext);
+  const book = useAppSelector((state) => state.quiz.passage.book);
+  const chapter = useAppSelector((state) => state.quiz.passage.chapter);
+  const verses = useAppSelector((state) => state.quiz.passage.verses);
   const [showText, setShowText] = useState(1);
 
   const { colorScheme } = useColorScheme();

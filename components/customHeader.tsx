@@ -18,7 +18,7 @@ const CustomHeader = ({
 
   return (
     <View className="flex-1 flex justify-start items-center bg-odbm-light dark:bg-odbm-gray-digital py-safe">
-      <View className="flex-row gap-3 px-2 pt-5">
+      <View className="flex-row gap-3 px-2 py-3 border-b-2 border-odbm-blue-600 dark:border-slate-600">
         <Animated.View entering={FadeInRight.delay(fadeInDelay)}>
           <CustomBackButton />
         </Animated.View>

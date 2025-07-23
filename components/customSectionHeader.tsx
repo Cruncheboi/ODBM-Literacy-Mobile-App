@@ -17,7 +17,7 @@ const CustomSectionHeader = ({ title, className, textStyles }: Props) => {
     >
       <Text
         className={cn(
-          "text-3xl font-bold text-odbm-blue-600 dark:text-white",
+          "text-2xl font-bold text-odbm-blue-600 dark:text-white",
           textStyles
         )}
       >

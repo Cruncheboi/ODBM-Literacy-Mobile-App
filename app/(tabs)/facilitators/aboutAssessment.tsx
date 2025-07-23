@@ -4,20 +4,19 @@ import YoutubePlayer from "@/components/youtubePlayer";
 import { router } from "expo-router";
 import { View } from "react-native";
 
-const AboutSun = () => {
+const AboutAssessment = () => {
   return (
-    <CustomHeader title="Let's Learn About SUN">
+    <CustomHeader title="What is Assessment?">
       <View className="py-6" />
-      <YoutubePlayer videoId="Lv3W6dvDVOE" />
+      <YoutubePlayer videoId="DjnZAZ_tsKE" />
       <CustomOpacityButton
         title="Next"
         className="w-full absolute bottom-0 left-0"
-        // Go to game
         onPress={() => {
-          router.push("/(tabs)/facillitators/aboutLiteracyKit");
+          router.push("/(tabs)/facilitators/aboutSun");
         }}
       />
     </CustomHeader>
   );
 };
-export default AboutSun;
+export default AboutAssessment;

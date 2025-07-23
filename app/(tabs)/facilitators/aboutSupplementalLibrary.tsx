@@ -4,19 +4,20 @@ import YoutubePlayer from "@/components/youtubePlayer";
 import { router } from "expo-router";
 import { View } from "react-native";
 
-const AboutLiteracyKit = () => {
+const AboutSupplementalLibrary = () => {
   return (
-    <CustomHeader title="What is the Literacy Kit and How to Use It?">
+    <CustomHeader title="The Supplemental Library and Its Purpose">
       <View className="py-6" />
-      <YoutubePlayer videoId="eRmG66vbvEY" />
+      <YoutubePlayer videoId="OGnPEO9z0M0" />
       <CustomOpacityButton
         title="Next"
         className="w-full absolute bottom-0 left-0"
+        // Go to 'Higher Level Thinking'
         onPress={() => {
-          router.push("/(tabs)/facillitators/aboutSupplementalLibrary");
+          router.push("/(tabs)/facilitators/aboutChurchImplementation");
         }}
       />
     </CustomHeader>
   );
 };
-export default AboutLiteracyKit;
+export default AboutSupplementalLibrary;

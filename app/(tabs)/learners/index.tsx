@@ -67,7 +67,7 @@ const Index = () => {
                 // Displays PDF item
                 if (item.pdfSource != undefined) {
                   router.push({
-                    pathname: "/(tabs)/learners/(pdfs)/pdfViewer",
+                    pathname: "/(pdfs)/pdfViewer",
                     params: item.pdfSource,
                   });
                 }

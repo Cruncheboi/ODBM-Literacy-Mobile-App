@@ -52,7 +52,7 @@ const Index = () => {
   return (
     <View className="flex-1 py-safe flex justify-start items-center dark:bg-odbm-gray-digital">
       <CustomNavigationDropdown
-        title="For Facillitators"
+        title="For Facilitators"
         data={navigationItems}
       />
       <SectionList
@@ -66,6 +66,9 @@ const Index = () => {
         }}
         ItemSeparatorComponent={() => {
           return <CustomSectionSeparator />;
+        }}
+        renderSectionFooter={() => {
+          return <View className="py-1" />;
         }}
         renderItem={({ item }) => {
           return (
@@ -90,8 +93,8 @@ const sections: Section[] = [
     sectionName: "Program Overview",
     data: [
       {
-        title: "Program Overview",
-        route: "/(tabs)/facillitators/aboutProgramOverview",
+        title: "View video",
+        route: "/(tabs)/facilitators/aboutProgramOverview",
       },
     ],
   },
@@ -99,8 +102,8 @@ const sections: Section[] = [
     sectionName: "Acquisition Order and Time",
     data: [
       {
-        title: "Acquisition Order and Time",
-        route: "/(tabs)/facillitators/aboutAcquisition",
+        title: "View video",
+        route: "/(tabs)/facilitators/aboutAcquisition",
       },
     ],
   },
@@ -108,8 +111,8 @@ const sections: Section[] = [
     sectionName: "What is Assessment?",
     data: [
       {
-        title: "What is Assessment?",
-        route: "/(tabs)/facillitators/aboutAssessment",
+        title: "View video",
+        route: "/(tabs)/facilitators/aboutAssessment",
       },
     ],
   },
@@ -117,8 +120,8 @@ const sections: Section[] = [
     sectionName: "Let's Learn About SUN",
     data: [
       {
-        title: "Let's Learn About SUN",
-        route: "/(tabs)/facillitators/aboutSun",
+        title: "View video",
+        route: "/(tabs)/facilitators/aboutSun",
       },
     ],
   },
@@ -126,8 +129,8 @@ const sections: Section[] = [
     sectionName: "What is the Literacy Kit and How to Use It?",
     data: [
       {
-        title: "What is the Literacy Kit and How to Use It?",
-        route: "/(tabs)/facillitators/aboutLiteracyKit",
+        title: "View video",
+        route: "/(tabs)/facilitators/aboutLiteracyKit",
       },
     ],
   },
@@ -135,8 +138,8 @@ const sections: Section[] = [
     sectionName: "The Supplemental Library and Its Purpose",
     data: [
       {
-        title: "The Supplemental Library and Its Purpose",
-        route: "/(tabs)/facillitators/aboutSupplementalLibrary",
+        title: "View video",
+        route: "/(tabs)/facilitators/aboutSupplementalLibrary",
       },
     ],
   },
@@ -144,8 +147,8 @@ const sections: Section[] = [
     sectionName: "Church Implementation",
     data: [
       {
-        title: "Church Implementation",
-        route: "/(tabs)/facillitators/aboutChurchImplementation",
+        title: "View video",
+        route: "/(tabs)/facilitators/aboutChurchImplementation",
       },
     ],
   },

@@ -166,53 +166,60 @@ type Passage = {
   }[];
 };
 
-export const PassageContext = createContext<Passage>(passage);
+// export const PassageContext = createContext<Passage>(passage);
 
 const Assesment = () => {
   return (
-    <PassageContext.Provider value={passage}>
+    // <PassageContext.Provider value={passage}>
+    <>
       {/* <CustomHeader
         title="Placement Assessment"
         contentContainerClassName="w-full bg-black"
-      > */}
+      /> */}
       <ScrollView
         className="flex-1 dark:bg-odbm-gray-digital"
         contentContainerStyle={styles.container}
       >
-        {/* Passage */}
-        <View className="w-10/12 mt-2 justify-start gap-5">
-          <View className="gap-2">
-            <Animated.Text
-              className="dark:text-white text-xl"
-              entering={FadeInLeft.delay(100)}
-            >
-              Read the passage below from
-              {"\n"}
-              {passage.book} {passage.chapter}:{passage.verses[0].verseNumber}-
-              {passage.verses[passage.verses.length - 1].verseNumber}.
-            </Animated.Text>
-            <CustomOpacityButton
-              title="View Passage"
-              className="w-full bg-odbm-light dark:bg-slate-600"
-              onPress={() => {
-                router.push("/(tabs)/learners/(quiz)/passageViewer");
-              }}
-            />
+        <View className="py-safe flex-1">
+          {/* Passage */}
+          <View className="mt-2 justify-start">
+            <Text className="dark:text-white text-center font-semibold text-2xl">
+              Placement Assessment
+            </Text>
+            <View className="gap-2">
+              <Animated.Text
+                className="dark:text-white text-xl"
+                entering={FadeInLeft.delay(100)}
+              >
+                Read the passage below from
+                {"\n"}
+                {passage.book} {passage.chapter}:{passage.verses[0].verseNumber}
+                -{passage.verses[passage.verses.length - 1].verseNumber}.
+              </Animated.Text>
+              <CustomOpacityButton
+                title="View Passage"
+                className="w-full bg-odbm-light dark:bg-slate-600"
+                onPress={() => {
+                  router.push("/(tabs)/learners/(quiz)/passageViewer");
+                }}
+              />
+            </View>
           </View>
-        </View>
-        <View className="w-10/12 flex-1 justify-end">
-          <Quiz questions={quiz} />
+          <View className="w-10/12 flex-1 justify-end">
+            <Quiz questions={quiz} />
+          </View>
         </View>
       </ScrollView>
       {/* </CustomHeader> */}
-    </PassageContext.Provider>
+      {/* </PassageContext.Provider> */}
+    </>
   );
 };
 export default Assesment;
 
 const styles = StyleSheet.create({
   container: {
-    justifyContent: "space-between",
+    // justifyContent: "space-between",
     alignItems: "center",
     flexDirection: "column",
     flexGrow: 1,

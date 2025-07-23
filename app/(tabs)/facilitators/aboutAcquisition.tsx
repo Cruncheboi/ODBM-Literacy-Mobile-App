@@ -12,7 +12,7 @@ const AboutAcquisition = () => {
         title="Next"
         className="w-full absolute bottom-0 left-0"
         onPress={() => {
-          router.push("/(tabs)/facillitators/aboutAssessment");
+          router.push("/(tabs)/facilitators/aboutAssessment");
         }}
       />
     </CustomHeader>
