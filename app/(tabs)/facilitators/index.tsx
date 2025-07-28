@@ -14,8 +14,18 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
+import { VideoInfo } from "./videoLayout";
 
-type SectionItem = { title: string; route?: Href };
+type SectionItem = {
+  title: string;
+  route?: Href;
+  videoInfo?: {
+    title: string;
+    videoId: string;
+    videoHeader?: string;
+    videoFooter?: string;
+  };
+};
 type SectionData = { sectionName: string };
 
 type Section = SectionListData<SectionItem, SectionData>;
@@ -75,8 +85,14 @@ const Index = () => {
             <CustomSectionItem
               title={item.title}
               onPress={() => {
-                if (item.route != undefined) {
-                  router.push(item.route);
+                if (item.videoInfo != undefined) {
+                  router.push({
+                    pathname: "/(tabs)/facilitators/videoLayout",
+                    params: {
+                      title: item.videoInfo.title,
+                      videoId: item.videoInfo.videoId,
+                    },
+                  });
                 }
               }}
             />
@@ -95,6 +111,10 @@ const sections: Section[] = [
       {
         title: "View video",
         route: "/(tabs)/facilitators/aboutProgramOverview",
+        videoInfo: {
+          title: "Program Overview",
+          videoId: "qQuuhZXWijc",
+        },
       },
     ],
   },
@@ -104,6 +124,10 @@ const sections: Section[] = [
       {
         title: "View video",
         route: "/(tabs)/facilitators/aboutAcquisition",
+        videoInfo: {
+          title: "Acquisition Order and Time",
+          videoId: "L3hZDZBwEEI",
+        },
       },
     ],
   },
@@ -113,6 +137,10 @@ const sections: Section[] = [
       {
         title: "View video",
         route: "/(tabs)/facilitators/aboutAssessment",
+        videoInfo: {
+          title: "What is Assessment?",
+          videoId: "DjnZAZ_tsKE",
+        },
       },
     ],
   },
@@ -122,6 +150,10 @@ const sections: Section[] = [
       {
         title: "View video",
         route: "/(tabs)/facilitators/aboutSun",
+        videoInfo: {
+          title: "Let's Learn About SUN",
+          videoId: "Lv3W6dvDVOE",
+        },
       },
     ],
   },
@@ -131,6 +163,10 @@ const sections: Section[] = [
       {
         title: "View video",
         route: "/(tabs)/facilitators/aboutLiteracyKit",
+        videoInfo: {
+          title: "What is the Literacy Kit and How to Use It?",
+          videoId: "eRmG66vbvEY",
+        },
       },
     ],
   },
@@ -140,6 +176,10 @@ const sections: Section[] = [
       {
         title: "View video",
         route: "/(tabs)/facilitators/aboutSupplementalLibrary",
+        videoInfo: {
+          title: "The Supplemental Library and Its Purpose",
+          videoId: "OGnPEO9z0M0",
+        },
       },
     ],
   },
@@ -149,6 +189,10 @@ const sections: Section[] = [
       {
         title: "View video",
         route: "/(tabs)/facilitators/aboutChurchImplementation",
+        videoInfo: {
+          title: "Church Implementation",
+          videoId: "WWOt8yihN5k",
+        },
       },
     ],
   },
