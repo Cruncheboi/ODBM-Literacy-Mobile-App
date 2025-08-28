@@ -7,24 +7,28 @@ interface Props {
   title: string;
   children?: React.ReactNode;
   contentContainerClassName?: string;
+  showBackButton?: boolean;
 }
 
 const CustomHeader = ({
   title,
   children,
   contentContainerClassName,
+  showBackButton = true,
 }: Props) => {
   const fadeInDelay = 300;
 
   return (
     <View className="flex-1 flex justify-start items-center bg-odbm-light dark:bg-odbm-gray-digital py-safe">
       <View className="flex-row gap-3 px-2 py-3 border-b-2 border-odbm-blue-600 dark:border-slate-600">
-        <Animated.View entering={FadeInRight.delay(fadeInDelay)}>
-          <CustomBackButton />
-        </Animated.View>
+        {showBackButton && (
+          <Animated.View entering={FadeInRight.delay(fadeInDelay)}>
+            <CustomBackButton />
+          </Animated.View>
+        )}
         <Animated.Text
           entering={FadeInRight.delay(fadeInDelay)}
-          className="text-3xl font-bold dark:text-white flex-shrink flex-1"
+          className="text-3xl font-bold text-odbm-gray dark:text-white flex-shrink flex-1"
         >
           {title}
         </Animated.Text>

@@ -110,7 +110,6 @@ const sections: Section[] = [
     data: [
       {
         title: "View video",
-        route: "/(tabs)/facilitators/aboutProgramOverview",
         videoInfo: {
           title: "Program Overview",
           videoId: "qQuuhZXWijc",
@@ -123,7 +122,6 @@ const sections: Section[] = [
     data: [
       {
         title: "View video",
-        route: "/(tabs)/facilitators/aboutAcquisition",
         videoInfo: {
           title: "Acquisition Order and Time",
           videoId: "L3hZDZBwEEI",
@@ -136,7 +134,6 @@ const sections: Section[] = [
     data: [
       {
         title: "View video",
-        route: "/(tabs)/facilitators/aboutAssessment",
         videoInfo: {
           title: "What is Assessment?",
           videoId: "DjnZAZ_tsKE",
@@ -149,7 +146,6 @@ const sections: Section[] = [
     data: [
       {
         title: "View video",
-        route: "/(tabs)/facilitators/aboutSun",
         videoInfo: {
           title: "Let's Learn About SUN",
           videoId: "Lv3W6dvDVOE",
@@ -162,7 +158,6 @@ const sections: Section[] = [
     data: [
       {
         title: "View video",
-        route: "/(tabs)/facilitators/aboutLiteracyKit",
         videoInfo: {
           title: "What is the Literacy Kit and How to Use It?",
           videoId: "eRmG66vbvEY",
@@ -175,7 +170,6 @@ const sections: Section[] = [
     data: [
       {
         title: "View video",
-        route: "/(tabs)/facilitators/aboutSupplementalLibrary",
         videoInfo: {
           title: "The Supplemental Library and Its Purpose",
           videoId: "OGnPEO9z0M0",
@@ -188,7 +182,6 @@ const sections: Section[] = [
     data: [
       {
         title: "View video",
-        route: "/(tabs)/facilitators/aboutChurchImplementation",
         videoInfo: {
           title: "Church Implementation",
           videoId: "WWOt8yihN5k",

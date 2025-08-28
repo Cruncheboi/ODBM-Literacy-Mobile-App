@@ -1,20 +1,14 @@
 import { View, Text } from "react-native";
-import { useAppSelector, useAppDispatch } from "@/redux/hooks";
+import { useAppSelector } from "@/redux/hooks";
 import CustomOpacityButton from "@/components/customOpacityButton";
-import { updateFirstName } from "@/redux/features/usersSlice";
-import { auth, isSignedIn } from "@/firebaseConfig";
-import { useEffect } from "react";
+import { auth } from "@/firebaseConfig";
 import { router } from "expo-router";
+import CustomNavigationButton from "@/components/customNavigationButton";
 
 const Home = () => {
   const username = useAppSelector((state) => state.users.firstName);
   const signedIn = useAppSelector((state) => state.users.isSignedIn);
   const email = useAppSelector((state) => state.users.email);
-  const dispatch = useAppDispatch();
-
-  const handleUpdateFirstName = () => {
-    dispatch(updateFirstName("Leo"));
-  };
 
   return (
     <View className="flex-1 px-5 dark:bg-odbm-gray-digital py-safe">
@@ -23,10 +17,6 @@ const Home = () => {
       <Text className="dark:color-white">{"" + signedIn}</Text>
       <Text className="dark:color-white">{"" + email}</Text>
       <Text className="dark:color-white">{"" + auth.currentUser?.uid}</Text>
-      <CustomOpacityButton
-        onPress={handleUpdateFirstName}
-        title="update name"
-      />
       <CustomOpacityButton
         onPress={() => {
           router.push("/(auth)/register");
@@ -38,6 +28,13 @@ const Home = () => {
           router.push("/(auth)/signIn");
         }}
         title="Sign In"
+      />
+      <CustomNavigationButton
+        buttonTitle="s"
+        onPress={() => {
+          console.log("pressed");
+        }}
+        showFloatingTitle
       />
     </View>
   );

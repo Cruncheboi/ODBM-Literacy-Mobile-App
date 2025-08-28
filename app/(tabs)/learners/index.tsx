@@ -7,14 +7,29 @@ import CustomNavigationDropdown, {
 import { useMemo, useRef } from "react";
 import CustomSectionSeparator from "@/components/customSectionSeparator";
 import CustomSectionHeader from "@/components/customSectionHeader";
+import FloatingIndicator from "@/components/floatingIndicator";
+import { useAppSelector } from "@/redux/hooks";
 
+export type SectionName =
+  | "Assessment"
+  | "SUN"
+  | "Vocabulary"
+  | "Fragments"
+  | "Sentences"
+  | "Open Bible Stories"
+  | "Devotionals"
+  | "Children's Bible"
+  | "Bible";
 type SectionItem = { title: string; pdfSource?: { uri: string }; route?: Href };
-type SectionData = { sectionName: string };
+type SectionData = { sectionName: SectionName };
 
 type Section = SectionListData<SectionItem, SectionData>;
 
 const Index = () => {
   const sectionListRef = useRef<SectionList<SectionItem, SectionData>>(null);
+  const recommendedStart = useAppSelector(
+    (state) => state.quiz.recommendedStart
+  );
 
   // Drop down navigation
   const navigationItems = useMemo(() => {
@@ -61,22 +76,27 @@ const Index = () => {
         }}
         renderItem={({ item }) => {
           return (
-            <CustomSectionItem
-              title={item.title}
-              onPress={() => {
-                // Displays PDF item
-                if (item.pdfSource != undefined) {
-                  router.push({
-                    pathname: "/(pdfs)/pdfViewer",
-                    params: item.pdfSource,
-                  });
-                }
-                // Redirects to route
-                else if (item.route != undefined) {
-                  router.push(item.route);
-                }
-              }}
-            />
+            <FloatingIndicator
+              floatingTitle="Recommended"
+              showFloatingTitle={item.title == recommendedStart}
+            >
+              <CustomSectionItem
+                title={item.title}
+                onPress={() => {
+                  // Displays PDF item
+                  if (item.pdfSource != undefined) {
+                    router.push({
+                      pathname: "/(pdfs)/pdfViewer",
+                      params: item.pdfSource,
+                    });
+                  }
+                  // Redirects to route
+                  else if (item.route != undefined) {
+                    router.push(item.route);
+                  }
+                }}
+              />
+            </FloatingIndicator>
           );
         }}
       />
@@ -96,28 +116,39 @@ const sections: Section[] = [
     ],
   },
   {
+    sectionName: "SUN",
+    data: [
+      {
+        title: "Learn SUN",
+        pdfSource: {
+          uri: "https://drive.google.com/file/d/1B3VDwOoazqqPq3cI66YKdXBUPL6ExaGp/view?usp=drive_link",
+        },
+      },
+    ],
+  },
+  {
     sectionName: "Vocabulary",
     data: [
       {
-        title: "Vocab A",
+        title: "Vocabulary A",
         pdfSource: {
           uri: "https://drive.google.com/file/d/1JTSBP7gx3Vk1UvMJc7-mDOxPmQKkVwmI/view?usp=drive_link",
         },
       },
       {
-        title: "Vocab B",
+        title: "Vocabulary B",
         pdfSource: {
           uri: "https://drive.google.com/file/d/1jez4iBC_oOHxa2YsPW-NQZS1AX8xyFJa/view?usp=drive_link",
         },
       },
       {
-        title: "Vocab C",
+        title: "Vocabulary C",
         pdfSource: {
           uri: "https://drive.google.com/file/d/1h-v_n_KtswBOJw-DIl8H6WfPjD9c2p5V/view?usp=drive_link",
         },
       },
       {
-        title: "Vocab D",
+        title: "Vocabulary D",
         pdfSource: {
           uri: "https://drive.google.com/file/d/1ANcaZlX_gBcovGBWwVAZGEAWWrsjyCf4/view?usp=drive_link",
         },

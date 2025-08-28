@@ -21,7 +21,7 @@ const CustomOpacityButton = ({
       disabled={disabled}
       onPress={onPress}
       className={cn(
-        "w-3/4 bg-highlight min-h-14 rounded-full my-5 elevation-lg shadow-highlight",
+        "w-full bg-highlight min-h-14 rounded-full my-5 elevation-lg shadow-highlight",
         className,
         disabled && "opacity-50"
       )}

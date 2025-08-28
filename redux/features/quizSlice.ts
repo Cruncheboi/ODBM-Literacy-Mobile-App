@@ -1,6 +1,12 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 
+export type StartPoint =
+  | "Learn SUN"
+  | "Vocabulary A"
+  | "Easy Sentences"
+  | "Medium Sentences A";
+
 interface QuizState {
   passage: {
     book: string;
@@ -10,6 +16,7 @@ interface QuizState {
       verse: string;
     }[];
   };
+  recommendedStart?: StartPoint;
 }
 
 const initialState: QuizState = {
@@ -132,8 +139,13 @@ const initialState: QuizState = {
 export const quizSlice = createSlice({
   name: "quiz",
   initialState,
-  reducers: {},
+  reducers: {
+    updateRecommendedStart: (state, action: PayloadAction<StartPoint>) => {
+      state.recommendedStart = action.payload;
+    },
+    resetQuiz: () => initialState,
+  },
 });
 
-export const {} = quizSlice.actions;
+export const { updateRecommendedStart } = quizSlice.actions;
 export default quizSlice.reducer;

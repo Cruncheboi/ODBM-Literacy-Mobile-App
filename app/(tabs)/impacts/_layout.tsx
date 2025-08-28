@@ -2,9 +2,8 @@ import { Stack } from "expo-router";
 import { View, Text } from "react-native";
 const Layout = () => {
   return (
-    <Stack>
-      <Stack.Screen name="passageViewer" />
-      <Stack.Screen name="results" options={{ headerShown: false }} />
+    <Stack initialRouteName="index" screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="index" />
     </Stack>
   );
 };

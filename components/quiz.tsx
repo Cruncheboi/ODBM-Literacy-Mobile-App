@@ -12,6 +12,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import cn from "@/utility_functions/cn";
+import { router } from "expo-router";
 
 export interface Quiz {
   questions: {
@@ -19,14 +20,21 @@ export interface Quiz {
     choices: string[];
     answerIndex: number;
   }[];
+  /**
+   * Handles what happens after a quiz has been submitted.
+   * @param numCorrect Number of correct answers in the quiz.
+   * @returns
+   */
+  onSubmitQuiz: (numCorrect: number) => void;
 }
 
-const Quiz = ({ questions }: Quiz) => {
+const Quiz = ({ questions, onSubmitQuiz }: Quiz) => {
   const [questionIndex, setQuestionIndex] = useState<number>(0);
-  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
-  const answers = useRef<(number | null)[]>(new Array(questions.length));
+  const [selectedAnswer, setSelectedAnswer] = useState<number>();
+  const answers = useRef<number[]>(new Array(questions.length));
   const { colorScheme } = useColorScheme();
 
+  // Update current selected answer when question is changed
   useEffect(() => {
     setSelectedAnswer(answers.current[questionIndex]);
   }, [questionIndex]);
@@ -35,8 +43,21 @@ const Quiz = ({ questions }: Quiz) => {
     console.log("UE-ANS: " + answers.current);
   }, [selectedAnswer]);
 
+  const allQuestionsAreAnswered = (): boolean => {
+    // Ensure all
+    for (let i = 0; i < questions.length; i++) {
+      if (answers.current[i] == undefined) return false;
+    }
+    return true;
+  };
+
   // Implement quiz check
   const onSubmit = () => {
+    // console.log(answers.current[2]);
+    if (!allQuestionsAreAnswered()) return;
+
+    // console.log(!answers.current.every((value) => value != undefined));
+    // if (!answers.current.every((value) => value != undefined)) return;
     console.log("submitting...");
     let numOfCorrectAnswers = 0;
     for (let i = 0; i < answers.current.length; i++) {
@@ -45,6 +66,7 @@ const Quiz = ({ questions }: Quiz) => {
       }
     }
     console.log(numOfCorrectAnswers);
+    onSubmitQuiz(numOfCorrectAnswers);
   };
 
   /**
@@ -62,6 +84,7 @@ const Quiz = ({ questions }: Quiz) => {
    */
   const setNextQuestionIndex = () => {
     setQuestionIndex((prev) => Math.min(prev + 1, questions.length - 1));
+    console.log(selectedAnswer);
   };
 
   /**
@@ -155,6 +178,7 @@ const Quiz = ({ questions }: Quiz) => {
       {/* Quiz Navigation */}
       <View className="w-full flex flex-row gap-1">
         {questionIndex !== 0 && (
+          // Previous Question Button
           <CustomOpacityButton
             className="flex-1 rounded-r-none bg-odbm-light dark:bg-slate-800"
             title="Previous"
@@ -165,9 +189,7 @@ const Quiz = ({ questions }: Quiz) => {
           // Submit Button
           <CustomOpacityButton
             disabled={
-              selectedAnswer === undefined ||
-              (questionIndex === questions.length - 1 &&
-                !answers.current.every((value) => value != undefined))
+              selectedAnswer === undefined || !allQuestionsAreAnswered()
             }
             className={`flex-1 bg-green-500 ${
               questionIndex !== 0 && "rounded-l-none"
@@ -176,6 +198,7 @@ const Quiz = ({ questions }: Quiz) => {
             onPress={onSubmit}
           />
         ) : (
+          // Next Question Button
           <CustomOpacityButton
             disabled={selectedAnswer === undefined}
             className={`flex-1 bg-odbm-light dark:bg-slate-600 ${

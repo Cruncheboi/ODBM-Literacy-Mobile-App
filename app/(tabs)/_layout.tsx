@@ -36,6 +36,15 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="impacts"
+        options={{
+          title: "Impacts",
+          tabBarIcon: ({ color, size }) => {
+            return <Ionicons name="chatbubbles" size={size} color={color} />;
+          },
+        }}
+      />
+      <Tabs.Screen
         name="learners"
         options={{
           title: "Learners",
@@ -60,9 +69,7 @@ export default function TabLayout() {
         options={{
           title: "Settings",
           tabBarIcon: ({ color, size }) => {
-            return (
-              <Ionicons name="settings-outline" size={size} color={color} />
-            );
+            return <FontAwesome6 name="gear" size={size} color={color} />;
           },
         }}
       />

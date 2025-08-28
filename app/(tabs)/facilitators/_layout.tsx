@@ -11,6 +11,7 @@ const Layout = () => {
       }}
     >
       <Stack.Screen name="index" />
+      <Stack.Screen name="videoLayout" />
     </Stack>
   );
 };

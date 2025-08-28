@@ -2,7 +2,7 @@ import { getThemeFontColor } from "@/utility_functions/themeColor";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { router } from "expo-router";
 import { useColorScheme } from "nativewind";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, TouchableOpacity } from "react-native";
 const CustomBackButton = () => {
   const { colorScheme } = useColorScheme();
   return (

@@ -81,6 +81,9 @@ const CustomNavigationDropdown = ({ title, data }: Props) => {
         {/** header */}
         <GestureDetector gesture={dropdownTapGesture}>
           <View className="w-full flex flex-row">
+            <Text className="text-4xl font-bold text-odbm-blue-600 dark:text-white flex-1 text-center">
+              {title}
+            </Text>
             <View collapsable={false} className="px-2">
               {!showDropdown ? (
                 <AntDesign
@@ -96,9 +99,6 @@ const CustomNavigationDropdown = ({ title, data }: Props) => {
                 />
               )}
             </View>
-            <Text className="text-4xl font-bold text-odbm-blue-600 dark:text-white flex-1 text-center">
-              {title}
-            </Text>
           </View>
         </GestureDetector>
       </View>

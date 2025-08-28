@@ -5,6 +5,7 @@ import { signOut } from "firebase/auth";
 import { auth } from "@/firebaseConfig";
 import { useAppDispatch } from "@/redux/hooks";
 import { resetUser, updateIsSignedIn } from "@/redux/features/usersSlice";
+import { router } from "expo-router";
 
 const Settings = () => {
   const { colorScheme, toggleColorScheme } = useColorScheme();
@@ -23,7 +24,7 @@ const Settings = () => {
       });
   };
   return (
-    <View className="flex-1 flex justify-start items-center py-safe dark:bg-odbm-gray-digital">
+    <View className="flex-1 flex justify-start items-center py-safe px-6 dark:bg-odbm-gray-digital">
       <View className="flex-row gap-5">
         <Text className="dark:text-white text-lg">Switch Default Theme</Text>
         <Switch
@@ -31,6 +32,13 @@ const Settings = () => {
           onValueChange={toggleColorScheme}
         />
       </View>
+      <CustomOpacityButton
+        title="Profile"
+        onPress={() => {
+          router.push("/(tabs)/settings/profile");
+        }}
+        textStyles="text-odbm-gray"
+      />
       <CustomOpacityButton
         title="Sign Out"
         onPress={signOutUser}

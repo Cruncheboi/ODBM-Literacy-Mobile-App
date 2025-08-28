@@ -3,8 +3,14 @@ import Quiz from "@/components/quiz";
 import { router } from "expo-router";
 import { View, Text, ScrollView, StyleSheet } from "react-native";
 import Animated, { FadeInLeft } from "react-native-reanimated";
+import { SectionName } from ".";
+import {
+  updateRecommendedStart,
+  type StartPoint,
+} from "@/redux/features/quizSlice";
+import { useAppDispatch } from "@/redux/hooks";
 
-const passage = {
+const passage: Passage = {
   book: "Mark",
   chapter: 6,
   verses: [
@@ -165,44 +171,50 @@ type Passage = {
 };
 
 const Assesment = () => {
-  return (
-    <>
-      <ScrollView
-        className="flex-1 dark:bg-odbm-gray-digital"
-        contentContainerStyle={styles.container}
-      >
-        <View className="py-safe flex-1 mt-10">
-          {/* Passage
-          <View className="mt-10 justify-start">
-            <Text className="dark:text-white text-center font-semibold text-3xl">
-              Placement Assessment
-            </Text>
-          </View> */}
+  const dispatch = useAppDispatch();
 
-          <View className="gap-2">
-            <Animated.Text
-              className="dark:text-white text-xl"
-              entering={FadeInLeft.delay(100)}
-            >
-              Read the passage below from
-              {"\n"}
-              {passage.book} {passage.chapter}:{passage.verses[0].verseNumber}-
-              {passage.verses[passage.verses.length - 1].verseNumber}.
-            </Animated.Text>
-            <CustomOpacityButton
-              title="View Passage"
-              className="w-full bg-odbm-light dark:bg-slate-600"
-              onPress={() => {
-                router.push("/(tabs)/learners/(quiz)/passageViewer");
-              }}
-            />
-          </View>
-          <View className="w-10/12 flex-1 gap-2 justify-end mt-16">
-            <Quiz questions={quiz} />
-          </View>
+  const onSubmitQuiz = (numCorrect: number) => {
+    let recommendedStart: StartPoint = "Learn SUN";
+    if (numCorrect == 1) {
+      recommendedStart = "Vocabulary A";
+    } else if (numCorrect == 2) {
+      recommendedStart = "Easy Sentences";
+    } else if (numCorrect == 3) {
+      recommendedStart = "Medium Sentences A";
+    }
+    dispatch(updateRecommendedStart(recommendedStart));
+    router.replace("/(tabs)/learners/(quiz)/results");
+  };
+  return (
+    <ScrollView
+      className="flex-1 dark:bg-odbm-gray-digital"
+      contentContainerStyle={styles.container}
+    >
+      <View className="py-safe flex-1 mt-10">
+        <View className="gap-2">
+          {/** Passage Section */}
+          <Animated.Text
+            className="dark:text-white text-xl"
+            entering={FadeInLeft.delay(100)}
+          >
+            Read the passage below from
+            {"\n"}
+            {passage.book} {passage.chapter}:{passage.verses[0].verseNumber}-
+            {passage.verses[passage.verses.length - 1].verseNumber}.
+          </Animated.Text>
+          <CustomOpacityButton
+            title="View Passage"
+            className="w-full bg-odbm-light dark:bg-slate-600"
+            onPress={() => {
+              router.push("/(tabs)/learners/(quiz)/passageViewer");
+            }}
+          />
         </View>
-      </ScrollView>
-    </>
+        <View className="w-10/12 flex-1 gap-2 justify-end mt-16">
+          <Quiz questions={quiz} onSubmitQuiz={onSubmitQuiz} />
+        </View>
+      </View>
+    </ScrollView>
   );
 };
 export default Assesment;
