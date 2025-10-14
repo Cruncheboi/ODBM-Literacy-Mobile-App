@@ -4,7 +4,12 @@ import {
   onAuthStateChanged,
   getReactNativePersistence,
 } from "firebase/auth";
-import { getFirestore, Timestamp } from "firebase/firestore";
+import {
+  collection,
+  FieldValue,
+  getFirestore,
+  Timestamp,
+} from "firebase/firestore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Web app's Firebase configuration
@@ -34,7 +39,15 @@ export const isSignedIn = (): boolean => {
   return userSignedIn;
 };
 
+// Collection and path constants in firestore
+export const usersPath = "users";
+export const usersCollection = collection(db, usersPath);
+export const testimoniesPath = "testimonies";
+export const testimoniesCollection = collection(db, testimoniesPath);
+
 export interface UserInfo {
+  displayName: string;
+  displayNameLowerCase: string;
   firstName: string;
   lastName: string;
   certificatesCompleted: {
@@ -45,6 +58,7 @@ export interface UserInfo {
 
 export interface Testimony {
   documentID: string;
+  displayName: string;
   user: string;
   date: Date;
   title: string;
@@ -53,6 +67,7 @@ export interface Testimony {
 
 export interface TestimonyFromFirestore {
   documentID: string;
+  displayName: string;
   user: string;
   date: Timestamp;
   title: string;

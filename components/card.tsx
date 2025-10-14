@@ -9,15 +9,14 @@ interface Props {
 
 const Card = ({ testimony }: Props) => {
   const { colorScheme } = useColorScheme();
-  const date = testimony.date;
 
   return (
     <View className="w-11/12 self-center p-3 max-h-70 rounded-xl">
       <TouchableOpacity className="w-full">
         <Text className="text-odbm-gold">
-          @{testimony.user}{" "}
+          @{testimony.displayName}{" "}
           <Text className="text-gray-300">
-            {date.toLocaleDateString([], {
+            {testimony.date.toLocaleDateString([], {
               hour: "2-digit",
               minute: "2-digit",
             })}

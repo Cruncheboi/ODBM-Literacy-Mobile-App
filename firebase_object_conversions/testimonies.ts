@@ -1,21 +1,36 @@
-import { Testimony, TestimonyFromFirestore } from "@/firebaseConfig";
-import { DocumentSnapshot, Timestamp } from "firebase/firestore";
+import { auth, Testimony, TestimonyFromFirestore } from "@/firebaseConfig";
+import { usersSlice } from "@/redux/features/usersSlice";
+import { useAppSelector } from "@/redux/hooks";
+import {
+  DocumentSnapshot,
+  serverTimestamp,
+  Timestamp,
+} from "firebase/firestore";
 
 export class TestimonyConverter {
   static converter = {
-    toFirestore: (testimony: Testimony) => {
+    toFirestore: (title: string, body: string) => {
+      const currentUser = auth.currentUser;
+      if (currentUser == null) {
+        console.log(
+          "Could not convert data for use in Firestore because user is not authenticated."
+        );
+        return;
+      }
+
       return {
-        documentID: testimony.documentID,
-        user: testimony.user,
-        date: Timestamp.fromDate(testimony.date),
-        title: testimony.title,
-        body: testimony.body,
+        displayName: currentUser.displayName,
+        user: currentUser.uid,
+        date: serverTimestamp(),
+        title: title,
+        body: body,
       };
     },
-    fromFirestore: (snapshot: DocumentSnapshot) => {
+    fromFirestore: (snapshot: DocumentSnapshot): Testimony => {
       const data = snapshot.data() as TestimonyFromFirestore;
       return {
         documentID: data.documentID,
+        displayName: data.displayName,
         user: data.user,
         date: data.date.toDate(),
         title: data.title,

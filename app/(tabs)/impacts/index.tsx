@@ -3,6 +3,7 @@ import CustomSectionSeparator from "@/components/customSectionSeparator";
 import { Testimony } from "@/firebaseConfig";
 import { getTestimonies } from "@/redux/storageSync";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
+import { router } from "expo-router";
 import { useColorScheme } from "nativewind";
 import { forwardRef, useEffect, useState } from "react";
 import {
@@ -42,8 +43,10 @@ const Index = () => {
   useEffect(() => {
     (async () => {
       let data;
+      console.log("attempting testimony retreival");
       setIsLoading(true);
       [data, lastVisibleDoc] = await getTestimonies();
+      console.log(data);
       setTestimonies(data);
       setIsLoading(false);
     })();
@@ -58,7 +61,12 @@ const Index = () => {
             Impact Posts
           </Text>
           {/* "Add a Post" Button */}
-          <TouchableOpacity className="p-2">
+          <TouchableOpacity
+            className="p-2"
+            onPress={() => {
+              router.push("/(tabs)/impacts/createPost");
+            }}
+          >
             <FontAwesome6
               name="plus"
               size={24}
@@ -81,17 +89,7 @@ const Index = () => {
             contentContainerClassName="w-full flex py-3"
             data={testimonies}
             renderItem={({ item }) => {
-              return (
-                <Card
-                  testimony={{
-                    body: item.body,
-                    date: item.date,
-                    documentID: item.documentID,
-                    title: item.title,
-                    user: item.user,
-                  }}
-                />
-              );
+              return <Card testimony={item} />;
             }}
             className="w-full dark:bg-odbm-gray-digital"
             ItemSeparatorComponent={() => <CustomSectionSeparator />}

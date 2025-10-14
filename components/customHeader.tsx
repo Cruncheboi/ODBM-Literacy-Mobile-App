@@ -28,14 +28,14 @@ const CustomHeader = ({
         )}
         <Animated.Text
           entering={FadeInRight.delay(fadeInDelay)}
-          className="text-3xl font-bold text-odbm-gray dark:text-white flex-shrink flex-1"
+          className="text-3xl font-bold text-odbm-blue-600 dark:text-white flex-shrink flex-1"
         >
           {title}
         </Animated.Text>
       </View>
       <Animated.View
         className={cn(
-          "flex-1 flex items-center w-10/12 gap-4 justify-start",
+          "flex-1 flex items-center w-full gap-4 justify-start",
           contentContainerClassName
         )}
         entering={FadeInRight.delay(fadeInDelay)}

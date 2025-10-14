@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { View, Text, Image, ScrollView, TouchableOpacity } from "react-native";
 import { updateIsSignedIn } from "@/redux/features/usersSlice";
 import { useAppDispatch } from "@/redux/hooks";
@@ -17,6 +17,9 @@ import { clsx } from "clsx";
 import { createUserAccountInfo } from "@/redux/storageSync";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { router } from "expo-router";
+import { checkIfDisplayNameIsAvailable } from "@/firebase_functions/firebaseFunctions";
+import { debounce } from "lodash";
+import InfoText from "@/components/infoText";
 
 // Constants
 const PASSWORD_MIN_LEN = 8;
@@ -61,12 +64,19 @@ interface PasswordValidationStatusMutable {
 
 const Register = () => {
   // Form values
+  const [displayName, setDisplayName] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  // Other state
+  const [loadingDisplayNameCheck, setLoadingDisplayNameCheck] = useState(false);
+
   // Validation
+  const [displayNameAvailable, setDisplayNameAvailable] = useState<
+    boolean | undefined
+  >();
   const [isLoading, setIsLoading] = useState(false);
   const [emailValid, setEmailValid] = useState(false);
   const [passwordStatus, setPasswordStatus] =
@@ -139,6 +149,8 @@ const Register = () => {
             firstName: firstName,
             lastName: lastName,
             certificatesCompleted: { facilitator: false, learner: false },
+            displayName: displayName,
+            displayNameLowerCase: displayName.toLowerCase(),
           };
           createUserAccountInfo(dispatch, userInfo);
           dispatch(updateIsSignedIn(true));
@@ -150,6 +162,24 @@ const Register = () => {
         });
     }
   };
+
+  //
+  const displayNameCheckDebounced = useCallback(
+    debounce(async () => {
+      if (displayName === "") return;
+      console.log("checking...");
+      const isAvailable = await checkIfDisplayNameIsAvailable(displayName);
+      setDisplayNameAvailable(isAvailable);
+      console.log(isAvailable);
+      setLoadingDisplayNameCheck(false);
+    }, 2000),
+    []
+  );
+
+  useEffect(() => {
+    setLoadingDisplayNameCheck(true);
+    displayNameCheckDebounced();
+  }, [displayName]);
 
   useEffect(() => {
     console.log('"' + email + '"');
@@ -163,6 +193,7 @@ const Register = () => {
     const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
     setEmailValid(emailRegex.test(sanitizedEmail));
   };
+  console.log(displayName);
 
   return (
     <ScrollView
@@ -184,6 +215,37 @@ const Register = () => {
               Create an Account
             </Text>
             <View className="gap-3">
+              {/* Display Name Section */}
+              <View>
+                <StyledLabel label="Display Name" />
+                <StyledTextInput
+                  containerClassName={clsx(
+                    displayName === "" && "border border-red-600"
+                  )}
+                  onChangeText={(text) => {
+                    setDisplayName(text.trim());
+                  }}
+                  placeholder="Crunche"
+                />
+                {displayName === "" && (
+                  <ErrorText>Enter a Display name.</ErrorText>
+                )}
+                {loadingDisplayNameCheck && displayName !== "" && (
+                  <InfoText className="text-yellow-400">
+                    Checking if display name is available...
+                  </InfoText>
+                )}
+                {displayNameAvailable === true && displayName !== "" && (
+                  <InfoText className="text-green-500">
+                    Display name is available.
+                  </InfoText>
+                )}
+                {displayNameAvailable === false && displayName !== "" && (
+                  <ErrorText>
+                    Display name is unavailable. Please choose another name.
+                  </ErrorText>
+                )}
+              </View>
               {/* First Name Section */}
               <View>
                 <StyledLabel label="First Name" />
@@ -192,7 +254,7 @@ const Register = () => {
                     firstName === "" && "border border-red-600"
                   )}
                   onChangeText={(text) => {
-                    setFirstName(text);
+                    setFirstName(text.trim());
                   }}
                   placeholder="John"
                   autoComplete="given-name"

@@ -2,9 +2,16 @@
  * Contains all code used to sync database and local storage.
  */
 
-import { auth, db, Testimony, UserInfo } from "@/firebaseConfig";
 import {
-  collection,
+  auth,
+  db,
+  testimoniesCollection,
+  Testimony,
+  UserInfo,
+  usersPath,
+} from "@/firebaseConfig";
+import {
+  addDoc,
   doc,
   getDoc,
   getDocs,
@@ -13,19 +20,19 @@ import {
   query,
   setDoc,
   updateDoc,
-  where,
 } from "firebase/firestore";
 import { AppDispatch } from "./store";
 import {
   updateCertificateFacilitator,
   updateCertificateLearner,
+  updateDisplayName,
+  updateDisplayNameLowerCase,
   updateEmail,
   updateFirstName,
   updateLastName,
 } from "./features/usersSlice";
 import { TestimonyConverter } from "@/firebase_object_conversions/testimonies";
-// Path to usersPath collection in DB
-const usersPath = "users";
+import { updateProfile } from "firebase/auth";
 
 /**
  * Updates the first name of the user in the database and locally.
@@ -66,8 +73,9 @@ export const createUserAccountInfo = (
   dispatch: AppDispatch,
   user: UserInfo
 ) => {
+  if (auth.currentUser == null) return;
   console.log(auth.currentUser);
-  setDoc(doc(db, usersPath, auth.currentUser!.uid), user)
+  setDoc(doc(db, usersPath, auth.currentUser.uid), user)
     // Update local storage with current user info
     .then(() => {
       updateCurrentUserInfo(dispatch, user);
@@ -75,6 +83,7 @@ export const createUserAccountInfo = (
     .catch((error) => {
       console.log("User info failed to write to DB. " + error);
     });
+  updateProfile(auth.currentUser, { displayName: user.displayName });
 };
 
 /**
@@ -88,6 +97,8 @@ export const updateCurrentUserInfo = (
   dispatch(updateEmail(auth.currentUser.email as string));
   dispatch(updateFirstName(user.firstName));
   dispatch(updateLastName(user.lastName));
+  dispatch(updateDisplayName(user.displayName));
+  dispatch(updateDisplayNameLowerCase(user.displayNameLowerCase));
   dispatch(
     updateCertificateFacilitator(user.certificatesCompleted.facilitator)
   );
@@ -109,9 +120,6 @@ export const getCurrentUserInfo = async (): Promise<UserInfo | null> => {
   return null;
 };
 
-const testimoniesPath = "testimonies";
-const testimoniesCollection = collection(db, testimoniesPath);
-
 /**
  * Retrieves the most recent testimonies with a specified limit
  * @returns A tuple that contains a list of Testimony objects and the id of the last Testimony document retrieved.
@@ -120,8 +128,8 @@ export const getTestimonies = async (): Promise<
   [Testimony[], string | undefined]
 > => {
   const q = query(testimoniesCollection, orderBy("date", "desc"), limit(15));
-
   const querySnapshot = await getDocs(q);
+  console.log(`Retreived ${querySnapshot.size} testimonies.`);
   let testimonies: Testimony[] = [];
   querySnapshot.forEach((doc) => {
     testimonies.push(TestimonyConverter.converter.fromFirestore(doc));
@@ -132,4 +140,33 @@ export const getTestimonies = async (): Promise<
   }
   console.log(testimonies);
   return [testimonies, lastVisibleDoc];
+};
+
+/**
+ * Creates a new Testimony document in Firebase Firestore.
+ * @returns A boolean that states if the document was created successfully.
+ */
+export const createPost = async (
+  title: string,
+  body: string
+): Promise<boolean> => {
+  title = title.trim();
+  body = body.trim();
+
+  if (body === "" || title === "") return false;
+
+  console.log("Creating post");
+  let submittedSuccessfully = true;
+  try {
+    await addDoc(
+      testimoniesCollection,
+      TestimonyConverter.converter.toFirestore(title, body)
+    );
+  } catch (error) {
+    console.log(error);
+    submittedSuccessfully = false;
+  }
+
+  console.log(submittedSuccessfully);
+  return submittedSuccessfully;
 };

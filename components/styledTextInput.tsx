@@ -15,6 +15,8 @@ interface Props {
   containerClassName?: string;
   keyboardType?: KeyboardTypeOptions;
   autoComplete?: TextInputProps["autoComplete"];
+  multiline?: boolean;
+  maxLen?: number;
 }
 
 interface AutoComplete {}
@@ -27,6 +29,8 @@ const StyledTextInput = ({
   inputClassName,
   keyboardType,
   autoComplete,
+  multiline = false,
+  maxLen = 256,
 }: Props) => {
   const { colorScheme } = useColorScheme();
 
@@ -38,9 +42,11 @@ const StyledTextInput = ({
       )}
     >
       <TextInput
+        multiline={multiline}
+        numberOfLines={13}
         cursorColor={getThemeFontColor(colorScheme)}
         selectionColor={getPrimaryColor()}
-        maxLength={256}
+        maxLength={maxLen}
         keyboardType={keyboardType}
         autoCapitalize="none"
         autoComplete={autoComplete}

@@ -2,6 +2,8 @@ import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 
 interface UsersState {
+  displayName: string;
+  displayNameLowerCase: string;
   firstName: string;
   lastName?: string;
   email: string;
@@ -13,6 +15,8 @@ interface UsersState {
 }
 
 const initialState: UsersState = {
+  displayName: "",
+  displayNameLowerCase: "",
   firstName: "",
   email: "",
   certificatesCompleted: {
@@ -26,6 +30,12 @@ export const usersSlice = createSlice({
   name: "users",
   initialState,
   reducers: {
+    updateDisplayName: (state, action: PayloadAction<string>) => {
+      state.displayName = action.payload;
+    },
+    updateDisplayNameLowerCase: (state, action: PayloadAction<string>) => {
+      state.displayNameLowerCase = action.payload;
+    },
     updateFirstName: (state, action: PayloadAction<string>) => {
       state.firstName = action.payload;
     },
@@ -49,6 +59,8 @@ export const usersSlice = createSlice({
 });
 
 export const {
+  updateDisplayName,
+  updateDisplayNameLowerCase,
   updateFirstName,
   updateLastName,
   updateEmail,
