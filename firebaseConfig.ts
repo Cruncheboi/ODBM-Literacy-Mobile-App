@@ -4,12 +4,7 @@ import {
   onAuthStateChanged,
   getReactNativePersistence,
 } from "firebase/auth";
-import {
-  collection,
-  FieldValue,
-  getFirestore,
-  Timestamp,
-} from "firebase/firestore";
+import { collection, getFirestore, Timestamp } from "firebase/firestore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Web app's Firebase configuration
@@ -66,7 +61,6 @@ export interface Testimony {
 }
 
 export interface TestimonyFromFirestore {
-  documentID: string;
   displayName: string;
   user: string;
   date: Timestamp;

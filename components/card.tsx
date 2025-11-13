@@ -15,14 +15,14 @@ const Card = ({ testimony }: Props) => {
       <TouchableOpacity className="w-full">
         <Text className="text-odbm-gold">
           @{testimony.displayName}{" "}
-          <Text className="text-gray-300">
+          <Text className="dark:text-gray-300 text-odbm-blue-600">
             {testimony.date.toLocaleDateString([], {
               hour: "2-digit",
               minute: "2-digit",
             })}
           </Text>
         </Text>
-        <Text className="dark:text-gray-300 text-xl font-semibold">
+        <Text className="dark:text-gray-300 text-xl font-semibold line-clamp-3">
           {testimony.title}
         </Text>
         <View className="max-h-40 my-4">

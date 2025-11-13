@@ -29,13 +29,6 @@ const Home = () => {
         }}
         title="Sign In"
       />
-      <CustomNavigationButton
-        buttonTitle="s"
-        onPress={() => {
-          console.log("pressed");
-        }}
-        showFloatingTitle
-      />
     </View>
   );
 };

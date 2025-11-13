@@ -1,33 +1,18 @@
-import CustomTextInput from "@/components/styledTextInput";
-import { useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  Image,
-  TextInput,
-  ScrollView,
-  TouchableOpacity,
-} from "react-native";
-import {
-  updateFirstName,
-  updateLastName,
-  updateEmail,
-  resetUser,
-  updateIsSignedIn,
-} from "@/redux/features/usersSlice";
+import { useState } from "react";
+import { View, Text, Image, ScrollView, TouchableOpacity } from "react-native";
+import { updateIsSignedIn } from "@/redux/features/usersSlice";
 import { useAppDispatch } from "@/redux/hooks";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth, UserInfo } from "@/firebaseConfig";
+import { auth } from "@/firebaseConfig";
 import CustomOpacityButton from "@/components/customOpacityButton";
-import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import SecureTextInput from "@/components/secureTextInput";
 import StyledTextInput from "@/components/styledTextInput";
 import StyledLabel from "@/components/styledLabel";
 import ErrorText from "@/components/errorText";
 import { clsx } from "clsx";
-import { AppDispatch } from "@/redux/store";
 import { router } from "expo-router";
-import { getCurrentUserInfo, updateCurrentUserInfo } from "@/redux/storageSync";
+import { updateCurrentUserInfo } from "@/redux/storageSync";
+import { getCurrentUserInfo } from "@/firebase_functions/firebaseFunctions";
 
 const SignIn = () => {
   // Form values

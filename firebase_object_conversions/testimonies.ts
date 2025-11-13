@@ -1,11 +1,5 @@
 import { auth, Testimony, TestimonyFromFirestore } from "@/firebaseConfig";
-import { usersSlice } from "@/redux/features/usersSlice";
-import { useAppSelector } from "@/redux/hooks";
-import {
-  DocumentSnapshot,
-  serverTimestamp,
-  Timestamp,
-} from "firebase/firestore";
+import { DocumentSnapshot, serverTimestamp } from "firebase/firestore";
 
 export class TestimonyConverter {
   static converter = {
@@ -29,7 +23,7 @@ export class TestimonyConverter {
     fromFirestore: (snapshot: DocumentSnapshot): Testimony => {
       const data = snapshot.data() as TestimonyFromFirestore;
       return {
-        documentID: data.documentID,
+        documentID: snapshot.id,
         displayName: data.displayName,
         user: data.user,
         date: data.date.toDate(),

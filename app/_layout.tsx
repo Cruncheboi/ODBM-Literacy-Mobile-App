@@ -14,6 +14,7 @@ import { PersistGate } from "redux-persist/integration/react";
 import { persistStore } from "redux-persist";
 import { auth, isSignedIn } from "@/firebaseConfig";
 import { useAppDispatch } from "@/redux/hooks";
+import Toast from "react-native-toast-message";
 
 const persistor = persistStore(store);
 
@@ -47,37 +48,40 @@ export default function RootLayout() {
   }
 
   return (
-    <Provider store={store}>
-      <PersistGate loading={null} persistor={persistor}>
-        <GestureHandlerRootView>
-          <SafeAreaProvider
-            style={{
-              backgroundColor: colorScheme == "light" ? "#f5f5f5" : "#222222",
-            }}
-          >
-            <StatusBar
-              style="auto"
-              backgroundColor={getThemeMainColor(colorScheme)}
-            />
-            <Stack
-              screenOptions={{
-                animation: "ios_from_right",
-                animationTypeForReplace: "push",
-                navigationBarColor: getThemeMainColor(colorScheme),
-                statusBarBackgroundColor: "transparent",
-                statusBarStyle: colorScheme == "light" ? "dark" : "light",
-                headerShown: false,
+    <>
+      <Provider store={store}>
+        <PersistGate loading={null} persistor={persistor}>
+          <GestureHandlerRootView>
+            <SafeAreaProvider
+              style={{
+                backgroundColor: colorScheme == "light" ? "#f5f5f5" : "#222222",
               }}
-              initialRouteName="index"
             >
-              <Stack.Screen name="index" />
-              <Stack.Screen name="(tabs)" />
-              <Stack.Screen name="(pdfs)" />
-              <Stack.Screen name="(auth)" />
-            </Stack>
-          </SafeAreaProvider>
-        </GestureHandlerRootView>
-      </PersistGate>
-    </Provider>
+              <StatusBar
+                style="auto"
+                backgroundColor={getThemeMainColor(colorScheme)}
+              />
+              <Stack
+                screenOptions={{
+                  animation: "ios_from_right",
+                  animationTypeForReplace: "push",
+                  navigationBarColor: getThemeMainColor(colorScheme),
+                  statusBarBackgroundColor: "transparent",
+                  statusBarStyle: colorScheme == "light" ? "dark" : "light",
+                  headerShown: false,
+                }}
+                initialRouteName="index"
+              >
+                <Stack.Screen name="index" />
+                <Stack.Screen name="(tabs)" />
+                <Stack.Screen name="(pdfs)" />
+                <Stack.Screen name="(auth)" />
+              </Stack>
+            </SafeAreaProvider>
+          </GestureHandlerRootView>
+        </PersistGate>
+      </Provider>
+      <Toast />
+    </>
   );
 }

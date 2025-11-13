@@ -17,6 +17,7 @@ export default function TabLayout() {
         tabBarInactiveBackgroundColor: getThemeMainColor(colorScheme),
         tabBarActiveBackgroundColor: getThemeMainColor(colorScheme),
         headerShown: false,
+        tabBarHideOnKeyboard: true,
       }}
       backBehavior="initialRoute"
     >
