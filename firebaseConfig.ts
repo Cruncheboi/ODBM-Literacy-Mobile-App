@@ -38,7 +38,9 @@ export const isSignedIn = (): boolean => {
 export const usersPath = "users";
 export const usersCollection = collection(db, usersPath);
 export const testimoniesPath = "testimonies";
+export const eventsPath = "events";
 export const testimoniesCollection = collection(db, testimoniesPath);
+export const eventsCollection = collection(db, eventsPath);
 
 export interface UserInfo {
   displayName: string;
@@ -61,6 +63,23 @@ export interface Testimony {
 }
 
 export interface TestimonyFromFirestore {
+  displayName: string;
+  user: string;
+  date: Timestamp;
+  title: string;
+  body: string;
+}
+
+export interface Event {
+  documentID: string;
+  displayName: string;
+  user: string;
+  date: Date;
+  title: string;
+  body: string;
+}
+
+export interface EventFromFirestore {
   displayName: string;
   user: string;
   date: Timestamp;

@@ -4,11 +4,12 @@ import CustomSectionItem from "@/components/customSectionItem";
 import CustomNavigationDropdown, {
   NavigationDropdownItem,
 } from "@/components/customNavigationDropdown";
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 import CustomSectionSeparator from "@/components/customSectionSeparator";
 import CustomSectionHeader from "@/components/customSectionHeader";
 import FloatingIndicator from "@/components/floatingIndicator";
 import { useAppSelector } from "@/redux/hooks";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
 
 export type SectionName =
   | "Assessment"
@@ -30,6 +31,13 @@ const Index = () => {
   const recommendedStart = useAppSelector(
     (state) => state.quiz.recommendedStart
   );
+  const [forceHideDropDown, setForceHideDropDown] = useState<boolean>(false);
+  const tap = Gesture.Tap()
+    .runOnJS(true)
+    .onStart(() => {
+      console.log("Tapped list.");
+      setForceHideDropDown(true);
+    });
 
   // Drop down navigation
   const navigationItems = useMemo(() => {
@@ -62,44 +70,46 @@ const Index = () => {
   return (
     <View className="flex-1 bg-odbm-light dark:bg-odbm-gray-digital flex justify-start items-center py-safe">
       <CustomNavigationDropdown title="For Learners" data={navigationItems} />
-      <SectionList
-        ref={sectionListRef}
-        className="w-full"
-        contentContainerClassName="px-5 pb-5"
-        sections={sections}
-        onScrollToIndexFailed={onScrollFail}
-        renderSectionHeader={({ section }) => {
-          return <CustomSectionHeader title={section.sectionName} />;
-        }}
-        ItemSeparatorComponent={() => {
-          return <CustomSectionSeparator />;
-        }}
-        renderItem={({ item }) => {
-          return (
-            <FloatingIndicator
-              floatingTitle="Recommended"
-              showFloatingTitle={item.title == recommendedStart}
-            >
-              <CustomSectionItem
-                title={item.title}
-                onPress={() => {
-                  // Displays PDF item
-                  if (item.pdfSource != undefined) {
-                    router.push({
-                      pathname: "/(pdfs)/pdfViewer",
-                      params: item.pdfSource,
-                    });
-                  }
-                  // Redirects to route
-                  else if (item.route != undefined) {
-                    router.push(item.route);
-                  }
-                }}
-              />
-            </FloatingIndicator>
-          );
-        }}
-      />
+      <GestureDetector gesture={tap}>
+        <SectionList
+          ref={sectionListRef}
+          className="w-full"
+          contentContainerClassName="px-5 pb-5"
+          sections={sections}
+          onScrollToIndexFailed={onScrollFail}
+          renderSectionHeader={({ section }) => {
+            return <CustomSectionHeader title={section.sectionName} />;
+          }}
+          ItemSeparatorComponent={() => {
+            return <CustomSectionSeparator />;
+          }}
+          renderItem={({ item }) => {
+            return (
+              <FloatingIndicator
+                floatingTitle="Recommended"
+                showFloatingTitle={item.title == recommendedStart}
+              >
+                <CustomSectionItem
+                  title={item.title}
+                  onPress={() => {
+                    // Displays PDF item
+                    if (item.pdfSource != undefined) {
+                      router.push({
+                        pathname: "/(pdfs)/pdfViewer",
+                        params: item.pdfSource,
+                      });
+                    }
+                    // Redirects to route
+                    else if (item.route != undefined) {
+                      router.push(item.route);
+                    }
+                  }}
+                />
+              </FloatingIndicator>
+            );
+          }}
+        />
+      </GestureDetector>
     </View>
   );
 };

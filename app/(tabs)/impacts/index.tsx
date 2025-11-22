@@ -1,12 +1,15 @@
 import Card from "@/components/card";
 import CustomSectionSeparator from "@/components/customSectionSeparator";
-import { Testimony } from "@/firebaseConfig";
-import { getTestimonies } from "@/firebase_functions/firebaseFunctions";
+import { Event, Testimony } from "@/firebaseConfig";
+import {
+  getEvents,
+  getTestimonies,
+} from "@/firebase_functions/firebaseFunctions";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { router } from "expo-router";
 import { QueryDocumentSnapshot } from "firebase/firestore";
 import { useColorScheme } from "nativewind";
-import { forwardRef, useCallback, useState } from "react";
+import { forwardRef, useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -14,17 +17,27 @@ import {
   FlatList,
   ListRenderItemInfo,
 } from "react-native";
+import Octicons from "@expo/vector-icons/Octicons";
 
-type ImpactDoc = QueryDocumentSnapshot | undefined;
+type PostDoc = QueryDocumentSnapshot | undefined;
+export type Post = "testimony" | "event";
 
 const Index = () => {
-  const basicTextClassName = "text-odbm-gray dark:text-white";
   const { colorScheme } = useColorScheme();
+  const [postData, setPostData] = useState<Testimony[] | Event[] | undefined>();
+  const [postSectionTitle, setPostSectionTitle] = useState<string>("Impact");
   const [testimonies, setTestimonies] = useState<Testimony[] | undefined>(
     undefined
   );
+  const [events, setEvents] = useState<Event[] | undefined>();
   const [isLoading, setIsLoading] = useState(false);
-  const [lastDocReached, setLastDocReached] = useState(false);
+  const [lastTestimonyDocReached, setLastTestimonyDocReached] = useState(false);
+  const [lastEventDocReached, setLastEventDocReached] = useState(false);
+  const [lastVisibleTestimonyDoc, setLastVisibleTestimonyDoc] =
+    useState<PostDoc>(undefined);
+  const [lastVisibleEventDoc, setLastVisibleEventDoc] =
+    useState<PostDoc>(undefined);
+  const [postType, setPostType] = useState<Post>("testimony");
   // Top-Level filter for Impacts Page
   // const filter = forwardRef(() => {
   //   return (
@@ -42,8 +55,8 @@ const Index = () => {
   // });
 
   const renderListItem = useCallback(
-    ({ item }: ListRenderItemInfo<Testimony>) => {
-      return <Card testimony={item} />;
+    ({ item }: ListRenderItemInfo<Testimony | Event>) => {
+      return <Card post={item} />;
     },
     []
   );
@@ -63,6 +76,7 @@ const Index = () => {
     );
   }, []);
 
+  // Item to display when there was an error retrieving posts
   const showItemOnError = useCallback(() => {
     return (
       <View>
@@ -73,45 +87,142 @@ const Index = () => {
     );
   }, []);
 
-  const [lastVisibleDoc, setLastVisibleDoc] = useState<ImpactDoc>(undefined);
-  const onEndReached = async () => {
-    if (lastDocReached) return;
+  // Sets the post section title based on current post type.
+  useEffect(() => {
+    if (postType === "testimony") {
+      setPostSectionTitle("Impact");
+    } else {
+      setPostSectionTitle("Event");
+    }
+  }, [postType]);
+
+  // const getPostSectionTitle = useCallback((): string => {
+  //   if (postType == "testimony") {
+  //     return "Impact";
+  //   } else {
+  //     return "Event";
+  //   }
+  // }, [postType]);
+
+  // Switches the current post type in use
+  const onSwitchPostType = useCallback(() => {
+    if (postType == "testimony") {
+      setPostType("event");
+    } else {
+      setPostType("testimony");
+    }
+  }, [postType]);
+
+  const getCurrentPostData = useCallback(():
+    | Testimony[]
+    | Event[]
+    | undefined => {
+    if (postType == "testimony") {
+      return testimonies;
+    } else {
+      return events;
+    }
+  }, [postType, testimonies, events]);
+
+  useEffect(() => {
+    setPostData(getCurrentPostData());
+  }, [postType, testimonies, events]);
+
+  const getTestimonyPosts = useCallback(async () => {
+    const [data, lastDoc]: [Testimony[], PostDoc] = await getTestimonies(
+      lastVisibleTestimonyDoc
+    );
+    if (data.length == 0) {
+      setLastTestimonyDocReached(true);
+    }
+    setLastVisibleTestimonyDoc(lastDoc);
+    setTestimonies((prev) => (prev ? [...prev, ...data] : data));
+  }, [lastVisibleTestimonyDoc, testimonies]);
+
+  const getEventPosts = useCallback(async () => {
+    const [data, lastDoc]: [Event[], PostDoc] = await getEvents(
+      lastVisibleEventDoc
+    );
+    if (data.length == 0) {
+      setLastEventDocReached(true);
+    }
+    setLastVisibleEventDoc(lastDoc);
+    setEvents((prev) => (prev ? [...prev, ...data] : data));
+  }, [lastVisibleEventDoc, events]);
+
+  // Determines what happens when the end of the current list is reached.
+  const onEndReached = useCallback(async () => {
+    if (
+      (lastTestimonyDocReached && postType === "testimony") ||
+      (lastEventDocReached && postType === "event")
+    ) {
+      console.log("Last doc Reached.");
+      return;
+    }
+
     console.log("end reached. Trying to load more...");
     setIsLoading(true);
-    const [data, lastDoc, error]: [Testimony[], ImpactDoc, boolean] =
-      await getTestimonies(lastVisibleDoc);
-    if (data.length == 0) {
-      setLastDocReached(true);
+    if (postType === "testimony") {
+      await getTestimonyPosts();
+    } else {
+      await getEventPosts();
     }
     setIsLoading(false);
-    setLastVisibleDoc(lastDoc);
-    setTestimonies((prev) => (prev ? [...prev, ...data] : data));
-  };
+  }, [
+    postType,
+    lastTestimonyDocReached,
+    lastVisibleTestimonyDoc,
+    lastEventDocReached,
+    lastVisibleEventDoc,
+  ]);
 
   // Retrieves initial posts
   const onComponentLoaded = useCallback(async () => {
-    console.log("attempting testimony retrieval");
+    console.log("attempting post retrieval");
     setIsLoading(true);
-    const [data, lastDoc, error]: [Testimony[], ImpactDoc, boolean] =
-      await getTestimonies();
-    setLastVisibleDoc(lastDoc);
+    if (postType === "testimony") {
+      await getTestimonyPosts();
+    } else {
+      await getEventPosts();
+    }
     setIsLoading(false);
-    setTestimonies(data);
-  }, []);
+  }, [
+    postType,
+    lastTestimonyDocReached,
+    lastVisibleTestimonyDoc,
+    lastEventDocReached,
+    lastVisibleEventDoc,
+  ]);
 
   return (
     <View className="py-safe dark:bg-odbm-gray-digital flex flex-1">
       <View className="py-3 px-4 border-b-2 border-odbm-blue-600 dark:border-odbm-blue-700">
         {/* Header */}
         <View className="h-10 flex flex-row items-center px-2">
-          <Text className="text-4xl tracking-wide font-bold text-odbm-blue-600 dark:text-white flex-1">
-            Impact Posts
-          </Text>
-          {/* "Add a Post" Button */}
+          <View className="flex-1 flex flex-row items-center">
+            {/* Title */}
+            <Text className="text-4xl tracking-wide font-bold text-odbm-blue-600 dark:text-white">
+              {postSectionTitle} Posts
+            </Text>
+            {/* Button to switch post type*/}
+            <TouchableOpacity className="ml-4" onPress={onSwitchPostType}>
+              <Octicons
+                name="arrow-switch"
+                size={24}
+                color={colorScheme == "light" ? "#173A64" : "white"}
+              />
+            </TouchableOpacity>
+          </View>
+          {/* Button to add a post */}
           <TouchableOpacity
             className="p-2"
             onPress={() => {
-              router.push("/(tabs)/impacts/createPost");
+              router.push({
+                pathname: "/(tabs)/impacts/createPost",
+                params: {
+                  type: postType,
+                },
+              });
             }}
           >
             <FontAwesome6
@@ -125,11 +236,11 @@ const Index = () => {
       <View className="flex-1 dark:bg-odbm-gray-digital">
         <FlatList
           contentContainerClassName="w-full flex py-3"
-          data={testimonies}
+          data={postData}
           renderItem={
-            testimonies == undefined && !isLoading
+            postData == undefined && !isLoading
               ? showItemOnError
-              : testimonies != undefined && testimonies.length == 0
+              : postData != undefined && postData.length == 0
               ? showItemOnEmptyList
               : renderListItem
           }
@@ -142,7 +253,6 @@ const Index = () => {
           // stickyHeaderIndices={[0]}
           // StickyHeaderComponent={filter}
         />
-        {/** )*/}
       </View>
     </View>
   );

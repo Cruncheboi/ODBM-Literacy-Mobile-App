@@ -20,6 +20,7 @@ import { router } from "expo-router";
 import { checkIfDisplayNameIsAvailable } from "@/firebase_functions/firebaseFunctions";
 import { debounce } from "lodash";
 import InfoText from "@/components/infoText";
+import Toast from "react-native-toast-message";
 
 // Constants
 const PASSWORD_MIN_LEN = 8;
@@ -153,12 +154,20 @@ const Register = () => {
             displayNameLowerCase: displayName.toLowerCase(),
           };
           createUserAccountInfo(dispatch, userInfo);
+          Toast.show({
+            type: "success",
+            text1: "Account successfully created",
+          });
           dispatch(updateIsSignedIn(true));
         })
         .catch((error) => {
           const errorCode = error.code;
           const errorMessage = error.message;
           console.log(errorMessage);
+          Toast.show({
+            type: "error",
+            text1: "An error occurred while creating an account",
+          });
         });
     }
   };

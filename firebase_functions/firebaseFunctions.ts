@@ -1,7 +1,13 @@
-import { TestimonyConverter } from "@/firebase_object_conversions/testimonies";
+import { PostSearchParams } from "@/app/(tabs)/impacts/createPost";
+import {
+  EventsConverter,
+  TestimonyConverter,
+} from "@/firebase_object_conversions/testimonies";
 import {
   auth,
   db,
+  Event,
+  eventsCollection,
   testimoniesCollection,
   Testimony,
   UserInfo,
@@ -22,6 +28,7 @@ import {
   startAfter,
   where,
 } from "firebase/firestore";
+import Toast from "react-native-toast-message";
 
 export const checkIfDisplayNameIsAvailable = async (
   displayName: string
@@ -52,7 +59,7 @@ export const checkIfDisplayNameIsAvailable = async (
  */
 export const getTestimonies = async (
   lastVisibleDoc: QueryDocumentSnapshot | undefined = undefined
-): Promise<[Testimony[], QueryDocumentSnapshot | undefined, boolean]> => {
+): Promise<[Testimony[], QueryDocumentSnapshot | undefined]> => {
   let q: Query;
   // Query to retreive initial testimonies
   console.log(lastVisibleDoc);
@@ -83,7 +90,8 @@ export const getTestimonies = async (
     }
     console.log(testimonies);
     console.log(`last visible doc: ${lastVisibleDoc?.id}`);
-    return [testimonies, lastVisibleDoc, false];
+    console.log(`testimony size: ${testimonies.length}`);
+    return [testimonies, lastVisibleDoc];
   } catch (error) {
     if (error instanceof FirebaseError) {
       console.error("Firebase Error:", error.code, error.message);
@@ -91,13 +99,84 @@ export const getTestimonies = async (
         console.error(
           "User does not have permission to access this collection."
         );
+        Toast.show({
+          type: "error",
+          text1: "An error occurred trying to get posts.",
+        });
       } else if (error.code === "unavailable") {
         console.error("Firestore service is currently unavailable.");
+        Toast.show({
+          type: "error",
+          text1: "Post are currently unretrievable. Please try again later.",
+        });
       }
     } else {
       console.error("Unexpected Error:", error);
     }
-    return [[], lastVisibleDoc, true];
+    return [[], lastVisibleDoc];
+  }
+};
+
+/**
+ * Retrieves the most recent events with a specified limit
+ * @returns A tuple that contains a list of Event objects and the id of the last Event document retrieved.
+ */
+export const getEvents = async (
+  lastVisibleDoc: QueryDocumentSnapshot | undefined = undefined
+): Promise<[Event[], QueryDocumentSnapshot | undefined]> => {
+  let q: Query;
+  // Query to retreive initial events
+  console.log(lastVisibleDoc);
+  if (lastVisibleDoc == undefined) {
+    console.log("using initial query");
+    q = query(eventsCollection, orderBy("date", "desc"), limit(15));
+  }
+  // Query to retreive the next events
+  else {
+    console.log("using new query");
+    q = query(
+      eventsCollection,
+      orderBy("date", "desc"),
+      limit(15),
+      startAfter(lastVisibleDoc)
+    );
+  }
+
+  try {
+    const querySnapshot = await getDocs(q);
+    console.log(`Retreived ${querySnapshot.size} events.`);
+    let events: Event[] = [];
+    querySnapshot.forEach((doc) => {
+      events.push(EventsConverter.converter.fromFirestore(doc));
+    });
+    if (querySnapshot.size > 0) {
+      lastVisibleDoc = querySnapshot.docs[querySnapshot.size - 1];
+    }
+    console.log(events);
+    console.log(`last visible doc: ${lastVisibleDoc?.id}`);
+    return [events, lastVisibleDoc];
+  } catch (error) {
+    if (error instanceof FirebaseError) {
+      console.error("Firebase Error:", error.code, error.message);
+      if (error.code === "permission-denied") {
+        console.error(
+          "User does not have permission to access this collection."
+        );
+        Toast.show({
+          type: "error",
+          text1: "An error occurred trying to get posts.",
+        });
+      } else if (error.code === "unavailable") {
+        console.error("Firestore service is currently unavailable.");
+        Toast.show({
+          type: "error",
+          text1: "Post are currently unretrievable. Please try again later.",
+        });
+      }
+    } else {
+      console.error("Unexpected Error:", error);
+    }
+    return [[], lastVisibleDoc];
   }
 };
 
@@ -107,7 +186,8 @@ export const getTestimonies = async (
  */
 export const createPost = async (
   title: string,
-  body: string
+  body: string,
+  { type }: PostSearchParams
 ): Promise<boolean> => {
   title = title.trim();
   body = body.trim();
@@ -117,13 +197,30 @@ export const createPost = async (
   console.log("Creating post");
   let submittedSuccessfully = true;
   try {
-    await addDoc(
-      testimoniesCollection,
-      TestimonyConverter.converter.toFirestore(title, body)
-    );
+    if (type == "testimony") {
+      await addDoc(
+        testimoniesCollection,
+        TestimonyConverter.converter.toFirestore(title, body)
+      );
+    } else {
+      await addDoc(
+        eventsCollection,
+        EventsConverter.converter.toFirestore(title, body)
+      );
+    }
+    Toast.show({
+      type: "success",
+      text1: "Post Submitted Successfully",
+      position: "bottom",
+    });
   } catch (error) {
     console.log(error);
     submittedSuccessfully = false;
+    Toast.show({
+      type: "error",
+      text1: "Error Submitting Post",
+      position: "bottom",
+    });
   }
 
   console.log(submittedSuccessfully);

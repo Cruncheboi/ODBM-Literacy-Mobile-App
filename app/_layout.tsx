@@ -5,7 +5,10 @@ import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
 import { useColorScheme } from "nativewind";
-import getThemeMainColor from "@/utility_functions/themeColor";
+import getThemeMainColor, {
+  getThemeFontColor,
+  getThemeSecondaryColor,
+} from "@/utility_functions/themeColor";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Provider } from "react-redux";
@@ -14,7 +17,7 @@ import { PersistGate } from "redux-persist/integration/react";
 import { persistStore } from "redux-persist";
 import { auth, isSignedIn } from "@/firebaseConfig";
 import { useAppDispatch } from "@/redux/hooks";
-import Toast from "react-native-toast-message";
+import Toast, { BaseToast, ToastProps } from "react-native-toast-message";
 
 const persistor = persistStore(store);
 
@@ -29,6 +32,45 @@ export default function RootLayout() {
       SplashScreen.hideAsync();
     }
   }, [loaded, error]);
+
+  const toastConfig = {
+    success: (props: ToastProps) => {
+      return (
+        <BaseToast
+          {...props}
+          style={{ borderLeftColor: "green" }}
+          contentContainerStyle={{
+            borderTopWidth: 1,
+            borderBottomWidth: 1,
+            borderRightWidth: 1,
+            borderTopRightRadius: 6,
+            borderBottomRightRadius: 6,
+            borderColor: "#58595B",
+            backgroundColor: getThemeSecondaryColor(colorScheme),
+          }}
+          text1Style={{ color: getThemeFontColor(colorScheme) }}
+        />
+      );
+    },
+    error: (props: ToastProps) => {
+      return (
+        <BaseToast
+          {...props}
+          style={{ borderLeftColor: "red" }}
+          contentContainerStyle={{
+            borderTopWidth: 1,
+            borderBottomWidth: 1,
+            borderRightWidth: 1,
+            borderTopRightRadius: 6,
+            borderBottomRightRadius: 6,
+            borderColor: "#58595B",
+            backgroundColor: getThemeSecondaryColor(colorScheme),
+          }}
+          text1Style={{ color: getThemeFontColor(colorScheme) }}
+        />
+      );
+    },
+  };
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -81,7 +123,7 @@ export default function RootLayout() {
           </GestureHandlerRootView>
         </PersistGate>
       </Provider>
-      <Toast />
+      <Toast position="bottom" config={toastConfig} />
     </>
   );
 }

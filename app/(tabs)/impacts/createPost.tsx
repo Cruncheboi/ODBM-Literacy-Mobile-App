@@ -4,9 +4,14 @@ import ErrorText from "@/components/errorText";
 import StyledLabel from "@/components/styledLabel";
 import StyledTextInput from "@/components/styledTextInput";
 import { createPost } from "@/firebase_functions/firebaseFunctions";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { View, ScrollView } from "react-native";
+import type { Post } from "./index";
+
+export type PostSearchParams = {
+  type: Post;
+};
 
 const CreatePost = () => {
   const [title, setTitle] = useState("");
@@ -14,6 +19,7 @@ const CreatePost = () => {
   const [hasValidTitle, setHasValidTitle] = useState(false);
   const [hasValidBody, setHasValidBody] = useState(false);
   const [buttonDisabled, setButtonDisabled] = useState(true);
+  const { type } = useLocalSearchParams<PostSearchParams>();
   const titleCharLimit = 256;
   const bodyCharLimit = 5000;
 
@@ -21,16 +27,36 @@ const CreatePost = () => {
     if (buttonDisabled) return;
     if (hasValidTitle && hasValidTitle) {
       setButtonDisabled(true);
-      createPost(title, body).then((wasSuccessful) => {
-        if (wasSuccessful) {
-          router.replace("/(tabs)/impacts");
-        } else {
-          console.log("Something went wrong creating the post.");
-        }
-        setButtonDisabled(false);
-      });
+      if (type == "testimony") {
+        createTestimonyPost();
+      } else {
+        createEventPost();
+      }
     }
     console.log("continued");
+  };
+
+  const createTestimonyPost = () => {
+    createPost(title, body, { type: "testimony" }).then((wasSuccessful) => {
+      if (wasSuccessful) {
+        router.back();
+        // router.replace("/(tabs)/impacts");
+      } else {
+        console.log("Something went wrong creating the post.");
+      }
+      setButtonDisabled(false);
+    });
+  };
+
+  const createEventPost = () => {
+    createPost(title, body, { type: "event" }).then((wasSuccessful) => {
+      if (wasSuccessful) {
+        router.back();
+      } else {
+        console.log("Something went wrong creating the post.");
+      }
+      setButtonDisabled(false);
+    });
   };
 
   const titleTextRequirementChecks = useEffect(() => {

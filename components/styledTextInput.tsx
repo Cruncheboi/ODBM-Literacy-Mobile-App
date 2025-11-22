@@ -49,7 +49,6 @@ const StyledTextInput = ({
       )}
     >
       <TextInput
-        // scrollEnabled={false}
         editable={editable}
         value={value}
         multiline={multiline}
@@ -65,7 +64,7 @@ const StyledTextInput = ({
         secureTextEntry={secureTextEntry}
         onChangeText={onChangeText}
         className={clsx(
-          "color-odbm-gray dark:color-white w-full",
+          "color-odbm-gray dark:color-white flex-1",
           inputClassName
         )}
         placeholder={placeholder}
