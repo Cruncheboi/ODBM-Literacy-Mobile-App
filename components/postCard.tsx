@@ -2,30 +2,47 @@ import { View, Text, TouchableOpacity } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useColorScheme } from "nativewind";
 import { Event, Testimony } from "@/firebaseConfig";
+import { useCallback } from "react";
+import { router } from "expo-router";
+import { SearchParams } from "@/app/(tabs)/posts/viewPost";
 
 interface Props {
   post: Testimony | Event;
 }
 
-const Card = ({ post }: Props) => {
+const PostCard = ({ post }: Props) => {
   const { colorScheme } = useColorScheme();
+  const date = new Date(post.date);
+
+  const onPressPost = () => {
+    router.push({
+      pathname: "/(tabs)/posts/viewPost",
+      params: {
+        postID: post.documentID,
+        postType: post.postType,
+      } as SearchParams,
+    });
+  };
 
   return (
-    <View className="w-11/12 self-center p-3 max-h-70 rounded-xl">
-      <TouchableOpacity className="w-full">
-        <Text className="text-odbm-gold">
-          @{post.displayName}{" "}
+    <View className="w-11/12 self-center p-3 max-h-[340px] rounded-xl">
+      <TouchableOpacity className="w-full" onPress={onPressPost}>
+        <View className="flex flex-row justify-items-center">
+          <Text className="text-odbm-gold">@</Text>
+          <View className="flex-1">
+            <Text className="text-odbm-gold">{post.displayName}</Text>
+          </View>
           <Text className="dark:text-gray-300 text-odbm-blue-600">
-            {post.date.toLocaleDateString([], {
+            {date.toLocaleDateString([], {
               hour: "2-digit",
               minute: "2-digit",
             })}
           </Text>
-        </Text>
-        <Text className="dark:text-gray-300 text-xl font-semibold line-clamp-3">
+        </View>
+        <Text className="dark:text-gray-200 text-xl font-bold line-clamp-3 mt-2">
           {post.title}
         </Text>
-        <View className="max-h-40 my-4">
+        <View className="max-h-40 mb-4">
           <Text className="dark:text-gray-300 text-lg line-clamp-5">
             {post.body}
           </Text>
@@ -41,4 +58,4 @@ const Card = ({ post }: Props) => {
     </View>
   );
 };
-export default Card;
+export default PostCard;

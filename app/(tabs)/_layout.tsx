@@ -37,9 +37,9 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="impacts"
+        name="posts"
         options={{
-          title: "Impacts",
+          title: "Posts",
           tabBarIcon: ({ color, size }) => {
             return <Ionicons name="chatbubbles" size={size} color={color} />;
           },

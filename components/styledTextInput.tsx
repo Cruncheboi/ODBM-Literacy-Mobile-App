@@ -5,7 +5,12 @@ import {
 import clsx from "clsx";
 import { useColorScheme } from "nativewind";
 import { View, TextInput } from "react-native";
-import type { KeyboardTypeOptions, TextInputProps } from "react-native";
+import type {
+  KeyboardTypeOptions,
+  NativeSyntheticEvent,
+  TextInputFocusEventData,
+  TextInputProps,
+} from "react-native";
 
 interface Props {
   children?: React.ReactNode;
@@ -20,6 +25,8 @@ interface Props {
   maxLen?: number;
   value?: string;
   editable?: boolean;
+  onBlur?: (e: NativeSyntheticEvent<TextInputFocusEventData>) => void;
+  autoCapitalize?: "none" | "sentences" | "words" | "characters" | undefined;
 }
 
 interface AutoComplete {}
@@ -37,6 +44,8 @@ const StyledTextInput = ({
   maxLen = 256,
   value,
   editable = true,
+  onBlur,
+  autoCapitalize,
 }: Props) => {
   const { colorScheme } = useColorScheme();
 
@@ -49,6 +58,7 @@ const StyledTextInput = ({
       )}
     >
       <TextInput
+        onBlur={onBlur}
         editable={editable}
         value={value}
         multiline={multiline}
@@ -58,7 +68,7 @@ const StyledTextInput = ({
         selectionColor={getPrimaryColor()}
         maxLength={maxLen}
         keyboardType={keyboardType}
-        autoCapitalize="none"
+        autoCapitalize={autoCapitalize}
         autoComplete={autoComplete}
         selectTextOnFocus={false}
         secureTextEntry={secureTextEntry}

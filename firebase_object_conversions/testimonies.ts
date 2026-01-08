@@ -29,10 +29,11 @@ export class TestimonyConverter {
     fromFirestore: (snapshot: DocumentSnapshot): Testimony => {
       const data = snapshot.data() as TestimonyFromFirestore;
       return {
+        postType: "testimony",
         documentID: snapshot.id,
         displayName: data.displayName,
         user: data.user,
-        date: data.date.toDate(),
+        date: data.date.toDate().toISOString(),
         title: data.title,
         body: data.body,
       };
@@ -62,10 +63,11 @@ export class EventsConverter {
     fromFirestore: (snapshot: DocumentSnapshot): Event => {
       const data = snapshot.data() as EventFromFirestore;
       return {
+        postType: "event",
         documentID: snapshot.id,
         displayName: data.displayName,
         user: data.user,
-        date: data.date.toDate(),
+        date: data.date.toDate().toISOString(),
         title: data.title,
         body: data.body,
       };

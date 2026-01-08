@@ -34,13 +34,19 @@ export const isSignedIn = (): boolean => {
   return userSignedIn;
 };
 
-// Collection and path constants in firestore
+// Path constants in firestore
 export const usersPath = "users";
-export const usersCollection = collection(db, usersPath);
 export const testimoniesPath = "testimonies";
 export const eventsPath = "events";
+export const commentsPath = "comments";
+
+// Collection constants in firestore
+export const usersCollection = collection(db, usersPath);
 export const testimoniesCollection = collection(db, testimoniesPath);
 export const eventsCollection = collection(db, eventsPath);
+export const commentsCollection = collection(db, commentsPath);
+
+export type Post = Testimony | Event;
 
 export interface UserInfo {
   displayName: string;
@@ -54,10 +60,11 @@ export interface UserInfo {
 }
 
 export interface Testimony {
+  postType: "testimony";
   documentID: string;
   displayName: string;
   user: string;
-  date: Date;
+  date: string;
   title: string;
   body: string;
 }
@@ -71,10 +78,11 @@ export interface TestimonyFromFirestore {
 }
 
 export interface Event {
+  postType: "event";
   documentID: string;
   displayName: string;
   user: string;
-  date: Date;
+  date: string;
   title: string;
   body: string;
 }
@@ -84,5 +92,21 @@ export interface EventFromFirestore {
   user: string;
   date: Timestamp;
   title: string;
+  body: string;
+}
+
+export interface Comment {
+  documentID: string;
+  postID: string;
+  displayName: string;
+  user: string;
+  date: string;
+  body: string;
+}
+export interface CommentFromFirestore {
+  postID: string;
+  displayName: string;
+  user: string;
+  date: Timestamp;
   body: string;
 }

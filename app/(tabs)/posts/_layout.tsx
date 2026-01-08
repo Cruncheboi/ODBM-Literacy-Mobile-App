@@ -4,7 +4,7 @@ const Layout = () => {
     <Stack initialRouteName="index" screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />
       <Stack.Screen name="createPost" />
-      <Stack.Screen name="events" />
+      <Stack.Screen name="viewPost" />
     </Stack>
   );
 };

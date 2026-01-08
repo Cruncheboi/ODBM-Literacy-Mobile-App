@@ -11,10 +11,14 @@ import {
 import storage from "@react-native-async-storage/async-storage";
 import usersReducer from "./features/usersSlice";
 import quizReducer from "./features/quizSlice";
+import postsReducer from "./features/postsSlice";
+import commentsReducer from "./features/commentsSlice";
 
 const reducers = combineReducers({
   users: usersReducer,
   quiz: quizReducer,
+  posts: postsReducer,
+  comments: commentsReducer,
 });
 
 const persistConfig = {

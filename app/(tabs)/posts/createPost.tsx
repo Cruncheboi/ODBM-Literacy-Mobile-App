@@ -5,86 +5,69 @@ import StyledLabel from "@/components/styledLabel";
 import StyledTextInput from "@/components/styledTextInput";
 import { createPost } from "@/firebase_functions/firebaseFunctions";
 import { router, useLocalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { View, ScrollView } from "react-native";
-import type { Post } from "./index";
+import type { PostType } from "./index";
 
 export type PostSearchParams = {
-  type: Post;
+  type: PostType;
 };
 
+type Status = "submitting" | "typing";
+
 const CreatePost = () => {
+  // Title state
   const [title, setTitle] = useState("");
+  const hasValidTitle = title.length > 0 && title.trim() !== "";
+
+  // Body state
   const [body, setBody] = useState("");
-  const [hasValidTitle, setHasValidTitle] = useState(false);
-  const [hasValidBody, setHasValidBody] = useState(false);
-  const [buttonDisabled, setButtonDisabled] = useState(true);
+  const hasValidBody = body.length > 0 && body.trim() !== "";
+
+  // Post state
+  const [status, setStatus] = useState<Status>("typing");
   const { type } = useLocalSearchParams<PostSearchParams>();
+  const [hasTouched, setHasTouched] = useState({
+    title: false,
+    body: false,
+  });
+
+  // Constant post values
   const titleCharLimit = 256;
   const bodyCharLimit = 5000;
 
   const onPostSubmit = async () => {
-    if (buttonDisabled) return;
-    if (hasValidTitle && hasValidTitle) {
-      setButtonDisabled(true);
-      if (type == "testimony") {
-        createTestimonyPost();
-      } else {
-        createEventPost();
-      }
+    if (status === "submitting") return;
+    if (hasValidTitle && hasValidBody) {
+      setStatus("submitting");
+      await createNewPost();
     }
     console.log("continued");
   };
 
-  const createTestimonyPost = () => {
-    createPost(title, body, { type: "testimony" }).then((wasSuccessful) => {
-      if (wasSuccessful) {
-        router.back();
-        // router.replace("/(tabs)/impacts");
-      } else {
-        console.log("Something went wrong creating the post.");
-      }
-      setButtonDisabled(false);
-    });
+  const createNewPost = async () => {
+    const wasSuccessful = await createPost(title, body, { type: type });
+    if (wasSuccessful) {
+      router.dismissTo("/(tabs)/posts");
+    } else {
+      setStatus("typing");
+    }
   };
 
-  const createEventPost = () => {
-    createPost(title, body, { type: "event" }).then((wasSuccessful) => {
-      if (wasSuccessful) {
-        router.back();
-      } else {
-        console.log("Something went wrong creating the post.");
-      }
-      setButtonDisabled(false);
-    });
+  const onTitleInputBlur = () => {
+    if (!hasTouched.title) {
+      setHasTouched((prev) => ({ ...prev, title: true }));
+    }
   };
 
-  const titleTextRequirementChecks = useEffect(() => {
-    if (title.length > 0 && title.trim() !== "") {
-      setHasValidTitle(true);
-    } else {
-      setHasValidTitle(false);
+  const onBodyInputBlur = () => {
+    if (!hasTouched.body) {
+      setHasTouched((prev) => ({ ...prev, body: true }));
     }
-  }, [title]);
-
-  const bodyTextRequirementChecks = useEffect(() => {
-    if (body.length > 0 && body.trim() !== "") {
-      setHasValidBody(true);
-    } else {
-      setHasValidBody(false);
-    }
-  }, [body]);
-
-  const buttonAvailabilityCheck = useEffect(() => {
-    if (!hasValidBody || !hasValidTitle) {
-      setButtonDisabled(true);
-    } else {
-      setButtonDisabled(false);
-    }
-  }, [hasValidTitle, hasValidBody]);
+  };
 
   return (
-    <CustomHeader title="Create a Post" contentContainerClassName="">
+    <CustomHeader title="Create a Post">
       <ScrollView
         className="w-full px-3 pb-3 flex"
         contentContainerClassName="gap-3"
@@ -101,10 +84,13 @@ const CreatePost = () => {
             value={title}
             maxLen={titleCharLimit}
             multiline={true}
+            editable={status !== "submitting"}
+            onBlur={onTitleInputBlur}
+            autoCapitalize="sentences"
           />
         </View>
-        {!hasValidTitle && (
-          <ErrorText>The title needs to be non-empty.</ErrorText>
+        {hasTouched.title && !hasValidTitle && (
+          <ErrorText>Your title cannot be empty.</ErrorText>
         )}
         {title.length == titleCharLimit && (
           <ErrorText>
@@ -120,6 +106,9 @@ const CreatePost = () => {
             value={body}
             maxLen={bodyCharLimit}
             multiline={true}
+            editable={status !== "submitting"}
+            onBlur={onBodyInputBlur}
+            autoCapitalize="sentences"
           />
         </View>
         {body.length == bodyCharLimit && (
@@ -127,14 +116,16 @@ const CreatePost = () => {
             Max length of {bodyCharLimit.toString()} characters reached.
           </ErrorText>
         )}
-        {!hasValidBody && (
-          <ErrorText>The story needs to be non-empty.</ErrorText>
+        {hasTouched.body && !hasValidBody && (
+          <ErrorText>Your story cannot be empty.</ErrorText>
         )}
         <View>
           <CustomOpacityButton
             title="Create Post"
             onPress={onPostSubmit}
-            disabled={buttonDisabled}
+            disabled={
+              status === "submitting" || !hasValidBody || !hasValidTitle
+            }
           />
         </View>
       </ScrollView>

@@ -25,20 +25,14 @@ type InfoTypes = "display name" | "";
 
 const Profile = () => {
   const dispatch = useAppDispatch();
-  const firstName = useAppSelector((state) => state.users.firstName);
-  const lastName = useAppSelector((state) => state.users.lastName);
   const email = useAppSelector((state) => state.users.email);
   const displayName =
     auth.currentUser != null ? (auth.currentUser.displayName as string) : "";
 
-  const [firstNameInput, setFirstNameInput] = useState(firstName);
-  const [lastNameInput, setLastNameInput] = useState(lastName);
   const [displayNameInput, setDisplayNameInput] = useState(displayName);
-  const [updateInProgress, setUpdateInProgress] = useState(false);
 
   const [updatesInProgress, setUpdatesInProgress] = useState<InfoTypes[]>([]);
   const [displayNameUpdating, setDisplayNameUpdating] = useState(false);
-  useEffect(() => {}, updatesInProgress);
 
   return (
     <CustomHeader title="Profile">
@@ -66,52 +60,6 @@ const Profile = () => {
             }}
           />
           <LoadingIndicator isLoading={displayNameUpdating} />
-        </StyledTextInput>
-        {/* First Name Field */}
-        <StyledLabel label="First Name" />
-        <StyledTextInput
-          onChangeText={setFirstNameInput}
-          value={firstNameInput}
-        >
-          <InputFieldButton
-            disabled={firstNameInput?.trim() === firstName || updateInProgress}
-            onPress={async () => {
-              setUpdateInProgress(true);
-              console.log("Started.");
-              updateFirstNameDB(dispatch, firstNameInput.trim())
-                .catch((error) => {
-                  console.log(
-                    "An error occured while updating first name in DB. " + error
-                  );
-                })
-                .finally(() => {
-                  console.log("Should be finished.");
-                  setUpdateInProgress(false);
-                });
-            }}
-          />
-        </StyledTextInput>
-        {/* Last Name Field */}
-        <StyledLabel label="Last Name" />
-        <StyledTextInput onChangeText={setLastNameInput} value={lastNameInput}>
-          <InputFieldButton
-            disabled={lastNameInput?.trim() === lastName || updateInProgress}
-            onPress={async () => {
-              if (lastNameInput != undefined) {
-                setUpdateInProgress(true);
-                updateLastNameDB(dispatch, lastNameInput.trim())
-                  .catch((error) => {
-                    console.log(
-                      "An error occured while updating last name in DB. " +
-                        error
-                    );
-                  })
-                  .finally(() => {
-                    setUpdateInProgress(false);
-                  });
-              }
-            }}
-          />
         </StyledTextInput>
         {/* User ID Field */}
         <StyledLabel label="User ID" />
