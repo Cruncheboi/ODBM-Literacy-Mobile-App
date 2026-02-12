@@ -4,7 +4,7 @@ import { useColorScheme } from "nativewind";
 import { Event, Testimony } from "@/firebaseConfig";
 import { useCallback } from "react";
 import { router } from "expo-router";
-import { SearchParams } from "@/app/(tabs)/posts/viewPost";
+import { SearchParams } from "@/app/postActions/viewPost";
 
 interface Props {
   post: Testimony | Event;
@@ -16,7 +16,7 @@ const PostCard = ({ post }: Props) => {
 
   const onPressPost = () => {
     router.push({
-      pathname: "/(tabs)/posts/viewPost",
+      pathname: "/postActions/viewPost",
       params: {
         postID: post.documentID,
         postType: post.postType,

@@ -4,7 +4,8 @@ const Layout = () => {
   return (
     <Stack screenOptions={{ headerShown: false }} initialRouteName="index">
       <Stack.Screen name="index" />
-      <Stack.Screen name="profile" />
+      <Stack.Screen name="(userInfo)/profile" />
+      <Stack.Screen name="(userInfo)/userPosts" />
     </Stack>
   );
 };

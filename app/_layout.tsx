@@ -18,6 +18,7 @@ import { persistStore } from "redux-persist";
 import { auth, isSignedIn } from "@/firebaseConfig";
 import { useAppDispatch } from "@/redux/hooks";
 import Toast, { BaseToast, ToastProps } from "react-native-toast-message";
+// import * as SystemUI from "expo-system-ui";
 
 const persistor = persistStore(store);
 
@@ -26,7 +27,6 @@ export default function RootLayout() {
   const [loaded, error] = useFonts({
     "Bounded Black": require("@/assets/fonts/Bounded Black.ttf"),
   });
-
   useEffect(() => {
     if (loaded || error) {
       SplashScreen.hideAsync();
@@ -82,6 +82,11 @@ export default function RootLayout() {
         console.log("redirecting to sign in...");
       }
     });
+    // (async () => {
+    //   const color = await SystemUI.getBackgroundColorAsync();
+    //   console.log(`ColorValue: ${color?.toString()}`);
+    // })();
+
     return () => unsubscribe();
   }, []);
 
@@ -95,9 +100,10 @@ export default function RootLayout() {
         <PersistGate loading={null} persistor={persistor}>
           <GestureHandlerRootView>
             <SafeAreaProvider
-              style={{
-                backgroundColor: colorScheme == "light" ? "#f5f5f5" : "#222222",
-              }}
+            // className="color-black"
+            // style={{
+            //   backgroundColor: ,
+            // }}
             >
               <StatusBar
                 style="auto"
@@ -105,8 +111,9 @@ export default function RootLayout() {
               />
               <Stack
                 screenOptions={{
-                  animation: "ios_from_right",
-                  animationTypeForReplace: "push",
+                  // animation: "slide_from_right",
+                  // presentation
+                  // animationTypeForReplace: "pop",
                   navigationBarColor: getThemeMainColor(colorScheme),
                   statusBarBackgroundColor: "transparent",
                   statusBarStyle: colorScheme == "light" ? "dark" : "light",
@@ -118,6 +125,7 @@ export default function RootLayout() {
                 <Stack.Screen name="(tabs)" />
                 <Stack.Screen name="(pdfs)" />
                 <Stack.Screen name="(auth)" />
+                <Stack.Screen name="postActions" />
               </Stack>
             </SafeAreaProvider>
           </GestureHandlerRootView>

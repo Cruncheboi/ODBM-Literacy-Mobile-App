@@ -1,21 +1,17 @@
 import Card from "@/components/postCard";
 import CustomSectionSeparator from "@/components/customSectionSeparator";
 import { Event, Testimony } from "@/firebaseConfig";
-import { getTestimonies } from "@/firebase_functions/firebaseFunctions";
+import { getEvents } from "@/firebase_functions/firebaseFunctions";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { router } from "expo-router";
 import { QueryDocumentSnapshot } from "firebase/firestore";
 import { useColorScheme } from "nativewind";
 import { forwardRef, useCallback, useEffect, useRef, useState } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
-import Octicons from "@expo/vector-icons/Octicons";
 import { useAppDispatch } from "@/redux/hooks";
+import { addEventPosts, resetEventPosts } from "@/redux/features/postsSlice";
 import {
-  addTestimonyPosts,
-  resetTestimonyPosts,
-} from "@/redux/features/postsSlice";
-import {
-  logCommentObjects,
+  resetAllComments,
   resetCommentCollection,
 } from "@/redux/features/commentsSlice";
 import {
@@ -27,7 +23,7 @@ import ScrollToButton from "@/components/scrollToButton";
 import ListFilter from "@/components/listFilter";
 import useListScrollController from "@/hooks/useListScrollController";
 import useListDataController from "@/hooks/useListDataController";
-import { CreatePostSearchParams } from "@/app/postActions/createPost";
+import { CreatePostSearchParams } from "../../postActions/createPost";
 
 export type PostType = "testimony" | "event";
 
@@ -37,15 +33,13 @@ const Index = () => {
 
   // Post state
   const { data, isLoading, onEndReached, onListRefreshed } =
-    useListDataController<Testimony>({
+    useListDataController<Event>({
       dataInUse: true,
-      getData: getTestimonies,
-      updateLocalStorage: (data) => dispatch(addTestimonyPosts(data)),
+      getData: getEvents,
+      updateLocalStorage: (data) => dispatch(addEventPosts(data)),
       resetLocalStorage: () => {
-        dispatch(resetTestimonyPosts());
-        dispatch(logCommentObjects());
-        dispatch(resetCommentCollection({ type: "testimony" }));
-        dispatch(logCommentObjects());
+        dispatch(resetEventPosts());
+        dispatch(resetCommentCollection({ type: "event" }));
       },
     });
 
@@ -115,16 +109,11 @@ const Index = () => {
     return showItemOnEmptyList();
   };
 
-  // Sets the initial state of the list on component load.
-  useEffect(() => {
-    onListRefreshed();
-  }, []);
-
   const onAddPostPressed = () => {
     router.push({
       pathname: "/postActions/createPost",
       params: {
-        type: "testimony",
+        type: "event",
       } as CreatePostSearchParams,
     });
   };
@@ -139,6 +128,11 @@ const Index = () => {
     );
   };
 
+  // Sets the initial state of the list on component load.
+  useEffect(() => {
+    onListRefreshed();
+  }, []);
+
   return (
     <View className="py-safe dark:bg-odbm-gray-digital flex flex-1">
       <View className="py-3 px-4 border-b-2 border-odbm-blue-600 dark:border-odbm-blue-700">
@@ -147,7 +141,7 @@ const Index = () => {
           <View className="flex-1 flex flex-row">
             {/* Title */}
             <Text className="text-4xl tracking-wide font-bold text-odbm-blue-600 dark:text-white">
-              Testimony Posts
+              Event Posts
             </Text>
           </View>
           {/* Button to add a post */}
@@ -164,11 +158,11 @@ const Index = () => {
         <FlashList
           // maintainVisibleContentPosition={{ minIndexForVisible: 0 }}
           contentContainerClassName="w-full flex py-3"
-          className="w-full dark:bg-odbm-gray-digital"
           data={data}
           // ListHeaderComponent={listHeaderComponent}
           renderItem={renderListItem}
           ListEmptyComponent={listEmptyComponent}
+          className="w-full dark:bg-odbm-gray-digital"
           ItemSeparatorComponent={itemSeparatorComponent}
           onEndReached={onEndReached}
           onEndReachedThreshold={0.5}

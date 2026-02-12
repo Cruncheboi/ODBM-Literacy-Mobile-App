@@ -20,7 +20,7 @@ import Toast from "react-native-toast-message";
  */
 export const updateFirstNameDB = async (
   dispatch: AppDispatch,
-  firstName: string
+  firstName: string,
 ) => {
   await updateDoc(doc(db, usersPath, auth.currentUser!.uid), {
     firstName: firstName,
@@ -47,7 +47,7 @@ export const updateFirstNameDB = async (
  */
 export const updateLastNameDB = async (
   dispatch: AppDispatch,
-  lastName: string
+  lastName: string,
 ) => {
   await updateDoc(doc(db, usersPath, auth.currentUser!.uid), {
     lastName: lastName,
@@ -75,7 +75,7 @@ export const updateLastNameDB = async (
 export const updateDisplayName = async (displayName: string): Promise<void> => {
   if (auth.currentUser == null) {
     console.log(
-      "Could not update display since current user is not authenticated."
+      "Could not update display since current user is not authenticated.",
     );
     return;
   }
@@ -88,7 +88,7 @@ export const updateDisplayName = async (displayName: string): Promise<void> => {
     });
   } catch (error) {
     console.log(
-      `An error occurred while updating user's display name. ${error}`
+      `An error occurred while updating user's display name. ${error}`,
     );
     Toast.show({
       type: "error",
@@ -102,7 +102,7 @@ export const updateDisplayName = async (displayName: string): Promise<void> => {
  */
 export const createUserAccountInfo = (
   dispatch: AppDispatch,
-  user: UserInfo
+  user: UserInfo,
 ) => {
   if (auth.currentUser == null) return;
   console.log(auth.currentUser);
@@ -117,9 +117,9 @@ export const createUserAccountInfo = (
   updateProfile(auth.currentUser, { displayName: user.displayName }).catch(
     (error) => {
       console.error(
-        `An error occurred trying to update display name. ${error}`
+        `An error occurred trying to update display name. ${error}`,
       );
-    }
+    },
   );
 };
 
@@ -128,7 +128,7 @@ export const createUserAccountInfo = (
  */
 export const updateCurrentUserInfo = (
   dispatch: AppDispatch,
-  user: UserInfo
+  user: UserInfo,
 ) => {
   if (auth.currentUser == null) return;
   dispatch(updateEmail(auth.currentUser.email as string));
@@ -136,7 +136,7 @@ export const updateCurrentUserInfo = (
   dispatch(updateLastName(user.lastName));
   dispatch(updateDisplayNameLowerCase(user.displayNameLowerCase));
   dispatch(
-    updateCertificateFacilitator(user.certificatesCompleted.facilitator)
+    updateCertificateFacilitator(user.certificatesCompleted.facilitator),
   );
   dispatch(updateCertificateLearner(user.certificatesCompleted.learner));
 };

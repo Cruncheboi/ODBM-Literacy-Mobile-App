@@ -1,7 +1,13 @@
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { router, useLocalSearchParams } from "expo-router";
-import { View, Text, TouchableOpacity } from "react-native";
-import { PostType } from ".";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  NativeSyntheticEvent,
+  NativeScrollEvent,
+} from "react-native";
+import { PostType } from "../(tabs)/posts";
 import CustomBackButton from "@/components/customBackButton";
 import CustomSectionSeparator from "@/components/customSectionSeparator";
 import CommentCard from "@/components/commentCard";
@@ -10,7 +16,8 @@ import { Comment } from "@/firebaseConfig";
 import {
   addComments,
   Comments,
-  initializePostComments,
+  initializePostCommentData,
+  logCommentObjects,
   resetCommentsOfAPost,
 } from "@/redux/features/commentsSlice";
 import { FlashList, ListRenderItemInfo } from "@shopify/flash-list";
@@ -21,7 +28,9 @@ import {
 } from "@/firebase_functions/firebaseFunctions";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { useColorScheme } from "nativewind";
-import { CommentSearchParams } from "./createComment";
+import { CommentSearchParams } from "@/app/postActions/createComment";
+import ScrollToButton from "@/components/scrollToButton";
+import useListScrollController from "@/hooks/useListScrollController";
 
 export type SearchParams = {
   postID: string;
@@ -41,7 +50,7 @@ const ViewPost = () => {
         return state.posts.testimonies[postID];
       }
       return state.posts.events[postID];
-    }
+    },
   );
 
   const postDate = new Date(date);
@@ -51,16 +60,24 @@ const ViewPost = () => {
   const [postComments, setPostComments] = useState<Comment[]>([]);
   const lastCommentReachedRef = useRef(false);
   const lastCommentDocSnapshotRef = useRef<DocumentSnapshot | undefined>(
-    undefined
+    undefined,
   );
-  const lastCommentDocID = useAppSelector(
-    (state) => state.comments[postID]?.lastCommentDocID
-  );
-  const comments = useAppSelector(
-    (state) => state.comments[postID]?.comments
-  ) as Comments | undefined;
+  const lastCommentDocID = useAppSelector((state) => {
+    return state.comments.testimonyComments[postID]?.lastCommentDocID;
+  });
+  const comments = useAppSelector((state) => {
+    return state.comments.testimonyComments[postID]?.comments;
+  }) as Comments | undefined;
+
+  // Flashlist state
+  const flashListRef = useRef<FlashList<Comment> | null>(null);
+  const { onScrollToPressed, onScroll, showScrollToButton } =
+    useListScrollController(flashListRef);
 
   const setInitialCommentState = async () => {
+    if (comments == undefined) {
+      console.log("Comments are undefined in local storage.");
+    }
     if (comments != undefined) {
       console.log("setting initial state");
       console.log("attempting retrieval of initial state from store");
@@ -82,7 +99,7 @@ const ViewPost = () => {
 
   useEffect(() => {
     if (comments != undefined) {
-      setPostComments((prev) => Object.values(comments));
+      setPostComments(Object.values(comments));
     }
   }, [comments]);
 
@@ -90,8 +107,11 @@ const ViewPost = () => {
     (async () => {
       console.log("Initializing post comments");
       if (comments == undefined) {
-        dispatch(initializePostComments({ postID: postID }));
+        console.log("Initializing post comment data");
+        dispatch(logCommentObjects());
+        dispatch(initializePostCommentData({ postID: postID, type: postType }));
       }
+      dispatch(logCommentObjects());
       console.log("Setting comment state");
       await setInitialCommentState();
       console.log("Finished setting comment state");
@@ -101,7 +121,7 @@ const ViewPost = () => {
   const resetCommentsState = () => {
     lastCommentReachedRef.current = false;
     lastCommentDocSnapshotRef.current = undefined;
-    setPostComments((prev) => []);
+    setPostComments([]);
   };
 
   const getPostComments = async (lastVisibleCommentDocID?: string) => {
@@ -112,14 +132,18 @@ const ViewPost = () => {
         postType,
         documentID,
         lastCommentDocSnapshotRef.current,
-        lastVisibleCommentDocID
+        lastVisibleCommentDocID,
       );
       if (newComments.length < QUERY_LIMIT) {
         lastCommentReachedRef.current = true;
       }
       lastCommentDocSnapshotRef.current = lastDoc;
       dispatch(
-        addComments({ comments: newComments, lastCommentDocID: lastDoc?.id })
+        addComments({
+          comments: newComments,
+          lastCommentDocID: lastDoc?.id,
+          type: postType,
+        }),
       );
     } catch (error) {
       console.log(error);
@@ -130,7 +154,8 @@ const ViewPost = () => {
     console.log("last doc reached.");
     if (
       lastCommentReachedRef.current ||
-      lastCommentDocSnapshotRef.current == undefined ||
+      (lastCommentDocSnapshotRef.current == undefined &&
+        lastCommentDocID == undefined) ||
       postComments.length == 0 ||
       isLoading
     )
@@ -145,7 +170,7 @@ const ViewPost = () => {
     console.log("refreshing");
     setIsLoading(true);
     resetCommentsState();
-    dispatch(resetCommentsOfAPost({ postID: postID }));
+    dispatch(resetCommentsOfAPost({ postID: postID, type: postType }));
     await getPostComments();
     setIsLoading(false);
     console.log("finished refreshing");
@@ -153,7 +178,7 @@ const ViewPost = () => {
 
   const onAddPost = () => {
     router.push({
-      pathname: "/(tabs)/posts/createComment",
+      pathname: "/postActions/createComment",
       params: {
         postID: postID,
         postType: postType,
@@ -211,7 +236,7 @@ const ViewPost = () => {
     ({ item }: ListRenderItemInfo<Comment>) => {
       return <CommentCard comment={item} />;
     },
-    [postComments]
+    [postComments],
   );
 
   const itemSeparatorComponent = useCallback(() => {
@@ -252,7 +277,15 @@ const ViewPost = () => {
         onEndReached={onEndReached}
         onEndReachedThreshold={0.3}
         estimatedItemSize={68}
+        ref={flashListRef}
+        onScroll={onScroll}
       />
+      <View className="relative flex">
+        <ScrollToButton
+          onPress={onScrollToPressed}
+          isHidden={!showScrollToButton}
+        />
+      </View>
     </View>
   );
 };

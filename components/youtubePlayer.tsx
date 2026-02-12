@@ -1,3 +1,4 @@
+import cn from "@/utility_functions/cn";
 import { useCallback, useRef, useState } from "react";
 import { View, useWindowDimensions, ActivityIndicator } from "react-native";
 import Animated, { FadeInLeft, FadeInRight } from "react-native-reanimated";
@@ -21,13 +22,13 @@ const YoutubePlayer = ({ videoId }: YoutubePlayerProps) => {
 
   const iframeWidth = useCallback(
     () => Math.max(300, Math.round(width * (10 / 12))),
-    [width]
+    [width],
   );
 
   // calculate height using 16:9 aspect ratio
   const iframeHeight = useCallback(
     () => Math.round(iframeWidth() * (9 / 16)),
-    [iframeWidth]
+    [iframeWidth],
   );
 
   return (

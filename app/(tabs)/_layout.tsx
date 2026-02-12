@@ -46,6 +46,15 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="events"
+        options={{
+          title: "Events",
+          tabBarIcon: ({ color, size }) => {
+            return <Ionicons name="chatbubbles" size={size} color={color} />;
+          },
+        }}
+      />
+      <Tabs.Screen
         name="learners"
         options={{
           title: "Learners",

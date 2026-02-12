@@ -25,6 +25,7 @@ export const postsSlice = createSlice({
   initialState,
   reducers: {
     addTestimonyPosts: (state, action: PayloadAction<Testimony[]>) => {
+      if (action.payload.length === 0) return;
       const newTestimonies = action.payload.reduce((acc: Testimonies, item) => {
         acc[item.documentID] = item;
         return acc;
@@ -35,6 +36,7 @@ export const postsSlice = createSlice({
       };
     },
     addEventPosts: (state, action: PayloadAction<Event[]>) => {
+      if (action.payload.length === 0) return;
       const newEvents = action.payload.reduce((acc: Events, item) => {
         acc[item.documentID] = item;
         return acc;

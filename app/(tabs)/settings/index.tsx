@@ -35,7 +35,7 @@ const Settings = () => {
       <CustomOpacityButton
         title="Profile"
         onPress={() => {
-          router.push("/(tabs)/settings/profile");
+          router.push("/(tabs)/settings/(userInfo)/profile");
         }}
         textStyles="text-odbm-gray"
       />

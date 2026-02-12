@@ -7,9 +7,9 @@ import { createPost } from "@/firebase_functions/firebaseFunctions";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { View, ScrollView } from "react-native";
-import type { PostType } from "./index";
+import type { PostType } from "../(tabs)/posts/index";
 
-export type PostSearchParams = {
+export type CreatePostSearchParams = {
   type: PostType;
 };
 
@@ -26,7 +26,7 @@ const CreatePost = () => {
 
   // Post state
   const [status, setStatus] = useState<Status>("typing");
-  const { type } = useLocalSearchParams<PostSearchParams>();
+  const { type } = useLocalSearchParams<CreatePostSearchParams>();
   const [hasTouched, setHasTouched] = useState({
     title: false,
     body: false,
@@ -48,7 +48,8 @@ const CreatePost = () => {
   const createNewPost = async () => {
     const wasSuccessful = await createPost(title, body, { type: type });
     if (wasSuccessful) {
-      router.dismissTo("/(tabs)/posts");
+      // router.dismissTo("/(tabs)/posts");
+      router.back();
     } else {
       setStatus("typing");
     }

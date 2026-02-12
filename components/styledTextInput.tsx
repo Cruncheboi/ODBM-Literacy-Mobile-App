@@ -29,8 +29,6 @@ interface Props {
   autoCapitalize?: "none" | "sentences" | "words" | "characters" | undefined;
 }
 
-interface AutoComplete {}
-
 const StyledTextInput = ({
   children,
   placeholder,
@@ -54,7 +52,7 @@ const StyledTextInput = ({
       className={clsx(
         "p-2 bg-odbm-gray-light dark:bg-odbm-gray rounded-md flex-1 min-h-14",
         "flex-row",
-        containerClassName
+        containerClassName,
       )}
     >
       <TextInput
@@ -75,7 +73,7 @@ const StyledTextInput = ({
         onChangeText={onChangeText}
         className={clsx(
           "color-odbm-gray dark:color-white flex-1",
-          inputClassName
+          inputClassName,
         )}
         placeholder={placeholder}
         placeholderClassName="color-odbm-gray dark:color-white"

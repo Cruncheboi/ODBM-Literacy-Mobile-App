@@ -14,8 +14,9 @@ import {
   NativeSyntheticEvent,
   TextInputFocusEventData,
 } from "react-native";
-import { SearchParams } from "./viewPost";
-import { PostType } from ".";
+import { SearchParams } from "@/app/postActions/viewPost";
+
+type PostType = "testimony" | "event";
 
 export type CommentSearchParams = {
   postID: string;
@@ -47,9 +48,9 @@ const CreateComment = () => {
   const onCreateComment = async () => {
     const newComment = await createComment(postID, body);
     if (newComment) {
-      dispatch(appendCommentToStart({ comment: newComment }));
+      dispatch(appendCommentToStart({ comment: newComment, type: postType }));
       router.dismissTo({
-        pathname: "/(tabs)/posts/viewPost",
+        pathname: "/postActions/viewPost",
         params: {
           postID: postID,
           postType: postType,

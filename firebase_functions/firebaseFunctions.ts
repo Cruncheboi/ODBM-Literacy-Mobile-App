@@ -1,5 +1,5 @@
 import { PostType } from "@/app/(tabs)/posts";
-import { PostSearchParams } from "@/app/(tabs)/posts/createPost";
+import { CreatePostSearchParams } from "@/app/postActions/createPost";
 import { CommentConverter } from "@/firebase_object_conversions/comments";
 import { TestimonyConverter } from "@/firebase_object_conversions/testimonies";
 import { EventsConverter } from "@/firebase_object_conversions/events";
@@ -58,11 +58,11 @@ export const getCurrentUserInfo = async (): Promise<UserInfo | null> => {
 };
 
 export const checkIfDisplayNameIsAvailable = async (
-  displayName: string
+  displayName: string,
 ): Promise<boolean> => {
   const q = query(
     usersCollection,
-    where("displayNameLowerCase", "==", displayName.toLowerCase())
+    where("displayNameLowerCase", "==", displayName.toLowerCase()),
   );
   console.log("before");
   try {
@@ -86,8 +86,8 @@ export const checkIfDisplayNameIsAvailable = async (
  *          QueryDocumentSnapshot of the last Testimony document retrieved.
  */
 export const getTestimonies = async (
-  lastVisibleDoc: QueryDocumentSnapshot | undefined = undefined
-): Promise<[Testimony[], QueryDocumentSnapshot | undefined]> => {
+  lastVisibleDoc?: QueryDocumentSnapshot,
+): Promise<[Testimony[], QueryDocumentSnapshot?]> => {
   let q: Query;
   console.log(`last visible doc: ${lastVisibleDoc?.id}`);
   if (lastVisibleDoc == undefined) {
@@ -96,7 +96,7 @@ export const getTestimonies = async (
     q = query(
       testimoniesCollection,
       orderBy("date", "desc"),
-      limit(QUERY_LIMIT)
+      limit(QUERY_LIMIT),
     );
   }
   // Query to retreive the next testimonies
@@ -106,7 +106,7 @@ export const getTestimonies = async (
       testimoniesCollection,
       orderBy("date", "desc"),
       limit(QUERY_LIMIT),
-      startAfter(lastVisibleDoc)
+      startAfter(lastVisibleDoc),
     );
   }
 
@@ -129,7 +129,7 @@ export const getTestimonies = async (
       console.error("Firebase Error:", error.code, error.message);
       if (error.code === "permission-denied") {
         console.error(
-          "User does not have permission to access this collection."
+          "User does not have permission to access this collection.",
         );
         Toast.show({
           type: "error",
@@ -159,7 +159,7 @@ export const getTestimonies = async (
  *          QueryDocumentSnapshot of the last Event document retrieved.
  */
 export const getEvents = async (
-  lastVisibleDoc: QueryDocumentSnapshot | undefined = undefined
+  lastVisibleDoc: QueryDocumentSnapshot | undefined,
 ): Promise<[Event[], QueryDocumentSnapshot | undefined]> => {
   let q: Query;
   // Query to retreive initial events
@@ -175,7 +175,7 @@ export const getEvents = async (
       eventsCollection,
       orderBy("date", "desc"),
       limit(QUERY_LIMIT),
-      startAfter(lastVisibleDoc)
+      startAfter(lastVisibleDoc),
     );
   }
 
@@ -197,7 +197,7 @@ export const getEvents = async (
       console.error("Firebase Error:", error.code, error.message);
       if (error.code === "permission-denied") {
         console.error(
-          "User does not have permission to access this collection."
+          "User does not have permission to access this collection.",
         );
         Toast.show({
           type: "error",
@@ -230,7 +230,7 @@ export const getComments = async (
   postType: PostType,
   documentID: string,
   lastVisibleDoc: DocumentSnapshot | undefined,
-  lastVisibleDocID?: string
+  lastVisibleDocID?: string,
 ): Promise<[Comment[], DocumentSnapshot | undefined]> => {
   // Create a document snapshot to start after in the query.
   // This should only occur when trying to restore the last used document snapshot from a previous session.
@@ -247,7 +247,7 @@ export const getComments = async (
       commentsCollection,
       orderBy("date", "desc"),
       limit(QUERY_LIMIT),
-      where("postID", "==", documentID)
+      where("postID", "==", documentID),
     );
     console.log("using initial query");
   }
@@ -258,7 +258,7 @@ export const getComments = async (
       orderBy("date", "desc"),
       limit(QUERY_LIMIT),
       where("postID", "==", documentID),
-      startAfter(lastVisibleDoc)
+      startAfter(lastVisibleDoc),
     );
     console.log("using new query");
   }
@@ -283,7 +283,7 @@ export const getComments = async (
       console.error("Firebase Error:", error.code, error.message);
       if (error.code === "permission-denied") {
         console.error(
-          "User does not have permission to access this collection."
+          "User does not have permission to access this collection.",
         );
         Toast.show({
           type: "error",
@@ -314,7 +314,7 @@ export const getComments = async (
 export const createPost = async (
   title: string,
   body: string,
-  { type }: PostSearchParams
+  { type }: CreatePostSearchParams,
 ): Promise<boolean> => {
   title = title.trim();
   body = body.trim();
@@ -327,12 +327,12 @@ export const createPost = async (
     if (type == "testimony") {
       await addDoc(
         testimoniesCollection,
-        TestimonyConverter.converter.toFirestore(title, body)
+        TestimonyConverter.converter.toFirestore(title, body),
       );
     } else {
       await addDoc(
         eventsCollection,
-        EventsConverter.converter.toFirestore(title, body)
+        EventsConverter.converter.toFirestore(title, body),
       );
     }
     Toast.show({
@@ -358,7 +358,7 @@ export const createPost = async (
  */
 export const createComment = async (
   postID: string,
-  body: string
+  body: string,
 ): Promise<Comment | null> => {
   body = body.trim();
   if (body === "") return null;
@@ -370,7 +370,7 @@ export const createComment = async (
     if (currentUser == null) return null;
     const docRef = await addDoc(
       commentsCollection,
-      CommentConverter.converter.toFirestore(postID, body)
+      CommentConverter.converter.toFirestore(postID, body),
     );
     const newComment: Comment = {
       body: body,

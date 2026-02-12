@@ -1,7 +1,10 @@
 import Card from "@/components/postCard";
 import CustomSectionSeparator from "@/components/customSectionSeparator";
 import { Event, Testimony } from "@/firebaseConfig";
-import { getTestimonies } from "@/firebase_functions/firebaseFunctions";
+import {
+  getEvents,
+  getTestimonies,
+} from "@/firebase_functions/firebaseFunctions";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { router } from "expo-router";
 import { QueryDocumentSnapshot } from "firebase/firestore";
@@ -11,13 +14,12 @@ import { View, Text, TouchableOpacity } from "react-native";
 import Octicons from "@expo/vector-icons/Octicons";
 import { useAppDispatch } from "@/redux/hooks";
 import {
+  addEventPosts,
   addTestimonyPosts,
+  resetEventPosts,
   resetTestimonyPosts,
 } from "@/redux/features/postsSlice";
-import {
-  logCommentObjects,
-  resetCommentCollection,
-} from "@/redux/features/commentsSlice";
+import { resetAllComments } from "@/redux/features/commentsSlice";
 import {
   FlashList,
   ListRenderItemInfo,
@@ -27,7 +29,6 @@ import ScrollToButton from "@/components/scrollToButton";
 import ListFilter from "@/components/listFilter";
 import useListScrollController from "@/hooks/useListScrollController";
 import useListDataController from "@/hooks/useListDataController";
-import { CreatePostSearchParams } from "@/app/postActions/createPost";
 
 export type PostType = "testimony" | "event";
 
@@ -36,18 +37,24 @@ const Index = () => {
   const { colorScheme } = useColorScheme();
 
   // Post state
-  const { data, isLoading, onEndReached, onListRefreshed } =
-    useListDataController<Testimony>({
-      dataInUse: true,
-      getData: getTestimonies,
-      updateLocalStorage: (data) => dispatch(addTestimonyPosts(data)),
-      resetLocalStorage: () => {
-        dispatch(resetTestimonyPosts());
-        dispatch(logCommentObjects());
-        dispatch(resetCommentCollection({ type: "testimony" }));
-        dispatch(logCommentObjects());
-      },
-    });
+  const [postType, setPostType] = useState<PostType>("testimony");
+  const testimonyListData = useListDataController<Testimony>({
+    dataInUse: postType === "testimony",
+    getData: getTestimonies,
+    updateLocalStorage: (data) => dispatch(addTestimonyPosts(data)),
+    resetLocalStorage: () => dispatch(resetTestimonyPosts()),
+  });
+  const eventListData = useListDataController<Event>({
+    dataInUse: postType === "event",
+    getData: getEvents,
+    updateLocalStorage: (data) => dispatch(addEventPosts(data)),
+    resetLocalStorage: () => dispatch(resetEventPosts()),
+  });
+  const isLoading = testimonyListData.isLoading || eventListData.isLoading;
+  const postSectionTitle = postType == "testimony" ? "Impact" : "Event";
+  // Retrieves the post data that should currently be in use
+  const postData =
+    postType == "testimony" ? testimonyListData.data : eventListData.data;
 
   // FlashList state
   const flashListRef = useRef<FlashList<Testimony | Event> | null>(null);
@@ -109,7 +116,7 @@ const Index = () => {
       return null;
     }
 
-    if (data == undefined) {
+    if (postData == undefined) {
       return showItemOnError();
     }
     return showItemOnEmptyList();
@@ -120,12 +127,33 @@ const Index = () => {
     onListRefreshed();
   }, []);
 
+  // Switches the current post type in use
+  const onSwitchPostType = () => {
+    if (postType == "testimony") {
+      setPostType("event");
+    } else {
+      setPostType("testimony");
+    }
+  };
+
+  // Loads more data when the end of the current list is reached.
+  const onEndReached = async () => {
+    await testimonyListData.onEndReached();
+    await eventListData.onEndReached();
+  };
+
+  // Retrieves initial posts
+  const onListRefreshed = async () => {
+    await testimonyListData.onListRefreshed();
+    await eventListData.onListRefreshed();
+  };
+
   const onAddPostPressed = () => {
     router.push({
       pathname: "/postActions/createPost",
       params: {
-        type: "testimony",
-      } as CreatePostSearchParams,
+        type: postType,
+      },
     });
   };
 
@@ -147,9 +175,17 @@ const Index = () => {
           <View className="flex-1 flex flex-row">
             {/* Title */}
             <Text className="text-4xl tracking-wide font-bold text-odbm-blue-600 dark:text-white">
-              Testimony Posts
+              {postSectionTitle} Posts
             </Text>
           </View>
+          {/* Button to switch post type*/}
+          <TouchableOpacity className="p-2" onPress={onSwitchPostType}>
+            <Octicons
+              name="arrow-switch"
+              size={28}
+              color={colorScheme == "light" ? "#173A64" : "white"}
+            />
+          </TouchableOpacity>
           {/* Button to add a post */}
           <TouchableOpacity className="p-2" onPress={onAddPostPressed}>
             <FontAwesome6
@@ -164,11 +200,11 @@ const Index = () => {
         <FlashList
           // maintainVisibleContentPosition={{ minIndexForVisible: 0 }}
           contentContainerClassName="w-full flex py-3"
-          className="w-full dark:bg-odbm-gray-digital"
-          data={data}
+          data={postData}
           // ListHeaderComponent={listHeaderComponent}
           renderItem={renderListItem}
           ListEmptyComponent={listEmptyComponent}
+          className="w-full dark:bg-odbm-gray-digital"
           ItemSeparatorComponent={itemSeparatorComponent}
           onEndReached={onEndReached}
           onEndReachedThreshold={0.5}
