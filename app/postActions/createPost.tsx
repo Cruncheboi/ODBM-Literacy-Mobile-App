@@ -4,10 +4,10 @@ import ErrorText from "@/components/errorText";
 import StyledLabel from "@/components/styledLabel";
 import StyledTextInput from "@/components/styledTextInput";
 import { createPost } from "@/firebase_functions/firebaseFunctions";
+import { PostType } from "@/firebaseConfig";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { View, ScrollView } from "react-native";
-import type { PostType } from "../(tabs)/posts/index";
 
 export type CreatePostSearchParams = {
   type: PostType;

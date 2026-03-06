@@ -1,6 +1,6 @@
 import Card from "@/components/postCard";
 import CustomSectionSeparator from "@/components/customSectionSeparator";
-import { Event, Testimony } from "@/firebaseConfig";
+import { Event, PostType, Testimony } from "@/firebaseConfig";
 import {
   getEvents,
   getTestimonies,
@@ -19,7 +19,6 @@ import {
   resetEventPosts,
   resetTestimonyPosts,
 } from "@/redux/features/postsSlice";
-import { resetAllComments } from "@/redux/features/commentsSlice";
 import {
   FlashList,
   ListRenderItemInfo,
@@ -29,8 +28,6 @@ import ScrollToButton from "@/components/scrollToButton";
 import ListFilter from "@/components/listFilter";
 import useListScrollController from "@/hooks/useListScrollController";
 import useListDataController from "@/hooks/useListDataController";
-
-export type PostType = "testimony" | "event";
 
 const Index = () => {
   const dispatch = useAppDispatch();

@@ -18,7 +18,7 @@ const PostCard = ({ post }: Props) => {
     router.push({
       pathname: "/postActions/viewPost",
       params: {
-        postID: post.documentID,
+        postID: post.documentId,
         postType: post.postType,
       } as SearchParams,
     });

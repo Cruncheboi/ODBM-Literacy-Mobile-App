@@ -38,7 +38,7 @@ export type SearchParams = {
   postType: PostType;
 };
 
-const ViewPost = () => {
+const ViewReport = () => {
   const dispatch = useAppDispatch();
   const { colorScheme } = useColorScheme();
 
@@ -71,7 +71,6 @@ const ViewPost = () => {
   //       }),
   //     );
   //   },
-
   // });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -318,4 +317,4 @@ const ViewPost = () => {
     </View>
   );
 };
-export default ViewPost;
+export default ViewReport;

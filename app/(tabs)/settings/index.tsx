@@ -40,6 +40,13 @@ const Settings = () => {
         textStyles="text-odbm-gray"
       />
       <CustomOpacityButton
+        title="Reports"
+        onPress={() => {
+          router.push("/(tabs)/settings/(admin)/reports");
+        }}
+        textStyles="text-odbm-gray"
+      />
+      <CustomOpacityButton
         title="Sign Out"
         onPress={signOutUser}
         textStyles="text-odbm-gray"

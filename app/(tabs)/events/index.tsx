@@ -1,19 +1,15 @@
 import Card from "@/components/postCard";
 import CustomSectionSeparator from "@/components/customSectionSeparator";
-import { Event, Testimony } from "@/firebaseConfig";
+import { Event } from "@/firebaseConfig";
 import { getEvents } from "@/firebase_functions/firebaseFunctions";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { router } from "expo-router";
-import { QueryDocumentSnapshot } from "firebase/firestore";
 import { useColorScheme } from "nativewind";
-import { forwardRef, useCallback, useEffect, useRef, useState } from "react";
+import { forwardRef, useCallback, useEffect, useRef } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { useAppDispatch } from "@/redux/hooks";
 import { addEventPosts, resetEventPosts } from "@/redux/features/postsSlice";
-import {
-  resetAllComments,
-  resetCommentCollection,
-} from "@/redux/features/commentsSlice";
+import { resetCommentCollection } from "@/redux/features/commentsSlice";
 import {
   FlashList,
   ListRenderItemInfo,
@@ -25,8 +21,6 @@ import useListScrollController from "@/hooks/useListScrollController";
 import useListDataController from "@/hooks/useListDataController";
 import { CreatePostSearchParams } from "../../postActions/createPost";
 
-export type PostType = "testimony" | "event";
-
 const Index = () => {
   const dispatch = useAppDispatch();
   const { colorScheme } = useColorScheme();
@@ -36,7 +30,7 @@ const Index = () => {
     useListDataController<Event>({
       dataInUse: true,
       getData: getEvents,
-      updateLocalStorage: (data) => dispatch(addEventPosts(data)),
+      updateLocalStorage: (events) => dispatch(addEventPosts(events)),
       resetLocalStorage: () => {
         dispatch(resetEventPosts());
         dispatch(resetCommentCollection({ type: "event" }));
@@ -44,7 +38,7 @@ const Index = () => {
     });
 
   // FlashList state
-  const flashListRef = useRef<FlashList<Testimony | Event> | null>(null);
+  const flashListRef = useRef<FlashList<Event> | null>(null);
   const { showScrollToButton, onScrollToPressed, onScroll } =
     useListScrollController(flashListRef);
 
@@ -69,7 +63,7 @@ const Index = () => {
     // );
   });
 
-  const renderListItem = ({ item }: ListRenderItemInfo<Testimony | Event>) => {
+  const renderListItem = ({ item }: ListRenderItemInfo<Event>) => {
     return <Card post={item} />;
   };
 

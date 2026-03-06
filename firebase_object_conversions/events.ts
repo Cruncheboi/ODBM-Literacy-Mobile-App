@@ -1,13 +1,13 @@
 import { auth, Event, EventFromFirestore } from "@/firebaseConfig";
 import { DocumentSnapshot, serverTimestamp } from "firebase/firestore";
 
-export class EventsConverter {
+export class EventConverter {
   static converter = {
     toFirestore: (title: string, body: string) => {
       const currentUser = auth.currentUser;
       if (currentUser == null) {
         console.log(
-          "Could not convert data for use in Firestore because user is not authenticated."
+          "Could not convert data for use in Firestore because user is not authenticated.",
         );
         return;
       }
@@ -18,18 +18,20 @@ export class EventsConverter {
         date: serverTimestamp(),
         title: title,
         body: body,
+        reports: 0,
       };
     },
     fromFirestore: (snapshot: DocumentSnapshot): Event => {
       const data = snapshot.data() as EventFromFirestore;
       return {
         postType: "event",
-        documentID: snapshot.id,
+        documentId: snapshot.id,
         displayName: data.displayName,
         user: data.user,
         date: data.date.toDate().toISOString(),
         title: data.title,
         body: data.body,
+        reports: data.reports,
       };
     },
   };

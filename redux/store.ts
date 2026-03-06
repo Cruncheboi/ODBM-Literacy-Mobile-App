@@ -13,12 +13,17 @@ import usersReducer from "./features/usersSlice";
 import quizReducer from "./features/quizSlice";
 import postsReducer from "./features/postsSlice";
 import commentsReducer from "./features/commentsSlice";
+import reportsReducer from "./features/reportsSlice";
+import { firestoreApi } from "./services/firestore";
+import { setupListeners } from "@reduxjs/toolkit/query";
 
 const reducers = combineReducers({
   users: usersReducer,
   quiz: quizReducer,
   posts: postsReducer,
   comments: commentsReducer,
+  reports: reportsReducer,
+  [firestoreApi.reducerPath]: firestoreApi.reducer,
 });
 
 const persistConfig = {
@@ -35,8 +40,11 @@ const store = configureStore({
       serializableCheck: {
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
-    }),
+    }).concat(firestoreApi.middleware),
 });
+
+setupListeners(store.dispatch);
+
 export default store;
 
 // Infer the `RootState`,  `AppDispatch`, and `AppStore` types from the store itself

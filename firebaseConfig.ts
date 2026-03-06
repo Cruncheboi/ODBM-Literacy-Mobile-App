@@ -4,7 +4,12 @@ import {
   onAuthStateChanged,
   getReactNativePersistence,
 } from "firebase/auth";
-import { collection, getFirestore, Timestamp } from "firebase/firestore";
+import {
+  collection,
+  FieldValue,
+  getFirestore,
+  Timestamp,
+} from "firebase/firestore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Web app's Firebase configuration
@@ -39,14 +44,21 @@ export const usersPath = "users";
 export const testimoniesPath = "testimonies";
 export const eventsPath = "events";
 export const commentsPath = "comments";
+export const reportsPath = "reports";
 
 // Collection constants in firestore
 export const usersCollection = collection(db, usersPath);
 export const testimoniesCollection = collection(db, testimoniesPath);
 export const eventsCollection = collection(db, eventsPath);
 export const commentsCollection = collection(db, commentsPath);
+export const reportsCollection = collection(db, reportsPath);
 
 export type Post = Testimony | Event;
+export type PostType = "testimony" | "event";
+export type Content = Post | Comment;
+export type ContentType = PostType | "comment";
+export type ReportReason = "spam" | "harassment" | "hate speech";
+export type Status = "pending" | "resolved";
 
 export interface UserInfo {
   displayName: string;
@@ -61,12 +73,13 @@ export interface UserInfo {
 
 export interface Testimony {
   postType: "testimony";
-  documentID: string;
+  documentId: string;
   displayName: string;
   user: string;
   date: string;
   title: string;
   body: string;
+  reports: number;
 }
 
 export interface TestimonyFromFirestore {
@@ -75,16 +88,18 @@ export interface TestimonyFromFirestore {
   date: Timestamp;
   title: string;
   body: string;
+  reports: number;
 }
 
 export interface Event {
   postType: "event";
-  documentID: string;
+  documentId: string;
   displayName: string;
   user: string;
   date: string;
   title: string;
   body: string;
+  reports: number;
 }
 
 export interface EventFromFirestore {
@@ -93,20 +108,68 @@ export interface EventFromFirestore {
   date: Timestamp;
   title: string;
   body: string;
+  reports: number;
 }
 
 export interface Comment {
-  documentID: string;
+  documentId: string;
   postID: string;
   displayName: string;
   user: string;
   date: string;
   body: string;
+  reports: number;
 }
+
 export interface CommentFromFirestore {
   postID: string;
   displayName: string;
   user: string;
   date: Timestamp;
   body: string;
+  reports: number;
 }
+
+export interface Report {
+  postId: string;
+  documentId: string;
+  reporterUid: string;
+  displayName: string;
+  contentType: ContentType;
+  reason: ReportReason;
+  explanation: string;
+  date: string;
+  status: Status;
+}
+
+export interface ReportFromFirestore {
+  postId: string;
+  reporterUid: string;
+  displayName: string;
+  contentType: ContentType;
+  reason: ReportReason;
+  explanation: string;
+  date: Timestamp;
+  status: Status;
+}
+
+export interface ReportToFirestore {
+  postId: string;
+  reporterUid: string;
+  displayName: string;
+  contentType: ContentType;
+  reason: ReportReason;
+  explanation: string;
+  date: FieldValue;
+  status: Status;
+}
+
+export const getCollection = (contentType: ContentType) => {
+  if (contentType === "testimony") {
+    return testimoniesCollection;
+  } else if (contentType === "event") {
+    return eventsCollection;
+  } else {
+    return commentsCollection;
+  }
+};

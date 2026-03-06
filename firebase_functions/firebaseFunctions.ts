@@ -1,8 +1,7 @@
-import { PostType } from "@/app/(tabs)/posts";
 import { CreatePostSearchParams } from "@/app/postActions/createPost";
 import { CommentConverter } from "@/firebase_object_conversions/comments";
 import { TestimonyConverter } from "@/firebase_object_conversions/testimonies";
-import { EventsConverter } from "@/firebase_object_conversions/events";
+import { EventConverter } from "@/firebase_object_conversions/events";
 
 import {
   auth,
@@ -16,14 +15,17 @@ import {
   usersPath,
   Comment,
   commentsCollection,
-  Post,
+  Report,
+  reportsCollection,
+  ContentType,
 } from "@/firebaseConfig";
 import { FirebaseError } from "firebase/app";
 import {
   addDoc,
   doc,
   documentId,
-  DocumentSnapshot,
+  FirestoreError,
+  FirestoreErrorCode,
   getDoc,
   getDocs,
   limit,
@@ -32,9 +34,13 @@ import {
   query,
   QueryDocumentSnapshot,
   startAfter,
+  Timestamp,
   where,
 } from "firebase/firestore";
 import Toast from "react-native-toast-message";
+import { ReportConverter } from "@/firebase_object_conversions/reports";
+import { ReportQueryFieldValues } from "@/redux/services/injectedEndpoints.ts/reports";
+import { BasicStartAfterFieldValues } from "@/redux/services/firestore";
 
 /**
  * @description The maximum number of document to be retreived from a query.
@@ -87,27 +93,49 @@ export const checkIfDisplayNameIsAvailable = async (
  */
 export const getTestimonies = async (
   lastVisibleDoc?: QueryDocumentSnapshot,
+  startAfterFieldValues?: BasicStartAfterFieldValues,
 ): Promise<[Testimony[], QueryDocumentSnapshot?]> => {
   let q: Query;
+  // const startAfterFieldValues = lastVisibleDoc ?? startAfterDoc;
   console.log(`last visible doc: ${lastVisibleDoc?.id}`);
-  if (lastVisibleDoc == undefined) {
+  if (!lastVisibleDoc && !startAfterFieldValues) {
     console.log("using initial query");
     // Query to retreive initial testimonies
     q = query(
       testimoniesCollection,
       orderBy("date", "desc"),
+      orderBy(documentId()),
       limit(QUERY_LIMIT),
     );
   }
   // Query to retreive the next testimonies
   else {
-    console.log("using new query");
-    q = query(
-      testimoniesCollection,
-      orderBy("date", "desc"),
-      limit(QUERY_LIMIT),
-      startAfter(lastVisibleDoc),
+    console.log(
+      "using next query with field values: ",
+      lastVisibleDoc,
+      startAfterFieldValues?.date,
+      startAfterFieldValues?.documentId,
     );
+    if (startAfterFieldValues) {
+      const timestamp = Timestamp.fromDate(
+        new Date(startAfterFieldValues.date),
+      );
+      q = query(
+        testimoniesCollection,
+        orderBy("date", "desc"),
+        orderBy(documentId()),
+        startAfter(timestamp, startAfterFieldValues.documentId),
+        limit(QUERY_LIMIT),
+      );
+    } else {
+      q = query(
+        testimoniesCollection,
+        orderBy("date", "desc"),
+        orderBy(documentId()),
+        startAfter(lastVisibleDoc),
+        limit(QUERY_LIMIT),
+      );
+    }
   }
 
   try {
@@ -127,7 +155,7 @@ export const getTestimonies = async (
   } catch (error) {
     if (error instanceof FirebaseError) {
       console.error("Firebase Error:", error.code, error.message);
-      if (error.code === "permission-denied") {
+      if (error.code === ("permission-denied" satisfies FirestoreErrorCode)) {
         console.error(
           "User does not have permission to access this collection.",
         );
@@ -135,11 +163,11 @@ export const getTestimonies = async (
           type: "error",
           text1: "An error occurred trying to get posts.",
         });
-      } else if (error.code === "unavailable") {
+      } else if (error.code === ("unavailable" satisfies FirestoreErrorCode)) {
         console.error("Firestore service is currently unavailable.");
         Toast.show({
           type: "error",
-          text1: "Post are currently unretrievable. Please try again later.",
+          text1: "Posts are currently unretrievable. Please try again later.",
         });
       }
     } else {
@@ -152,6 +180,78 @@ export const getTestimonies = async (
     return [[], lastVisibleDoc];
   }
 };
+// /**
+//  * Retrieves the most recent testimonies with a specified limit
+//  * @returns A tuple that contains a list of Testimony objects and the
+//  *          QueryDocumentSnapshot of the last Testimony document retrieved.
+//  */
+// export const getTestimonies = async (
+//   lastVisibleDoc?: QueryDocumentSnapshot,
+// ): Promise<[Testimony[], QueryDocumentSnapshot?]> => {
+//   let q: Query;
+//   console.log(`last visible doc: ${lastVisibleDoc?.id}`);
+//   if (lastVisibleDoc == undefined) {
+//     console.log("using initial query");
+//     // Query to retreive initial testimonies
+//     q = query(
+//       testimoniesCollection,
+//       orderBy("date", "desc"),
+//       limit(QUERY_LIMIT),
+//     );
+//   }
+//   // Query to retreive the next testimonies
+//   else {
+//     console.log("using new query");
+//     q = query(
+//       testimoniesCollection,
+//       orderBy("date", "desc"),
+//       limit(QUERY_LIMIT),
+//       startAfter(lastVisibleDoc),
+//     );
+//   }
+
+//   try {
+//     const querySnapshot = await getDocs(q);
+//     console.log(`Retreived ${querySnapshot.size} testimonies.`);
+//     let testimonies: Testimony[] = [];
+//     querySnapshot.forEach((doc) => {
+//       testimonies.push(TestimonyConverter.converter.fromFirestore(doc));
+//     });
+//     if (querySnapshot.size > 0) {
+//       lastVisibleDoc = querySnapshot.docs[querySnapshot.size - 1];
+//     }
+//     // console.log(testimonies);
+//     console.log(`new last visible doc: ${lastVisibleDoc?.id}`);
+//     // console.log(`testimony size: ${testimonies.length}`);
+//     return [testimonies, lastVisibleDoc];
+//   } catch (error) {
+//     if (error instanceof FirebaseError) {
+//       console.error("Firebase Error:", error.code, error.message);
+//       if (error.code === "permission-denied" satisfies FirestoreErrorCode) {
+//         console.error(
+//           "User does not have permission to access this collection.",
+//         );
+//         Toast.show({
+//           type: "error",
+//           text1: "An error occurred trying to get posts.",
+//         });
+//       } else if (error.code === "unavailable" satisfies FirestoreErrorCode) {
+//         console.error("Firestore service is currently unavailable.");
+//         Toast.show({
+//           type: "error",
+//           text1: "Posts are currently unretrievable. Please try again later.",
+//         });
+//       }
+//     } else {
+//       console.error("Unexpected Error:", error);
+//       Toast.show({
+//         type: "error",
+//         text1: "An unexpected error occurred while trying to get posts.",
+//       });
+//     }
+//     return [[], lastVisibleDoc];
+//   }
+// };
 
 /**
  * Retrieves the most recent events with a specified limit
@@ -184,7 +284,7 @@ export const getEvents = async (
     console.log(`Retreived ${querySnapshot.size} events.`);
     let events: Event[] = [];
     querySnapshot.forEach((doc) => {
-      events.push(EventsConverter.converter.fromFirestore(doc));
+      events.push(EventConverter.converter.fromFirestore(doc));
     });
     if (querySnapshot.size > 0) {
       lastVisibleDoc = querySnapshot.docs[querySnapshot.size - 1];
@@ -195,7 +295,7 @@ export const getEvents = async (
   } catch (error) {
     if (error instanceof FirebaseError) {
       console.error("Firebase Error:", error.code, error.message);
-      if (error.code === "permission-denied") {
+      if (error.code === ("permission-denied" satisfies FirestoreErrorCode)) {
         console.error(
           "User does not have permission to access this collection.",
         );
@@ -203,11 +303,11 @@ export const getEvents = async (
           type: "error",
           text1: "An error occurred trying to get posts.",
         });
-      } else if (error.code === "unavailable") {
+      } else if (error.code === ("unavailable" satisfies FirestoreErrorCode)) {
         console.error("Firestore service is currently unavailable.");
         Toast.show({
           type: "error",
-          text1: "Post are currently unretrievable. Please try again later.",
+          text1: "Posts are currently unretrievable. Please try again later.",
         });
       }
     } else {
@@ -227,16 +327,19 @@ export const getEvents = async (
  *          the DocumentSnapshot of the last Comment document retrieved.
  */
 export const getComments = async (
-  postType: PostType,
-  documentID: string,
-  lastVisibleDoc: DocumentSnapshot | undefined,
+  documentId: string, // Post ID to get comments from
+  lastVisibleDoc?: QueryDocumentSnapshot,
   lastVisibleDocID?: string,
-): Promise<[Comment[], DocumentSnapshot | undefined]> => {
+): Promise<[Comment[], QueryDocumentSnapshot | undefined]> => {
   // Create a document snapshot to start after in the query.
   // This should only occur when trying to restore the last used document snapshot from a previous session.
   if (lastVisibleDoc == undefined && lastVisibleDocID != undefined) {
     const lastVisibleDocRef = doc(commentsCollection, lastVisibleDocID);
-    lastVisibleDoc = await getDoc(lastVisibleDocRef);
+    // lastVisibleDoc = await getDoc(lastVisibleDocRef);
+    const restoredDoc = await getDoc(lastVisibleDocRef);
+    if (restoredDoc.exists()) {
+      lastVisibleDoc = restoredDoc;
+    }
   }
 
   let q: Query;
@@ -247,7 +350,7 @@ export const getComments = async (
       commentsCollection,
       orderBy("date", "desc"),
       limit(QUERY_LIMIT),
-      where("postID", "==", documentID),
+      where("postID", "==", documentId),
     );
     console.log("using initial query");
   }
@@ -257,8 +360,9 @@ export const getComments = async (
       commentsCollection,
       orderBy("date", "desc"),
       limit(QUERY_LIMIT),
-      where("postID", "==", documentID),
-      startAfter(lastVisibleDoc),
+      where("postID", "==", documentId),
+      // startAfter(lastVisibleDoc),
+      startAfter(""),
     );
     console.log("using new query");
   }
@@ -281,7 +385,7 @@ export const getComments = async (
   } catch (error) {
     if (error instanceof FirebaseError) {
       console.error("Firebase Error:", error.code, error.message);
-      if (error.code === "permission-denied") {
+      if (error.code === ("permission-denied" satisfies FirestoreErrorCode)) {
         console.error(
           "User does not have permission to access this collection.",
         );
@@ -289,11 +393,11 @@ export const getComments = async (
           type: "error",
           text1: "An error occurred trying to get posts.",
         });
-      } else if (error.code === "unavailable") {
+      } else if (error.code === ("unavailable" satisfies FirestoreErrorCode)) {
         console.error("Firestore service is currently unavailable.");
         Toast.show({
           type: "error",
-          text1: "Post are currently unretrievable. Please try again later.",
+          text1: "Posts are currently unretrievable. Please try again later.",
         });
       }
     } else {
@@ -332,7 +436,7 @@ export const createPost = async (
     } else {
       await addDoc(
         eventsCollection,
-        EventsConverter.converter.toFirestore(title, body),
+        EventConverter.converter.toFirestore(title, body),
       );
     }
     Toast.show({
@@ -354,7 +458,7 @@ export const createPost = async (
 
 /**
  * Creates a new Comment document in Firebase Firestore.
- * @returns A boolean that states if the document was created successfully.
+ * @returns A copy of the newly created Comment object.
  */
 export const createComment = async (
   postID: string,
@@ -372,14 +476,16 @@ export const createComment = async (
       commentsCollection,
       CommentConverter.converter.toFirestore(postID, body),
     );
+    // Create a duplicate comment to save to local state.
     const newComment: Comment = {
       body: body,
       date: new Date().toISOString(),
       displayName:
         currentUser.displayName == null ? "Anonymous" : currentUser.displayName,
-      documentID: docRef.id,
+      documentId: docRef.id,
       postID: postID,
       user: currentUser.uid,
+      reports: 0,
     };
     Toast.show({
       type: "success",

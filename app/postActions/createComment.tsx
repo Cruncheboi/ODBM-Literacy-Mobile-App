@@ -15,8 +15,7 @@ import {
   TextInputFocusEventData,
 } from "react-native";
 import { SearchParams } from "@/app/postActions/viewPost";
-
-type PostType = "testimony" | "event";
+import { PostType } from "@/firebaseConfig";
 
 export type CommentSearchParams = {
   postID: string;
