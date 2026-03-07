@@ -13,7 +13,6 @@ import usersReducer from "./features/usersSlice";
 import quizReducer from "./features/quizSlice";
 import postsReducer from "./features/postsSlice";
 import commentsReducer from "./features/commentsSlice";
-import reportsReducer from "./features/reportsSlice";
 import { firestoreApi } from "./services/firestore";
 import { setupListeners } from "@reduxjs/toolkit/query";
 
@@ -22,7 +21,6 @@ const reducers = combineReducers({
   quiz: quizReducer,
   posts: postsReducer,
   comments: commentsReducer,
-  reports: reportsReducer,
   [firestoreApi.reducerPath]: firestoreApi.reducer,
 });
 

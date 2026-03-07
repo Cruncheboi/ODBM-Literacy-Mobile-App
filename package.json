@@ -18,6 +18,7 @@
     "@config-plugins/react-native-blob-util": "^9.0.0",
     "@config-plugins/react-native-pdf": "^9.0.0",
     "@expo/vector-icons": "^14.0.2",
+    "@gorhom/bottom-sheet": "^5.2.8",
     "@react-native-async-storage/async-storage": "1.23.1",
     "@react-native-firebase/app": "^22.2.0",
     "@react-native-firebase/auth": "^22.2.0",
@@ -25,6 +26,7 @@
     "@react-navigation/drawer": "^7.1.1",
     "@react-navigation/native": "^7.0.14",
     "@reduxjs/toolkit": "^2.8.2",
+    "@shopify/flash-list": "1.7.3",
     "clsx": "^2.1.1",
     "expo": "~52.0.42",
     "expo-blur": "~14.0.3",
@@ -60,8 +62,7 @@
     "redux": "^5.0.1",
     "redux-persist": "^6.0.0",
     "tailwind-merge": "^3.2.0",
-    "tailwindcss": "^3.4.17",
-    "@shopify/flash-list": "1.7.3"
+    "tailwindcss": "^3.4.17"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
