@@ -1,15 +1,20 @@
-import { Testimony } from "@/firebaseConfig";
-import { BasicStartAfterFieldValues, firestoreApi } from "../firestore";
-import { getTestimonies } from "@/firebase_functions/testimonyFunctions";
+import { Comment, Testimony } from "@/firebaseConfig";
+import {
+  BasicStartAfterFieldValues,
+  firestoreApi,
+  QueryFieldValues,
+} from "../firestore";
+import { getTestimonies } from "@/firebase_functions/firebaseFunctions";
 import { FirebaseError } from "firebase/app";
 import { getTestimony } from "@/firebase_functions/testimonyFunctions";
 import { REPORT_THRESHOLD } from "@/firebase_functions/reportFunctions";
+import { getComment, getComments } from "@/firebase_functions/commentFunctions";
 
 const extendedApi = firestoreApi.injectEndpoints({
   endpoints: (build) => ({
-    getTestimonies: build.infiniteQuery<
-      Testimony[],
-      BasicStartAfterFieldValues | undefined,
+    getComments: build.infiniteQuery<
+      Comment[],
+      QueryFieldValues,
       BasicStartAfterFieldValues | undefined
     >({
       infiniteQueryOptions: {
@@ -17,6 +22,7 @@ const extendedApi = firestoreApi.injectEndpoints({
         getNextPageParam: (lastPage) => {
           if (lastPage && lastPage.length > 0) {
             const { date, documentId } = lastPage[lastPage.length - 1];
+            console.log(date, " ", documentId);
             return { date, documentId };
           }
         },
@@ -24,21 +30,18 @@ const extendedApi = firestoreApi.injectEndpoints({
       queryFn: async ({ queryArg, pageParam }) => {
         try {
           let startAfterFieldValues: BasicStartAfterFieldValues | undefined;
-          // Use queryArg for initial testimony retrieval when provided
-          if (queryArg && !pageParam) {
-            startAfterFieldValues = {
-              date: queryArg.date,
-              documentId: queryArg.documentId,
-            };
-            // Use pageParam for subsequent testimony retrieval requests
-          } else if (pageParam) {
+          // Use pageParam for subsequent comment retrieval requests
+          if (pageParam) {
             startAfterFieldValues = {
               date: pageParam.date,
               documentId: pageParam.documentId,
             };
           }
           console.log("using: ", startAfterFieldValues);
-          const data = await getTestimonies(startAfterFieldValues);
+          const data = await getComments(
+            queryArg.documentId,
+            startAfterFieldValues,
+          );
           console.log("data: ", data);
 
           return {
@@ -49,12 +52,15 @@ const extendedApi = firestoreApi.injectEndpoints({
           return { error: error };
         }
       },
-      providesTags: () => ["Post", { type: "Testimony", id: "LIST" }],
+      providesTags: (result, error, queryArg) => [
+        "Post",
+        { type: "Comment", id: queryArg.documentId },
+      ],
     }),
-    getTestimony: build.query<Testimony | null, { documentId: string }>({
+    getComment: build.query<Comment | null, { documentId: string }>({
       queryFn: async ({ documentId }) => {
         try {
-          const data = await getTestimony(documentId);
+          const data = await getComment(documentId);
           return {
             data: data,
           };
@@ -72,10 +78,9 @@ const extendedApi = firestoreApi.injectEndpoints({
         }
       },
       providesTags: (result, error, queryArg) => [
-        { type: "Testimony", id: queryArg.documentId },
-        ,
+        { type: "Reported", id: queryArg.documentId },
         (result?.reports ?? 0 >= REPORT_THRESHOLD)
-          ? { type: "Reported", id: "testimony" }
+          ? { type: "Reported", id: "comment" }
           : undefined,
       ],
     }),
@@ -83,5 +88,4 @@ const extendedApi = firestoreApi.injectEndpoints({
   overrideExisting: true,
 });
 
-export const { useGetTestimoniesInfiniteQuery, useGetTestimonyQuery } =
-  extendedApi;
+export const { useGetCommentsInfiniteQuery, useGetCommentQuery } = extendedApi;

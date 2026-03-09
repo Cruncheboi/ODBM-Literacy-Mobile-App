@@ -15,7 +15,6 @@ import SelectableButton from "@/components/selectableButton";
 
 const Reports = () => {
   const { colorScheme } = useColorScheme();
-  const snapPoints = useMemo(() => ["50%"], []);
   const [contentType, setContentType] = useState<ContentType>("testimony");
 
   // ref
@@ -71,7 +70,6 @@ const Reports = () => {
         index={sheetIndex.current}
         onChange={handleSheetChanges}
         enablePanDownToClose
-        snapPoints={snapPoints}
         backgroundComponent={CustomBackground}
       >
         <BottomSheetView className="px-4">

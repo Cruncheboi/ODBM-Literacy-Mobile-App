@@ -1,14 +1,14 @@
-import { Testimony } from "@/firebaseConfig";
+import { Event, Testimony } from "@/firebaseConfig";
 import { BasicStartAfterFieldValues, firestoreApi } from "../firestore";
-import { getTestimonies } from "@/firebase_functions/testimonyFunctions";
 import { FirebaseError } from "firebase/app";
 import { getTestimony } from "@/firebase_functions/testimonyFunctions";
+import { getEvent, getEvents } from "@/firebase_functions/eventFunctions";
 import { REPORT_THRESHOLD } from "@/firebase_functions/reportFunctions";
 
 const extendedApi = firestoreApi.injectEndpoints({
   endpoints: (build) => ({
-    getTestimonies: build.infiniteQuery<
-      Testimony[],
+    getEvents: build.infiniteQuery<
+      Event[],
       BasicStartAfterFieldValues | undefined,
       BasicStartAfterFieldValues | undefined
     >({
@@ -17,6 +17,7 @@ const extendedApi = firestoreApi.injectEndpoints({
         getNextPageParam: (lastPage) => {
           if (lastPage && lastPage.length > 0) {
             const { date, documentId } = lastPage[lastPage.length - 1];
+            console.log(date, " ", documentId);
             return { date, documentId };
           }
         },
@@ -24,13 +25,13 @@ const extendedApi = firestoreApi.injectEndpoints({
       queryFn: async ({ queryArg, pageParam }) => {
         try {
           let startAfterFieldValues: BasicStartAfterFieldValues | undefined;
-          // Use queryArg for initial testimony retrieval when provided
+          // Use queryArg for initial event retrieval when provided
           if (queryArg && !pageParam) {
             startAfterFieldValues = {
               date: queryArg.date,
               documentId: queryArg.documentId,
             };
-            // Use pageParam for subsequent testimony retrieval requests
+            // Use pageParam for subsequent event retrieval requests
           } else if (pageParam) {
             startAfterFieldValues = {
               date: pageParam.date,
@@ -38,7 +39,7 @@ const extendedApi = firestoreApi.injectEndpoints({
             };
           }
           console.log("using: ", startAfterFieldValues);
-          const data = await getTestimonies(startAfterFieldValues);
+          const data = await getEvents(startAfterFieldValues);
           console.log("data: ", data);
 
           return {
@@ -49,12 +50,12 @@ const extendedApi = firestoreApi.injectEndpoints({
           return { error: error };
         }
       },
-      providesTags: () => ["Post", { type: "Testimony", id: "LIST" }],
+      providesTags: () => ["Post", { type: "Event", id: "LIST" }],
     }),
-    getTestimony: build.query<Testimony | null, { documentId: string }>({
+    getEvent: build.query<Event | null, { documentId: string }>({
       queryFn: async ({ documentId }) => {
         try {
-          const data = await getTestimony(documentId);
+          const data = await getEvent(documentId);
           return {
             data: data,
           };
@@ -72,10 +73,9 @@ const extendedApi = firestoreApi.injectEndpoints({
         }
       },
       providesTags: (result, error, queryArg) => [
-        { type: "Testimony", id: queryArg.documentId },
-        ,
+        { type: "Event", id: queryArg.documentId },
         (result?.reports ?? 0 >= REPORT_THRESHOLD)
-          ? { type: "Reported", id: "testimony" }
+          ? { type: "Reported", id: "event" }
           : undefined,
       ],
     }),
@@ -83,5 +83,4 @@ const extendedApi = firestoreApi.injectEndpoints({
   overrideExisting: true,
 });
 
-export const { useGetTestimoniesInfiniteQuery, useGetTestimonyQuery } =
-  extendedApi;
+export const { useGetEventsInfiniteQuery, useGetEventQuery } = extendedApi;

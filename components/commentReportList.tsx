@@ -5,11 +5,13 @@ import { firestoreApi } from "@/redux/services/firestore";
 import { useGetReportedCommentsInfiniteQuery } from "@/redux/services/injectedEndpoints.ts/reports";
 import { FlashList, ListRenderItemInfo } from "@shopify/flash-list";
 import { useCallback, useRef } from "react";
-import { View, Text } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import PostCard from "./postCard";
 import CustomSectionSeparator from "./customSectionSeparator";
 import ScrollToButton from "./scrollToButton";
 import CommentCard from "./commentCard";
+import { router } from "expo-router";
+import { ViewReportSearchParams } from "@/app/postActions/viewReport";
 const CommentReportList = () => {
   const dispatch = useAppDispatch();
 
@@ -24,7 +26,21 @@ const CommentReportList = () => {
     useListScrollController(flashListRef);
 
   const renderListItem = ({ item }: ListRenderItemInfo<Comment>) => {
-    return <CommentCard comment={item} />;
+    return (
+      <TouchableOpacity
+        className="flex w-full px-6 py-2"
+        onPress={() => onCommentPressed(item.documentId)}
+      >
+        <CommentCard comment={item} />
+      </TouchableOpacity>
+    );
+  };
+
+  const onCommentPressed = (postId: string) => {
+    router.push({
+      pathname: "/postActions/viewReport",
+      params: { contentType: "comment", postId } as ViewReportSearchParams,
+    });
   };
 
   const itemSeparatorComponent = () => <CustomSectionSeparator />;

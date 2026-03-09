@@ -3,25 +3,37 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { useColorScheme } from "nativewind";
 import { Event, Testimony } from "@/firebaseConfig";
 import { useCallback } from "react";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { SearchParams } from "@/app/postActions/viewPost";
+import { ViewReportSearchParams } from "@/app/postActions/viewReport";
 
 interface Props {
   post: Testimony | Event;
+  isReported?: boolean;
 }
 
-const PostCard = ({ post }: Props) => {
+const PostCard = ({ post, isReported }: Props) => {
   const { colorScheme } = useColorScheme();
   const date = new Date(post.date);
 
   const onPressPost = () => {
-    router.push({
-      pathname: "/postActions/viewPost",
-      params: {
-        postID: post.documentId,
-        postType: post.postType,
-      } as SearchParams,
-    });
+    if (isReported) {
+      router.push({
+        pathname: "/postActions/viewReport",
+        params: {
+          postId: post.documentId,
+          contentType: post.contentType,
+        } as ViewReportSearchParams,
+      });
+    } else {
+      router.push({
+        pathname: "/postActions/viewPost",
+        params: {
+          postID: post.documentId,
+          postType: post.contentType,
+        } as SearchParams,
+      });
+    }
   };
 
   return (

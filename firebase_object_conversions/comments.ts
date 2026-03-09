@@ -1,4 +1,9 @@
-import { auth, Comment, CommentFromFirestore } from "@/firebaseConfig";
+import {
+  auth,
+  Comment,
+  CommentFromFirestore,
+  ContentType,
+} from "@/firebaseConfig";
 import { DocumentSnapshot, serverTimestamp } from "firebase/firestore";
 
 export class CommentConverter {
@@ -24,6 +29,7 @@ export class CommentConverter {
     fromFirestore: (snapshot: DocumentSnapshot): Comment => {
       const data = snapshot.data() as CommentFromFirestore;
       return {
+        contentType: "comment" satisfies ContentType,
         documentId: snapshot.id,
         displayName: data.displayName,
         user: data.user,

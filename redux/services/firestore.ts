@@ -12,6 +12,6 @@ export const firestoreApi = createApi({
   reducerPath: "firestoreApi",
   baseQuery: fakeBaseQuery(),
   keepUnusedDataFor: 60,
-  tagTypes: ["Post", "Testimony", "Event", "Report", "Reported"],
+  tagTypes: ["Post", "Testimony", "Event", "Comment", "Report", "Reported"],
   endpoints: (build) => ({}),
 });

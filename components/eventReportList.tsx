@@ -26,7 +26,7 @@ const EventReportList = () => {
     useListScrollController(flashListRef);
 
   const renderListItem = ({ item }: ListRenderItemInfo<Event>) => {
-    return <PostCard post={item} />;
+    return <PostCard post={item} isReported={true} />;
   };
 
   const itemSeparatorComponent = () => <CustomSectionSeparator />;

@@ -56,24 +56,6 @@ const ViewPost = () => {
 
   const postDate = new Date(date);
 
-  // Comment state
-  // const { data } = useListDataController<Comment>({
-  //   dataInUse: true,
-  //   getData: (lastVisibleDoc, lastVisibleDocID) =>
-  //     getComments(documentId, lastVisibleDoc, lastCommentDocID),
-  //   updateLocalStorage: (data, lastDocReached, lastDocID) => {
-  //     dispatch(
-  //       addComments({
-  //         comments: data,
-  //         lastCommentDocID: lastDocID,
-  //         type: postType,
-  //         lastDocReached: data.length < QUERY_LIMIT,
-  //       }),
-  //     );
-  //   },
-
-  // });
-
   const [isLoading, setIsLoading] = useState(false);
   const [postComments, setPostComments] = useState<Comment[]>([]);
   const lastCommentDocSnapshotRef = useRef<QueryDocumentSnapshot | undefined>(
@@ -83,17 +65,9 @@ const ViewPost = () => {
   const lastCommentDocID = useAppSelector(
     (state) => state.comments[commentCollection][postID]?.lastCommentDocID,
   );
-  const comments = useAppSelector((state) => {
-    console.log("getting selector state.");
-    if (state.comments[commentCollection][postID]) {
-      // const keys = Object.keys(
-      //   state.comments[commentCollection][postID].comments,
-      // );
-      // console.log(state.comments[commentCollection][postID].comments[keys[0]]);
-      // console.log(state.comments[commentCollection][postID].comments);
-    }
-    return state.comments[commentCollection][postID]?.comments;
-  }) as Comments | undefined;
+  const comments = useAppSelector(
+    (state) => state.comments[commentCollection][postID]?.comments,
+  ) as Comments | undefined;
 
   const lastCommentReached = useAppSelector(
     (state) =>

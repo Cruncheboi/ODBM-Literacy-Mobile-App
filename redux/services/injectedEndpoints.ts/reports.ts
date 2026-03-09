@@ -221,8 +221,16 @@ const extendedApi = firestoreApi.injectEndpoints({
             data: data,
           };
         } catch (error) {
-          console.log(error);
-          return { error: error };
+          if (error instanceof FirebaseError) {
+            return {
+              error: {
+                code: error.code,
+                message: error.message,
+              },
+            };
+          }
+
+          return { error: "An unknown error occured." };
         }
       },
       providesTags: (result, error, queryArg) => [

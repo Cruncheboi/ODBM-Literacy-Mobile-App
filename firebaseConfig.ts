@@ -72,7 +72,7 @@ export interface UserInfo {
 }
 
 export interface Testimony {
-  postType: "testimony";
+  contentType: "testimony";
   documentId: string;
   displayName: string;
   user: string;
@@ -92,7 +92,7 @@ export interface TestimonyFromFirestore {
 }
 
 export interface Event {
-  postType: "event";
+  contentType: "event";
   documentId: string;
   displayName: string;
   user: string;
@@ -112,6 +112,7 @@ export interface EventFromFirestore {
 }
 
 export interface Comment {
+  contentType: "comment";
   documentId: string;
   postID: string;
   displayName: string;

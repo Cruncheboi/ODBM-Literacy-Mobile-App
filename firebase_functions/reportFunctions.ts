@@ -1,12 +1,9 @@
 import {
-  Comment,
   Content,
   ContentType,
-  Event,
   getCollection,
   Report,
   reportsCollection,
-  Testimony,
 } from "@/firebaseConfig";
 import { ReportQueryFieldValues } from "@/redux/services/injectedEndpoints.ts/reports";
 import {
@@ -27,9 +24,6 @@ import { ReportConverter } from "@/firebase_object_conversions/reports";
 import { FirebaseError } from "firebase/app";
 import Toast from "react-native-toast-message";
 import { BasicStartAfterFieldValues } from "@/redux/services/firestore";
-import { TestimonyConverter } from "@/firebase_object_conversions/testimonies";
-import { EventConverter } from "@/firebase_object_conversions/events";
-import { CommentConverter } from "@/firebase_object_conversions/comments";
 
 export const REPORT_THRESHOLD = 1;
 

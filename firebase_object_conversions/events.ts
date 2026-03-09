@@ -1,4 +1,4 @@
-import { auth, Event, EventFromFirestore } from "@/firebaseConfig";
+import { auth, ContentType, Event, EventFromFirestore } from "@/firebaseConfig";
 import { DocumentSnapshot, serverTimestamp } from "firebase/firestore";
 
 export class EventConverter {
@@ -24,7 +24,7 @@ export class EventConverter {
     fromFirestore: (snapshot: DocumentSnapshot): Event => {
       const data = snapshot.data() as EventFromFirestore;
       return {
-        postType: "event",
+        contentType: "event" satisfies ContentType,
         documentId: snapshot.id,
         displayName: data.displayName,
         user: data.user,

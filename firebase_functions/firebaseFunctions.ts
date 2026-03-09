@@ -148,9 +148,7 @@ export const getTestimonies = async (
     if (querySnapshot.size > 0) {
       lastVisibleDoc = querySnapshot.docs[querySnapshot.size - 1];
     }
-    // console.log(testimonies);
     console.log(`new last visible doc: ${lastVisibleDoc?.id}`);
-    // console.log(`testimony size: ${testimonies.length}`);
     return [testimonies, lastVisibleDoc];
   } catch (error) {
     if (error instanceof FirebaseError) {
@@ -478,6 +476,7 @@ export const createComment = async (
     );
     // Create a duplicate comment to save to local state.
     const newComment: Comment = {
+      contentType: "comment",
       body: body,
       date: new Date().toISOString(),
       displayName:

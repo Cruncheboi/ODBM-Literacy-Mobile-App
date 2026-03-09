@@ -23,7 +23,7 @@ const TestimonyReportList = () => {
     useListScrollController(flashListRef);
 
   const renderListItem = ({ item }: ListRenderItemInfo<Testimony>) => {
-    return <PostCard post={item} />;
+    return <PostCard post={item} isReported={true} />;
   };
 
   const itemSeparatorComponent = () => <CustomSectionSeparator />;

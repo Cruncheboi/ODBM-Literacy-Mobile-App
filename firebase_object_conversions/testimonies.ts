@@ -1,4 +1,9 @@
-import { auth, Testimony, TestimonyFromFirestore } from "@/firebaseConfig";
+import {
+  auth,
+  ContentType,
+  Testimony,
+  TestimonyFromFirestore,
+} from "@/firebaseConfig";
 import { DocumentSnapshot, serverTimestamp } from "firebase/firestore";
 
 export class TestimonyConverter {
@@ -24,7 +29,7 @@ export class TestimonyConverter {
     fromFirestore: (snapshot: DocumentSnapshot): Testimony => {
       const data = snapshot.data() as TestimonyFromFirestore;
       return {
-        postType: "testimony",
+        contentType: "testimony" satisfies ContentType,
         documentId: snapshot.id,
         displayName: data.displayName,
         user: data.user,
