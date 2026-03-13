@@ -140,7 +140,6 @@ export interface Report {
   reason: ReportReason;
   explanation: string;
   date: string;
-  status: Status;
 }
 
 export interface ReportFromFirestore {
@@ -151,7 +150,6 @@ export interface ReportFromFirestore {
   reason: ReportReason;
   explanation: string;
   date: Timestamp;
-  status: Status;
 }
 
 export interface ReportToFirestore {
@@ -162,7 +160,6 @@ export interface ReportToFirestore {
   reason: ReportReason;
   explanation: string;
   date: FieldValue;
-  status: Status;
 }
 
 export const getCollection = (contentType: ContentType) => {

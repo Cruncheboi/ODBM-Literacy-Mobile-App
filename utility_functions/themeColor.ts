@@ -34,3 +34,7 @@ export const getThemeSecondaryColor = (colorScheme: ColorScheme) => {
 export const getPrimaryColor = () => {
   return "#FAB432";
 };
+
+export const getAccentColor = (colorScheme: ColorScheme) => {
+  return colorScheme == "dark" ? "#173A64" : "#D5E2E9";
+};

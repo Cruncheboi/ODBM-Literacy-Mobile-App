@@ -16,8 +16,7 @@ export class ReportConverter {
       contentType: ContentType,
       reason: ReportReason,
       explanation: string,
-      status: Status,
-    ): ReportToFirestore | void => {
+    ): ReportToFirestore | undefined => {
       const currentUser = auth.currentUser;
       if (currentUser == null) {
         console.log(
@@ -34,7 +33,6 @@ export class ReportConverter {
         reason: reason,
         explanation: explanation,
         date: serverTimestamp(),
-        status: status,
       };
     },
     fromFirestore: (snapshot: DocumentSnapshot): Report => {
@@ -48,7 +46,6 @@ export class ReportConverter {
         reason: data.reason,
         explanation: data.explanation,
         date: data.date.toDate().toISOString(),
-        status: data.status,
       };
     },
   };

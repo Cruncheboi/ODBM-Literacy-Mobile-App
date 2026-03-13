@@ -1,30 +1,9 @@
-import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import { router, useLocalSearchParams } from "expo-router";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  NativeSyntheticEvent,
-  NativeScrollEvent,
-} from "react-native";
+import { useAppDispatch } from "@/redux/hooks";
+import { useLocalSearchParams } from "expo-router";
+import { View, Text } from "react-native";
 import CustomBackButton from "@/components/customBackButton";
-import CustomSectionSeparator from "@/components/customSectionSeparator";
-import CommentCard from "@/components/commentCard";
-import React, {
-  forwardRef,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
-import {
-  Comment,
-  Content,
-  ContentType,
-  Event,
-  Report,
-  Testimony,
-} from "@/firebaseConfig";
+import React, { useCallback, useRef } from "react";
+import { ContentType, Report } from "@/firebaseConfig";
 import { FlashList, ListRenderItemInfo } from "@shopify/flash-list";
 import { useColorScheme } from "nativewind";
 import ScrollToButton from "@/components/scrollToButton";
@@ -36,6 +15,13 @@ import { useGetTestimonyQuery } from "@/redux/services/injectedEndpoints.ts/test
 import ReportedContentSection from "@/components/reportedContentSection";
 import { useGetEventQuery } from "@/redux/services/injectedEndpoints.ts/events";
 import { useGetCommentQuery } from "@/redux/services/injectedEndpoints.ts/comments";
+import KebabIcon from "@/components/kebabIcon";
+import BottomSheet, {
+  BottomSheetBackdrop,
+  BottomSheetBackdropProps,
+} from "@gorhom/bottom-sheet";
+import CustomBackground from "@/components/customBackground";
+import ContentOptionsBottomSheetView from "@/components/contentOptionsBottomSheetView";
 
 export type ViewReportSearchParams = {
   postId: string;
@@ -50,6 +36,7 @@ const ViewReport = () => {
 
   // Reported Post data
   const reportedPost = getReportedPostData(contentType, postId);
+  // console.log(reportedPost.data?.user, "===", auth.currentUser?.uid);
 
   // Report data
   const { data, isFetching, fetchNextPage } =
@@ -64,6 +51,37 @@ const ViewReport = () => {
   const { onScrollToPressed, onScroll, showScrollToButton } =
     useListScrollController(flashListRef);
 
+  // Bottom Sheet refs
+  const bottomSheetRef = useRef<BottomSheet>(null);
+  const sheetIndexRef = useRef<number>(-1);
+
+  // Bottom sheet callbacks
+  const handleSheetChanges = useCallback((index: number) => {
+    console.log("handleSheetChanges", index);
+    sheetIndexRef.current = index;
+  }, []);
+
+  const onKebabPress = useCallback(() => {
+    if (sheetIndexRef.current < 0) {
+      bottomSheetRef.current?.expand();
+    } else {
+      bottomSheetRef.current?.close();
+    }
+  }, []);
+
+  const renderBackdrop = useCallback(
+    (props: BottomSheetBackdropProps) => (
+      <BottomSheetBackdrop
+        {...props}
+        opacity={0.5}
+        appearsOnIndex={0}
+        disappearsOnIndex={-1}
+      />
+    ),
+    [],
+  );
+
+  // FlashList callbacks
   const onEndReached = async () => {
     console.log("last doc reached.");
     if (reports.length == 0 || isFetching) return;
@@ -97,13 +115,12 @@ const ViewReport = () => {
   return (
     <View className="py-safe-offset-3 dark:bg-odbm-gray-digital flex flex-1 px-4">
       {/* Header */}
-      <View className="h-10 flex flex-row">
+      <View className="h-14 flex flex-row items-center justify-between">
         <CustomBackButton />
+        <KebabIcon className="p-2" onPress={onKebabPress} />
       </View>
       <FlashList
-        // StickyHeaderComponent={StickyHeaderComponent}
         stickyHeaderHiddenOnScroll={true}
-        // stickyHeaderIndices={[0]}
         ListHeaderComponent={() => (
           <ReportedContentSection content={reportedPost.data} />
         )}
@@ -125,6 +142,16 @@ const ViewReport = () => {
           isHidden={!showScrollToButton}
         />
       </View>
+      <BottomSheet
+        ref={bottomSheetRef}
+        index={sheetIndexRef.current}
+        onChange={handleSheetChanges}
+        enablePanDownToClose
+        backdropComponent={renderBackdrop}
+        backgroundComponent={CustomBackground}
+      >
+        <ContentOptionsBottomSheetView content={reportedPost.data} />
+      </BottomSheet>
     </View>
   );
 };

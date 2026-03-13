@@ -3,16 +3,13 @@ import { Text } from "react-native";
 
 interface Props {
   label: string;
-  textSize?: string;
+  className?: string;
 }
 
-const StyledLabel = ({ label, textSize }: Props) => {
+const StyledLabel = ({ label, className }: Props) => {
   return (
     <Text
-      className={cn(
-        "color-odbm-gray dark:color-white py-2 ",
-        textSize ? textSize : "text-xl"
-      )}
+      className={cn("color-odbm-gray dark:color-white py-2 text-xl", className)}
     >
       {label}
     </Text>

@@ -1,15 +1,20 @@
 import {
   Content,
   ContentType,
+  db,
   getCollection,
   Report,
+  ReportReason,
   reportsCollection,
 } from "@/firebaseConfig";
 import { ReportQueryFieldValues } from "@/redux/services/injectedEndpoints.ts/reports";
 import {
+  addDoc,
+  doc,
   documentId,
   FirestoreErrorCode,
   getDocs,
+  increment,
   limit,
   orderBy,
   query,
@@ -18,6 +23,7 @@ import {
   startAfter,
   Timestamp,
   where,
+  writeBatch,
 } from "firebase/firestore";
 import { QUERY_LIMIT } from "./firebaseFunctions";
 import { ReportConverter } from "@/firebase_object_conversions/reports";
@@ -209,4 +215,97 @@ export const getReportsFromUserContent = async (
     }
     return [[], lastVisibleDoc];
   }
+};
+
+export const createReport = async (
+  documentId: string,
+  contentType: ContentType,
+  reason: ReportReason,
+  explanation: string,
+) => {
+  explanation = explanation.trim();
+
+  console.log("Creating post");
+  let submittedSuccessfully = true;
+  try {
+    // await addDoc(
+    //   reportsCollection,
+    //   ReportConverter.converter.toFirestore(
+    //     documentId,
+    //     contentType,
+    //     reason,
+    //     explanation,
+    //   ),
+    // );
+    await createAndUpdateReportBatch(
+      documentId,
+      contentType,
+      reason,
+      explanation,
+    );
+    Toast.show({
+      type: "success",
+      text1: "Report submitted successfully.",
+    });
+  } catch (error) {
+    submittedSuccessfully = false;
+    if (error instanceof FirebaseError) {
+      console.error("Firebase Error:", error.code, error.message);
+      if (error.code === ("permission-denied" satisfies FirestoreErrorCode)) {
+        console.error(
+          "User does not have permission to access this collection.",
+        );
+        Toast.show({
+          type: "error",
+          text1: "An error occurred trying to create report.",
+        });
+      } else if (error.code === ("unavailable" satisfies FirestoreErrorCode)) {
+        console.error("Firestore service is currently unavailable.");
+        Toast.show({
+          type: "error",
+          text1: "Reports are currently unavailable. Please try again later.",
+        });
+      }
+    } else {
+      console.error("Unexpected Error:", error);
+      Toast.show({
+        type: "error",
+        text1: "An unexpected error occurred while trying to create report.",
+      });
+    }
+  }
+
+  console.log(submittedSuccessfully);
+  return submittedSuccessfully;
+};
+
+/**
+ * Uses a batch update to keep number of reports for a post
+ * up-to-date when a report is created for it.
+ */
+const createAndUpdateReportBatch = async (
+  documentId: string,
+  contentType: ContentType,
+  reason: ReportReason,
+  explanation: string,
+) => {
+  const batch = writeBatch(db);
+
+  // Create a new report document
+  const reportsDoc = doc(reportsCollection);
+  batch.set(
+    reportsDoc,
+    ReportConverter.converter.toFirestore(
+      documentId,
+      contentType,
+      reason,
+      explanation,
+    ),
+  );
+
+  // Update the number of times this content has been reported by 1.
+  const reportedContentDoc = doc(getCollection(contentType), documentId);
+  batch.update(reportedContentDoc, { reports: increment(1) });
+
+  await batch.commit();
 };

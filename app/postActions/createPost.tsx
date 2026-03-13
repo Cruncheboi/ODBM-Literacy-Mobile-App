@@ -6,7 +6,7 @@ import StyledTextInput from "@/components/styledTextInput";
 import { createPost } from "@/firebase_functions/firebaseFunctions";
 import { PostType } from "@/firebaseConfig";
 import { router, useLocalSearchParams } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { View, ScrollView } from "react-native";
 
 export type CreatePostSearchParams = {
@@ -48,7 +48,6 @@ const CreatePost = () => {
   const createNewPost = async () => {
     const wasSuccessful = await createPost(title, body, { type: type });
     if (wasSuccessful) {
-      // router.dismissTo("/(tabs)/posts");
       router.back();
     } else {
       setStatus("typing");

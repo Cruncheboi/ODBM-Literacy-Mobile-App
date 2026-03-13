@@ -32,6 +32,13 @@ import { CommentSearchParams } from "@/app/postActions/createComment";
 import ScrollToButton from "@/components/scrollToButton";
 import useListScrollController from "@/hooks/useListScrollController";
 import useListDataController from "@/hooks/useListDataController";
+import KebabIcon from "@/components/kebabIcon";
+import BottomSheet, {
+  BottomSheetBackdrop,
+  BottomSheetBackdropProps,
+} from "@gorhom/bottom-sheet";
+import CustomBackground from "@/components/customBackground";
+import ContentOptionsBottomSheetView from "@/components/contentOptionsBottomSheetView";
 
 export type SearchParams = {
   postID: string;
@@ -45,7 +52,7 @@ const ViewPost = () => {
   // Post data
   const { postID, postType } = useLocalSearchParams<SearchParams>();
 
-  const { displayName, body, title, date, documentId } = useAppSelector(
+  const { displayName, body, title, date, documentId, user } = useAppSelector(
     (state) => {
       if (postType == "testimony") {
         return state.posts.testimonies[postID];
@@ -53,6 +60,13 @@ const ViewPost = () => {
       return state.posts.events[postID];
     },
   );
+
+  const data = useAppSelector((state) => {
+    if (postType == "testimony") {
+      return state.posts.testimonies[postID];
+    }
+    return state.posts.events[postID];
+  });
 
   const postDate = new Date(date);
 
@@ -78,6 +92,10 @@ const ViewPost = () => {
   const flashListRef = useRef<FlashList<Comment> | null>(null);
   const { onScrollToPressed, onScroll, showScrollToButton } =
     useListScrollController(flashListRef);
+
+  // Bottom Sheet refs
+  const bottomSheetRef = useRef<BottomSheet>(null);
+  const sheetIndexRef = useRef<number>(-1);
 
   const setInitialCommentState = async () => {
     if (comments == undefined) {
@@ -189,6 +207,32 @@ const ViewPost = () => {
     });
   };
 
+  // Bottom sheet callbacks
+  const handleSheetChanges = useCallback((index: number) => {
+    console.log("handleSheetChanges", index);
+    sheetIndexRef.current = index;
+  }, []);
+
+  const onKebabPress = useCallback(() => {
+    if (sheetIndexRef.current < 0) {
+      bottomSheetRef.current?.expand();
+    } else {
+      bottomSheetRef.current?.close();
+    }
+  }, []);
+
+  const renderBackdrop = useCallback(
+    (props: BottomSheetBackdropProps) => (
+      <BottomSheetBackdrop
+        {...props}
+        opacity={0.5}
+        appearsOnIndex={0}
+        disappearsOnIndex={-1}
+      />
+    ),
+    [],
+  );
+
   const postSection = () => {
     return (
       <>
@@ -246,30 +290,15 @@ const ViewPost = () => {
     return <View className="p-2" />;
   }, []);
 
-  const StickyHeaderComponent = forwardRef(() => {
-    return (
-      <View className="h-10 flex flex-row px-4">
-        <CustomBackButton />
-        {/* <Text className="text-4xl tracking-wide font-bold text-odbm-blue-600 dark:text-white">
-            {displayName}'s Post
-            </Text> */}
-      </View>
-    );
-  });
-
   return (
     <View className="py-safe-offset-3 dark:bg-odbm-gray-digital flex flex-1 px-4">
       {/* Header */}
-      <View className="h-10 flex flex-row">
+      <View className="h-14 flex flex-row items-center justify-between">
         <CustomBackButton />
-        {/* <Text className="text-4xl tracking-wide font-bold text-odbm-blue-600 dark:text-white">
-            {displayName}'s Post
-            </Text> */}
+        <KebabIcon className="p-2" onPress={onKebabPress} />
       </View>
       <FlashList
-        // StickyHeaderComponent={StickyHeaderComponent}
         stickyHeaderHiddenOnScroll={true}
-        // stickyHeaderIndices={[0]}
         ListHeaderComponent={postSection}
         ItemSeparatorComponent={itemSeparatorComponent}
         ListEmptyComponent={ListEmptyComponent}
@@ -289,6 +318,16 @@ const ViewPost = () => {
           isHidden={!showScrollToButton}
         />
       </View>
+      <BottomSheet
+        ref={bottomSheetRef}
+        index={sheetIndexRef.current}
+        onChange={handleSheetChanges}
+        enablePanDownToClose
+        backdropComponent={renderBackdrop}
+        backgroundComponent={CustomBackground}
+      >
+        <ContentOptionsBottomSheetView content={data} />
+      </BottomSheet>
     </View>
   );
 };
