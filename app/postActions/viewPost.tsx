@@ -1,17 +1,11 @@
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { router, useLocalSearchParams } from "expo-router";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  NativeSyntheticEvent,
-  NativeScrollEvent,
-} from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import CustomBackButton from "@/components/customBackButton";
 import CustomSectionSeparator from "@/components/customSectionSeparator";
 import CommentCard from "@/components/commentCard";
-import { forwardRef, useCallback, useEffect, useRef, useState } from "react";
-import { Comment, PostType } from "@/firebaseConfig";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Comment, Content, PostType } from "@/firebaseConfig";
 import {
   addComments,
   Comments,
@@ -31,7 +25,6 @@ import { useColorScheme } from "nativewind";
 import { CommentSearchParams } from "@/app/postActions/createComment";
 import ScrollToButton from "@/components/scrollToButton";
 import useListScrollController from "@/hooks/useListScrollController";
-import useListDataController from "@/hooks/useListDataController";
 import KebabIcon from "@/components/kebabIcon";
 import BottomSheet, {
   BottomSheetBackdrop,
@@ -96,7 +89,36 @@ const ViewPost = () => {
   // Bottom Sheet refs
   const bottomSheetRef = useRef<BottomSheet>(null);
   const sheetIndexRef = useRef<number>(-1);
+  const [bottomSheetContent, setBottomSheetContent] = useState<Content>(data);
 
+  // Bottom sheet callbacks
+  const handleSheetChanges = useCallback((index: number) => {
+    console.log("handleSheetChanges", index);
+    sheetIndexRef.current = index;
+  }, []);
+
+  const onMoreOptionsPress = useCallback((data: Content) => {
+    setBottomSheetContent(data);
+    if (sheetIndexRef.current < 0) {
+      bottomSheetRef.current?.expand();
+    } else {
+      bottomSheetRef.current?.close();
+    }
+  }, []);
+
+  const renderBackdrop = useCallback(
+    (props: BottomSheetBackdropProps) => (
+      <BottomSheetBackdrop
+        {...props}
+        opacity={0.5}
+        appearsOnIndex={0}
+        disappearsOnIndex={-1}
+      />
+    ),
+    [],
+  );
+
+  // Post Callbacks
   const setInitialCommentState = async () => {
     if (comments == undefined) {
       console.log("Comments are undefined in local storage.");
@@ -207,32 +229,6 @@ const ViewPost = () => {
     });
   };
 
-  // Bottom sheet callbacks
-  const handleSheetChanges = useCallback((index: number) => {
-    console.log("handleSheetChanges", index);
-    sheetIndexRef.current = index;
-  }, []);
-
-  const onKebabPress = useCallback(() => {
-    if (sheetIndexRef.current < 0) {
-      bottomSheetRef.current?.expand();
-    } else {
-      bottomSheetRef.current?.close();
-    }
-  }, []);
-
-  const renderBackdrop = useCallback(
-    (props: BottomSheetBackdropProps) => (
-      <BottomSheetBackdrop
-        {...props}
-        opacity={0.5}
-        appearsOnIndex={0}
-        disappearsOnIndex={-1}
-      />
-    ),
-    [],
-  );
-
   const postSection = () => {
     return (
       <>
@@ -281,7 +277,14 @@ const ViewPost = () => {
 
   const renderComment = useCallback(
     ({ item }: ListRenderItemInfo<Comment>) => {
-      return <CommentCard comment={item} />;
+      return (
+        <TouchableOpacity
+          className="flex"
+          onPress={() => onMoreOptionsPress(item)}
+        >
+          <CommentCard comment={item} />
+        </TouchableOpacity>
+      );
     },
     [postComments],
   );
@@ -295,7 +298,7 @@ const ViewPost = () => {
       {/* Header */}
       <View className="h-14 flex flex-row items-center justify-between">
         <CustomBackButton />
-        <KebabIcon className="p-2" onPress={onKebabPress} />
+        <KebabIcon className="p-2" onPress={() => onMoreOptionsPress(data)} />
       </View>
       <FlashList
         stickyHeaderHiddenOnScroll={true}
@@ -326,7 +329,7 @@ const ViewPost = () => {
         backdropComponent={renderBackdrop}
         backgroundComponent={CustomBackground}
       >
-        <ContentOptionsBottomSheetView content={data} />
+        <ContentOptionsBottomSheetView content={bottomSheetContent} />
       </BottomSheet>
     </View>
   );

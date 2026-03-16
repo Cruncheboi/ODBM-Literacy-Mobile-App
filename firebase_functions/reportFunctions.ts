@@ -228,15 +228,6 @@ export const createReport = async (
   console.log("Creating post");
   let submittedSuccessfully = true;
   try {
-    // await addDoc(
-    //   reportsCollection,
-    //   ReportConverter.converter.toFirestore(
-    //     documentId,
-    //     contentType,
-    //     reason,
-    //     explanation,
-    //   ),
-    // );
     await createAndUpdateReportBatch(
       documentId,
       contentType,
@@ -280,8 +271,8 @@ export const createReport = async (
 };
 
 /**
- * Uses a batch update to keep number of reports for a post
- * up-to-date when a report is created for it.
+ * Uses a batch update to keep the number of reports for any given
+ * user created content up-to-date when a report is created for it.
  */
 const createAndUpdateReportBatch = async (
   documentId: string,

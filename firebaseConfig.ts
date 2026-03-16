@@ -91,6 +91,11 @@ export interface TestimonyFromFirestore {
   reports: number;
 }
 
+export interface TestimonyUpdateFields {
+  title: string;
+  body: string;
+}
+
 export interface Event {
   contentType: "event";
   documentId: string;
@@ -111,6 +116,11 @@ export interface EventFromFirestore {
   reports: number;
 }
 
+export interface EventUpdateFields {
+  title: string;
+  body: string;
+}
+
 export interface Comment {
   contentType: "comment";
   documentId: string;
@@ -129,6 +139,10 @@ export interface CommentFromFirestore {
   date: Timestamp;
   body: string;
   reports: number;
+}
+
+export interface CommentUpdateFields {
+  body: string;
 }
 
 export interface Report {

@@ -9,6 +9,8 @@ import { useColorScheme } from "nativewind";
 import { auth, Content } from "@/firebaseConfig";
 import { router } from "expo-router";
 import { CreateReportSearchParams } from "@/app/postActions/createReport";
+import { EditPostSearchParams } from "@/app/postActions/editPost";
+import { EditCommentSearchParams } from "@/app/postActions/editComment";
 
 interface ContentOptionsProps {
   content?: Content | null;
@@ -16,9 +18,14 @@ interface ContentOptionsProps {
 
 const ContentOptionsBottomSheetView = ({ content }: ContentOptionsProps) => {
   const { colorScheme } = useColorScheme();
+  // Content does not exist or has not loaded yet
+  if (!content) {
+    return;
+  }
+  const { documentId, user, contentType, body } = content;
 
-  const isOwner = content ? content.user === auth.currentUser?.uid : false;
-  console.log("Options: ", content?.user, "===", auth.currentUser?.uid);
+  const isOwner = user === auth.currentUser?.uid;
+  console.log("Options: ", user, "===", auth.currentUser?.uid);
   return (
     <BottomSheetView className="p-4 justify-center items-center">
       {isOwner && (
@@ -34,7 +41,28 @@ const ContentOptionsBottomSheetView = ({ content }: ContentOptionsProps) => {
               </View>
             }
             label={<StyledLabel label="Edit Post" />}
-            onPress={() => {}}
+            onPress={() => {
+              if (contentType === "testimony" || contentType === "event") {
+                router.push({
+                  pathname: "/postActions/editPost",
+                  params: {
+                    documentId,
+                    oldBody: body,
+                    oldTitle: content.title,
+                    type: contentType,
+                  } as EditPostSearchParams,
+                });
+              } else {
+                router.push({
+                  pathname: "/postActions/editComment",
+                  params: {
+                    documentId,
+                    postID: content.postID,
+                    oldBody: body,
+                  } as EditCommentSearchParams,
+                });
+              }
+            }}
           />
           <View className="py-2" />
         </>
@@ -69,15 +97,13 @@ const ContentOptionsBottomSheetView = ({ content }: ContentOptionsProps) => {
         }
         label={<StyledLabel label="Report Post" />}
         onPress={() => {
-          if (content) {
-            router.push({
-              pathname: "/postActions/createReport",
-              params: {
-                contentType: content.contentType,
-                documentId: content.documentId,
-              } as CreateReportSearchParams,
-            });
-          }
+          router.push({
+            pathname: "/postActions/createReport",
+            params: {
+              contentType: contentType,
+              documentId: documentId,
+            } as CreateReportSearchParams,
+          });
         }}
       />
     </BottomSheetView>

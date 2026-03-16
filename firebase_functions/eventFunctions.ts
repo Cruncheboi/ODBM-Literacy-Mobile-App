@@ -1,4 +1,4 @@
-import { Event, eventsCollection } from "@/firebaseConfig";
+import { Event, eventsCollection, EventUpdateFields } from "@/firebaseConfig";
 import { BasicStartAfterFieldValues } from "@/redux/services/firestore";
 import {
   doc,
@@ -12,6 +12,7 @@ import {
   Query,
   startAfter,
   Timestamp,
+  updateDoc,
 } from "firebase/firestore";
 import { QUERY_LIMIT } from "./firebaseFunctions";
 import { EventConverter } from "@/firebase_object_conversions/events";
@@ -127,5 +128,48 @@ export const getEvent = async (documentId: string): Promise<Event | null> => {
       });
     }
     return null;
+  }
+};
+
+export const updateEvent = async (
+  documentId: string,
+  updatedFields: EventUpdateFields,
+): Promise<boolean> => {
+  const { body, title } = updatedFields;
+  if (body.trim() === "" || title.trim() === "") {
+    return false;
+  }
+
+  try {
+    const eventsDoc = doc(eventsCollection, documentId);
+    await updateDoc(eventsDoc, { ...updatedFields });
+    return true;
+  } catch (error) {
+    if (error instanceof FirebaseError) {
+      console.error("Firebase Error:", error.code, error.message);
+      if (error.code === ("permission-denied" satisfies FirestoreErrorCode)) {
+        console.error(
+          "User does not have permission to access this collection.",
+        );
+        Toast.show({
+          type: "error",
+          text1: "An error occurred trying to get posts.",
+        });
+      } else if (error.code === ("unavailable" satisfies FirestoreErrorCode)) {
+        console.error("Firestore service is currently unavailable.");
+        Toast.show({
+          type: "error",
+          text1:
+            "Posts are currently not able to update. Please try again later.",
+        });
+      }
+    } else {
+      console.error("Unexpected Error:", error);
+      Toast.show({
+        type: "error",
+        text1: "An unexpected error occurred while trying to update posts.",
+      });
+    }
+    return false;
   }
 };

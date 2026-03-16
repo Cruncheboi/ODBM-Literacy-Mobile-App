@@ -1,8 +1,12 @@
-import { Event, Testimony } from "@/firebaseConfig";
+import { Event, EventUpdateFields, Testimony } from "@/firebaseConfig";
 import { BasicStartAfterFieldValues, firestoreApi } from "../firestore";
 import { FirebaseError } from "firebase/app";
 import { getTestimony } from "@/firebase_functions/testimonyFunctions";
-import { getEvent, getEvents } from "@/firebase_functions/eventFunctions";
+import {
+  getEvent,
+  getEvents,
+  updateEvent,
+} from "@/firebase_functions/eventFunctions";
 import { REPORT_THRESHOLD } from "@/firebase_functions/reportFunctions";
 
 const extendedApi = firestoreApi.injectEndpoints({
@@ -79,8 +83,41 @@ const extendedApi = firestoreApi.injectEndpoints({
           : undefined,
       ],
     }),
+    updateEvent: build.mutation<
+      boolean,
+      { documentId: string; udpatedFields: EventUpdateFields }
+    >({
+      queryFn: async ({ documentId, udpatedFields }) => {
+        try {
+          const wasSuccessful = await updateEvent(documentId, udpatedFields);
+          return {
+            data: wasSuccessful,
+          };
+        } catch (error) {
+          if (error instanceof FirebaseError) {
+            return {
+              error: {
+                code: error.code,
+                message: error.message,
+              },
+            };
+          }
+          return { error: "An unknown error occured." };
+        }
+      },
+      invalidatesTags: (result, error, arg, meta) => {
+        return [
+          { type: "Event", id: arg.documentId },
+          { type: "Event", id: "LIST" },
+        ];
+      },
+    }),
   }),
   overrideExisting: true,
 });
 
-export const { useGetEventsInfiniteQuery, useGetEventQuery } = extendedApi;
+export const {
+  useGetEventsInfiniteQuery,
+  useGetEventQuery,
+  useUpdateEventMutation,
+} = extendedApi;

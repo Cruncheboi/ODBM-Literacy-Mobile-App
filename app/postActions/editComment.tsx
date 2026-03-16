@@ -3,53 +3,53 @@ import CustomOpacityButton from "@/components/customOpacityButton";
 import ErrorText from "@/components/errorText";
 import StyledLabel from "@/components/styledLabel";
 import StyledTextInput from "@/components/styledTextInput";
-import { createComment } from "@/firebase_functions/firebaseFunctions";
-import { appendCommentToStart } from "@/redux/features/commentsSlice";
 import { useAppDispatch } from "@/redux/hooks";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { View, ScrollView } from "react-native";
-import { SearchParams } from "@/app/postActions/viewPost";
-import { PostType } from "@/firebaseConfig";
+import { useUpdateCommentMutation } from "@/redux/services/injectedEndpoints.ts/comments";
 
-export type CommentSearchParams = {
+export type EditCommentSearchParams = {
   postID: string;
-  postType: PostType;
+  documentId: string;
+  oldBody: string;
 };
 
 type Status = "submitting" | "typing";
 
-const CreateComment = () => {
+const EditComment = () => {
   // Constant values
-  const { postID, postType } = useLocalSearchParams<CommentSearchParams>();
-  const dispatch = useAppDispatch();
-  const bodyCharLimit = 5000;
+  const { postID, documentId, oldBody } =
+    useLocalSearchParams<EditCommentSearchParams>();
+  const [updateComment, result] = useUpdateCommentMutation();
 
   // Comment state
-  const [body, setBody] = useState("");
-  const [status, setStatus] = useState<Status>("typing");
+  const [body, setBody] = useState(oldBody);
   const hasValidBody = body.length > 0 && body.trim() !== "";
+  const bodyCharLimit = 5000;
+  const [status, setStatus] = useState<Status>("typing");
   const [hasTouched, setHasTouched] = useState(false);
 
   const onPostSubmit = async () => {
     if (status === "submitting") return;
     if (hasValidBody) {
       setStatus("submitting");
-      const newComment = await createComment(postID, body);
-      if (newComment) {
-        dispatch(appendCommentToStart({ comment: newComment, type: postType }));
-        router.dismissTo({
-          pathname: "/postActions/viewPost",
-          params: {
-            postID: postID,
-            postType: postType,
-          } as SearchParams,
-        });
-      } else {
-        setStatus("typing");
+      try {
+        const wasSuccessful = await updateComment({
+          postId: postID,
+          documentId,
+          udpatedFields: { body },
+        }).unwrap();
+
+        if (wasSuccessful) {
+          router.back();
+        } else {
+          setStatus("typing");
+        }
+      } catch (error) {
+        console.error("An error occurred on Post Update:", error);
       }
     }
-    console.log("continued");
   };
 
   const onBlur = () => {
@@ -59,13 +59,13 @@ const CreateComment = () => {
   };
 
   return (
-    <CustomHeader title="Create a Comment">
+    <CustomHeader title="Edit Your Comment">
       <ScrollView
         className="w-full px-3 pb-3 flex"
         contentContainerClassName="gap-3"
       >
         <View className="w-full flex items-center mt-3">
-          <StyledLabel label="Share your thoughts about this post!" />
+          <StyledLabel label="Update your thoughts about this post!" />
         </View>
         {/** Body */}
         <View className="h-60">
@@ -91,7 +91,7 @@ const CreateComment = () => {
         )}
         <View>
           <CustomOpacityButton
-            title="Create Comment"
+            title="Update Comment"
             onPress={onPostSubmit}
             disabled={status === "submitting" || !hasValidBody}
           />
@@ -100,4 +100,4 @@ const CreateComment = () => {
     </CustomHeader>
   );
 };
-export default CreateComment;
+export default EditComment;

@@ -115,7 +115,6 @@ const extendedApi = firestoreApi.injectEndpoints({
             data: data,
           };
         } catch (error) {
-          // console.log(error);
           if (error instanceof FirebaseError) {
             return {
               error: {

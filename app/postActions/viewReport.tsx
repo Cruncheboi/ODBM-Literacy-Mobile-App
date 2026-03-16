@@ -5,7 +5,6 @@ import CustomBackButton from "@/components/customBackButton";
 import React, { useCallback, useRef } from "react";
 import { ContentType, Report } from "@/firebaseConfig";
 import { FlashList, ListRenderItemInfo } from "@shopify/flash-list";
-import { useColorScheme } from "nativewind";
 import ScrollToButton from "@/components/scrollToButton";
 import useListScrollController from "@/hooks/useListScrollController";
 import { useGetReportsFromUserContentInfiniteQuery } from "@/redux/services/injectedEndpoints.ts/reports";
@@ -30,13 +29,11 @@ export type ViewReportSearchParams = {
 
 const ViewReport = () => {
   const dispatch = useAppDispatch();
-  const { colorScheme } = useColorScheme();
   const { postId, contentType } =
     useLocalSearchParams<ViewReportSearchParams>();
 
   // Reported Post data
   const reportedPost = getReportedPostData(contentType, postId);
-  // console.log(reportedPost.data?.user, "===", auth.currentUser?.uid);
 
   // Report data
   const { data, isFetching, fetchNextPage } =

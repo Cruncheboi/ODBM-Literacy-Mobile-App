@@ -1,5 +1,10 @@
 import { TestimonyConverter } from "@/firebase_object_conversions/testimonies";
-import { db, testimoniesCollection, Testimony } from "@/firebaseConfig";
+import {
+  db,
+  testimoniesCollection,
+  Testimony,
+  TestimonyUpdateFields,
+} from "@/firebaseConfig";
 import { BasicStartAfterFieldValues } from "@/redux/services/firestore";
 import { FirebaseError } from "firebase/app";
 import {
@@ -14,6 +19,7 @@ import {
   Query,
   startAfter,
   Timestamp,
+  updateDoc,
 } from "firebase/firestore";
 import Toast from "react-native-toast-message";
 import { QUERY_LIMIT } from "./firebaseFunctions";
@@ -44,20 +50,20 @@ export const getTestimony = async (
         );
         Toast.show({
           type: "error",
-          text1: "An error occurred trying to get posts.",
+          text1: "An error occurred trying to get post.",
         });
       } else if (error.code === ("unavailable" satisfies FirestoreErrorCode)) {
         console.error("Firestore service is currently unavailable.");
         Toast.show({
           type: "error",
-          text1: "Posts are currently unretrievable. Please try again later.",
+          text1: "Post is currently unretrievable. Please try again later.",
         });
       }
     } else {
       console.error("Unexpected Error:", error);
       Toast.show({
         type: "error",
-        text1: "An unexpected error occurred while trying to get posts.",
+        text1: "An unexpected error occurred while trying to get post.",
       });
     }
     return null;
@@ -134,5 +140,48 @@ export const getTestimonies = async (
       });
     }
     return [];
+  }
+};
+
+export const updateTestimony = async (
+  documentId: string,
+  updatedFields: TestimonyUpdateFields,
+): Promise<boolean> => {
+  const { body, title } = updatedFields;
+  if (body.trim() === "" || title.trim() === "") {
+    return false;
+  }
+
+  try {
+    const testimonyDoc = doc(testimoniesCollection, documentId);
+    await updateDoc(testimonyDoc, { ...updatedFields });
+    return true;
+  } catch (error) {
+    if (error instanceof FirebaseError) {
+      console.error("Firebase Error:", error.code, error.message);
+      if (error.code === ("permission-denied" satisfies FirestoreErrorCode)) {
+        console.error(
+          "User does not have permission to access this collection.",
+        );
+        Toast.show({
+          type: "error",
+          text1: "An error occurred trying to get posts.",
+        });
+      } else if (error.code === ("unavailable" satisfies FirestoreErrorCode)) {
+        console.error("Firestore service is currently unavailable.");
+        Toast.show({
+          type: "error",
+          text1:
+            "Posts are currently not able to update. Please try again later.",
+        });
+      }
+    } else {
+      console.error("Unexpected Error:", error);
+      Toast.show({
+        type: "error",
+        text1: "An unexpected error occurred while trying to update posts.",
+      });
+    }
+    return false;
   }
 };
