@@ -40,18 +40,14 @@ const CreatePost = () => {
     if (status === "submitting") return;
     if (hasValidTitle && hasValidBody) {
       setStatus("submitting");
-      await createNewPost();
+      const wasSuccessful = await createPost(title, body, { type: type });
+      if (wasSuccessful) {
+        router.back();
+      } else {
+        setStatus("typing");
+      }
     }
     console.log("continued");
-  };
-
-  const createNewPost = async () => {
-    const wasSuccessful = await createPost(title, body, { type: type });
-    if (wasSuccessful) {
-      router.back();
-    } else {
-      setStatus("typing");
-    }
   };
 
   const onTitleInputBlur = () => {

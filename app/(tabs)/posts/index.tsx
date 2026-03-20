@@ -127,6 +127,10 @@ const Index = () => {
     });
   };
 
+  const onSwitchPostPressed = () => {
+    router.navigate("/(tabs)/posts/events");
+  };
+
   const listHeaderComponent = () => {
     return (
       <View className="px-4 border-2 w-5/12 h-14 rounded-full border-odbm-blue-600 dark:border-slate-700 bg-odbm-gray-digital flex">
@@ -148,6 +152,14 @@ const Index = () => {
               Testimony Posts
             </Text>
           </View>
+          {/* Button to switch post type*/}
+          <TouchableOpacity className="p-2" onPress={onSwitchPostPressed}>
+            <Octicons
+              name="arrow-switch"
+              size={28}
+              color={colorScheme == "light" ? "#173A64" : "white"}
+            />
+          </TouchableOpacity>
           {/* Button to add a post */}
           <TouchableOpacity className="p-2" onPress={onAddPostPressed}>
             <FontAwesome6

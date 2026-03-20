@@ -108,6 +108,7 @@ const ContentOptionsBottomSheetView = ({ content }: ContentOptionsProps) => {
                     documentId,
                     postID: content.postID,
                     oldBody: body,
+                    numOfreports: reports.toString(),
                   } as EditCommentSearchParams,
                 });
               }

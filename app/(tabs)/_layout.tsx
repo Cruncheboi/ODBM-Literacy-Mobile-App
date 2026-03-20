@@ -22,12 +22,6 @@ export default function TabLayout() {
       backBehavior="initialRoute"
     >
       <Tabs.Screen
-        name="index"
-        options={{
-          href: null,
-        }}
-      />
-      <Tabs.Screen
         name="home"
         options={{
           title: "Home",
@@ -40,15 +34,6 @@ export default function TabLayout() {
         name="posts"
         options={{
           title: "Posts",
-          tabBarIcon: ({ color, size }) => {
-            return <Ionicons name="chatbubbles" size={size} color={color} />;
-          },
-        }}
-      />
-      <Tabs.Screen
-        name="events"
-        options={{
-          title: "Events",
           tabBarIcon: ({ color, size }) => {
             return <Ionicons name="chatbubbles" size={size} color={color} />;
           },

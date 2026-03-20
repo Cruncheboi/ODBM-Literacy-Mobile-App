@@ -67,6 +67,7 @@ const CreatePost = () => {
         }
       } catch (error) {
         console.error("An error occurred on Post Update:", error);
+        setStatus("typing");
       }
     }
   };

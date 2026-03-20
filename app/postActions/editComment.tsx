@@ -13,13 +13,14 @@ export type EditCommentSearchParams = {
   postID: string;
   documentId: string;
   oldBody: string;
+  numOfreports: string;
 };
 
 type Status = "submitting" | "typing";
 
 const EditComment = () => {
   // Constant values
-  const { postID, documentId, oldBody } =
+  const { postID, documentId, oldBody, numOfreports } =
     useLocalSearchParams<EditCommentSearchParams>();
   const [updateComment, result] = useUpdateCommentMutation();
 
@@ -39,6 +40,7 @@ const EditComment = () => {
           postId: postID,
           documentId,
           udpatedFields: { body },
+          reports: Number.parseInt(numOfreports),
         }).unwrap();
 
         if (wasSuccessful) {
@@ -48,6 +50,7 @@ const EditComment = () => {
         }
       } catch (error) {
         console.error("An error occurred on Post Update:", error);
+        setStatus("typing");
       }
     }
   };

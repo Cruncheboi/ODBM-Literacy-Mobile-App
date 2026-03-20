@@ -16,10 +16,10 @@ import {
   useBenchmark,
 } from "@shopify/flash-list";
 import ScrollToButton from "@/components/scrollToButton";
-import ListFilter from "@/components/listFilter";
 import useListScrollController from "@/hooks/useListScrollController";
 import useListDataController from "@/hooks/useListDataController";
 import { CreatePostSearchParams } from "../../postActions/createPost";
+import Octicons from "@expo/vector-icons/Octicons";
 
 const Index = () => {
   const dispatch = useAppDispatch();
@@ -127,6 +127,10 @@ const Index = () => {
     onListRefreshed();
   }, []);
 
+  const onSwitchPostPressed = () => {
+    router.navigate("/(tabs)/posts");
+  };
+
   return (
     <View className="py-safe dark:bg-odbm-gray-digital flex flex-1">
       <View className="py-3 px-4 border-b-2 border-odbm-blue-600 dark:border-odbm-blue-700">
@@ -138,6 +142,14 @@ const Index = () => {
               Event Posts
             </Text>
           </View>
+          {/* Button to switch post type*/}
+          <TouchableOpacity className="p-2" onPress={onSwitchPostPressed}>
+            <Octicons
+              name="arrow-switch"
+              size={28}
+              color={colorScheme == "light" ? "#173A64" : "white"}
+            />
+          </TouchableOpacity>
           {/* Button to add a post */}
           <TouchableOpacity className="p-2" onPress={onAddPostPressed}>
             <FontAwesome6
