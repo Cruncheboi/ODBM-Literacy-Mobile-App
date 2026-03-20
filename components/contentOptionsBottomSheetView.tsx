@@ -11,6 +11,9 @@ import { router } from "expo-router";
 import { CreateReportSearchParams } from "@/app/postActions/createReport";
 import { EditPostSearchParams } from "@/app/postActions/editPost";
 import { EditCommentSearchParams } from "@/app/postActions/editComment";
+import { useDeleteCommentMutation } from "@/redux/services/injectedEndpoints.ts/comments";
+import { useEffect, useState } from "react";
+import { checkIfIsAdmin } from "@/firebase_functions/firebaseFunctions";
 
 interface ContentOptionsProps {
   content?: Content | null;
@@ -22,10 +25,56 @@ const ContentOptionsBottomSheetView = ({ content }: ContentOptionsProps) => {
   if (!content) {
     return;
   }
-  const { documentId, user, contentType, body } = content;
+  const { documentId, user, contentType, body, reports } = content;
+  const [deleteCommentMutation, result] = useDeleteCommentMutation();
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const isOwner = user === auth.currentUser?.uid;
   console.log("Options: ", user, "===", auth.currentUser?.uid);
+
+  const getIsAdmin = async () => {
+    const isAdmin = await checkIfIsAdmin();
+    setIsAdmin(isAdmin);
+  };
+
+  useEffect(() => {
+    getIsAdmin();
+  }, []);
+
+  const onDeleteContent = async () => {
+    try {
+      if (contentType === "comment") {
+        const wasSuccessful = await deleteCommentMutation({
+          documentId,
+          postId: content.postID,
+          reports,
+        });
+      }
+    } catch (error) {
+      console.error("Post deletion unsuccessful.", error);
+    }
+  };
+
+  if (showDeleteConfirmation) {
+    return (
+      <BottomSheetView className="p-4 justify-center items-center gap-3">
+        <StyledButton
+          className="bg-red-700 dark:bg-red-700"
+          label={<StyledLabel label="Delete" />}
+          onPress={async () => {
+            onDeleteContent();
+            setShowDeleteConfirmation(false);
+          }}
+        />
+        <StyledButton
+          label={<StyledLabel label="Go Back" />}
+          onPress={() => setShowDeleteConfirmation(false)}
+        />
+      </BottomSheetView>
+    );
+  }
+
   return (
     <BottomSheetView className="p-4 justify-center items-center">
       {isOwner && (
@@ -67,7 +116,7 @@ const ContentOptionsBottomSheetView = ({ content }: ContentOptionsProps) => {
           <View className="py-2" />
         </>
       )}
-      {isOwner && (
+      {(isOwner || isAdmin) && (
         <>
           <StyledButton
             icon={
@@ -80,7 +129,7 @@ const ContentOptionsBottomSheetView = ({ content }: ContentOptionsProps) => {
               </View>
             }
             label={<StyledLabel label="Delete Post" />}
-            onPress={() => {}}
+            onPress={() => setShowDeleteConfirmation(true)}
           />
           <View className="py-2" />
         </>

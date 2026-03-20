@@ -9,7 +9,7 @@ const CommentCard = ({ comment }: Props) => {
   const date = new Date(comment.date);
 
   return (
-    <View className="flex w-full border p-2 rounded-2xl border-gray-400 bg-odbm-gray-digital-dark">
+    <View className="flex w-full border p-2 rounded-2xl border-gray-400 bg-odbm-gray-light dark:bg-odbm-gray-digital-dark">
       <View className="flex flex-row">
         <Text className="text-odbm-gold flex-1">@{comment.displayName}</Text>
         <Text className="dark:text-gray-300 text-odbm-blue-600">

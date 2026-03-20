@@ -2,6 +2,7 @@ import {
   Content,
   ContentType,
   db,
+  genericFirestoreErrorLog,
   getCollection,
   Report,
   ReportReason,
@@ -25,11 +26,14 @@ import {
   where,
   writeBatch,
 } from "firebase/firestore";
-import { QUERY_LIMIT } from "./firebaseFunctions";
+import { DELETE_LIMIT, QUERY_LIMIT } from "./firebaseFunctions";
 import { ReportConverter } from "@/firebase_object_conversions/reports";
 import { FirebaseError } from "firebase/app";
 import Toast from "react-native-toast-message";
-import { BasicStartAfterFieldValues } from "@/redux/services/firestore";
+import {
+  BasicStartAfterFieldValues,
+  QueryFieldValues,
+} from "@/redux/services/firestore";
 
 export const REPORT_THRESHOLD = 1;
 
@@ -84,30 +88,7 @@ export const getReportedContentFromType = async <T extends Content>(
 
     return reportedContent;
   } catch (error) {
-    if (error instanceof FirebaseError) {
-      console.error("Firebase Error:", error.code, error.message);
-      if (error.code === ("permission-denied" satisfies FirestoreErrorCode)) {
-        console.error(
-          "User does not have permission to access this collection.",
-        );
-        Toast.show({
-          type: "error",
-          text1: "An error occurred trying to get posts.",
-        });
-      } else if (error.code === ("unavailable" satisfies FirestoreErrorCode)) {
-        console.error("Firestore service is currently unavailable.");
-        Toast.show({
-          type: "error",
-          text1: "Posts are currently unretrievable. Please try again later.",
-        });
-      }
-    } else {
-      console.error("Unexpected Error:", error);
-      Toast.show({
-        type: "error",
-        text1: "An unexpected error occurred while trying to get reports.",
-      });
-    }
+    genericFirestoreErrorLog(error);
     return [];
   }
 };
@@ -120,12 +101,11 @@ export const getReportedContentFromType = async <T extends Content>(
 export const getReportsFromUserContent = async (
   contentType: ContentType,
   postId: string, // Post ID to get reports from
-  lastVisibleDoc?: QueryDocumentSnapshot,
   startAfterFieldValues?: ReportQueryFieldValues,
-): Promise<[Report[], QueryDocumentSnapshot | undefined]> => {
+): Promise<Report[]> => {
   let q: Query;
 
-  if (!lastVisibleDoc && !startAfterFieldValues) {
+  if (!startAfterFieldValues) {
     console.log("using initial query");
     // Query to retreive initial reports
     q = query(
@@ -141,36 +121,21 @@ export const getReportsFromUserContent = async (
   else {
     console.log(
       "using next query with field values: ",
-      lastVisibleDoc,
       startAfterFieldValues?.date,
       startAfterFieldValues?.documentId,
     );
     // Use field values to restore query cursor
-    if (startAfterFieldValues) {
-      const timestamp = Timestamp.fromDate(
-        new Date(startAfterFieldValues.date),
-      );
-      q = query(
-        reportsCollection,
-        where("postId", "==", postId),
-        where("contentType", "==", contentType),
-        orderBy("date", "desc"),
-        orderBy(documentId()),
-        startAfter(timestamp, startAfterFieldValues.documentId),
-        limit(QUERY_LIMIT),
-      );
-      // Use document snapshot to restore query cursor
-    } else {
-      q = query(
-        reportsCollection,
-        where("postId", "==", postId),
-        where("contentType", "==", contentType),
-        orderBy("date", "desc"),
-        orderBy(documentId()),
-        startAfter(lastVisibleDoc),
-        limit(QUERY_LIMIT),
-      );
-    }
+
+    const timestamp = Timestamp.fromDate(new Date(startAfterFieldValues.date));
+    q = query(
+      reportsCollection,
+      where("postId", "==", postId),
+      where("contentType", "==", contentType),
+      orderBy("date", "desc"),
+      orderBy(documentId()),
+      startAfter(timestamp, startAfterFieldValues.documentId),
+      limit(QUERY_LIMIT),
+    );
   }
 
   try {
@@ -182,38 +147,10 @@ export const getReportsFromUserContent = async (
     querySnapshot.forEach((doc) => {
       reports.push(ReportConverter.converter.fromFirestore(doc));
     });
-
-    if (querySnapshot.size > 0) {
-      lastVisibleDoc = querySnapshot.docs[querySnapshot.size - 1];
-    }
-    console.log(`new last visible doc: ${lastVisibleDoc?.id}`);
-    return [reports, lastVisibleDoc];
+    return reports;
   } catch (error) {
-    if (error instanceof FirebaseError) {
-      console.error("Firebase Error:", error.code, error.message);
-      if (error.code === ("permission-denied" satisfies FirestoreErrorCode)) {
-        console.error(
-          "User does not have permission to access this collection.",
-        );
-        Toast.show({
-          type: "error",
-          text1: "An error occurred trying to get posts.",
-        });
-      } else if (error.code === ("unavailable" satisfies FirestoreErrorCode)) {
-        console.error("Firestore service is currently unavailable.");
-        Toast.show({
-          type: "error",
-          text1: "Posts are currently unretrievable. Please try again later.",
-        });
-      }
-    } else {
-      console.error("Unexpected Error:", error);
-      Toast.show({
-        type: "error",
-        text1: "An unexpected error occurred while trying to get reports.",
-      });
-    }
-    return [[], lastVisibleDoc];
+    genericFirestoreErrorLog(error);
+    return [];
   }
 };
 
@@ -222,7 +159,7 @@ export const createReport = async (
   contentType: ContentType,
   reason: ReportReason,
   explanation: string,
-) => {
+): Promise<boolean> => {
   explanation = explanation.trim();
 
   console.log("Creating post");
@@ -240,30 +177,7 @@ export const createReport = async (
     });
   } catch (error) {
     submittedSuccessfully = false;
-    if (error instanceof FirebaseError) {
-      console.error("Firebase Error:", error.code, error.message);
-      if (error.code === ("permission-denied" satisfies FirestoreErrorCode)) {
-        console.error(
-          "User does not have permission to access this collection.",
-        );
-        Toast.show({
-          type: "error",
-          text1: "An error occurred trying to create report.",
-        });
-      } else if (error.code === ("unavailable" satisfies FirestoreErrorCode)) {
-        console.error("Firestore service is currently unavailable.");
-        Toast.show({
-          type: "error",
-          text1: "Reports are currently unavailable. Please try again later.",
-        });
-      }
-    } else {
-      console.error("Unexpected Error:", error);
-      Toast.show({
-        type: "error",
-        text1: "An unexpected error occurred while trying to create report.",
-      });
-    }
+    genericFirestoreErrorLog(error);
   }
 
   console.log(submittedSuccessfully);
@@ -299,4 +213,63 @@ const createAndUpdateReportBatch = async (
   batch.update(reportedContentDoc, { reports: increment(1) });
 
   await batch.commit();
+};
+
+/**
+ * Gets the document ids of reports that need to be deleted with a related content.
+ * @param postId The document id of the content to be deleted.
+ * @returns A tuple with a list of reportIds and
+ */
+export const getReportDocIdsForDeletion = async (
+  postId: string,
+  startAfterFieldValues?: QueryFieldValues | null,
+): Promise<[string[] | null, QueryFieldValues | null | undefined]> => {
+  let q: Query;
+  if (!startAfterFieldValues) {
+    console.log("using initial query");
+    q = query(
+      reportsCollection,
+      where("postId", "==", postId),
+      orderBy(documentId()),
+      limit(DELETE_LIMIT),
+    );
+  }
+  // Query to retreive the next related documents
+  else {
+    console.log(
+      "using next query with field values: ",
+      startAfterFieldValues.documentId,
+    );
+    // Use field values to restore query cursor
+    q = query(
+      reportsCollection,
+      where("postId", "==", postId),
+      orderBy(documentId()),
+      startAfter(startAfterFieldValues.documentId),
+      limit(DELETE_LIMIT),
+    );
+  }
+
+  try {
+    const querySnapshot = await getDocs(q);
+    const documentIds: string[] = [];
+
+    querySnapshot.forEach((doc) => {
+      documentIds.push(doc.id);
+    });
+    let lastDocFieldValue: QueryFieldValues | null | undefined;
+
+    // Maximum number of docs retrieved.
+    // Mark the last doc to retrieve next documents.
+    if (querySnapshot.size == DELETE_LIMIT) {
+      lastDocFieldValue = { documentId: documentIds[documentIds.length - 1] };
+      // All docs retrieved
+    } else {
+      lastDocFieldValue = null;
+    }
+    return [documentIds, lastDocFieldValue];
+  } catch (error) {
+    genericFirestoreErrorLog(error);
+    return [null, null];
+  }
 };

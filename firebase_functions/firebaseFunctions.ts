@@ -18,6 +18,7 @@ import {
   Report,
   reportsCollection,
   ContentType,
+  genericFirestoreErrorLog,
 } from "@/firebaseConfig";
 import { FirebaseError } from "firebase/app";
 import {
@@ -38,14 +39,14 @@ import {
   where,
 } from "firebase/firestore";
 import Toast from "react-native-toast-message";
-import { ReportConverter } from "@/firebase_object_conversions/reports";
-import { ReportQueryFieldValues } from "@/redux/services/injectedEndpoints.ts/reports";
 import { BasicStartAfterFieldValues } from "@/redux/services/firestore";
 
 /**
  * @description The maximum number of document to be retreived from a query.
  */
 export const QUERY_LIMIT = 15;
+
+export const DELETE_LIMIT = 500;
 
 /**
  * Retrieves the current user's account info from database.
@@ -151,30 +152,7 @@ export const getTestimonies = async (
     console.log(`new last visible doc: ${lastVisibleDoc?.id}`);
     return [testimonies, lastVisibleDoc];
   } catch (error) {
-    if (error instanceof FirebaseError) {
-      console.error("Firebase Error:", error.code, error.message);
-      if (error.code === ("permission-denied" satisfies FirestoreErrorCode)) {
-        console.error(
-          "User does not have permission to access this collection.",
-        );
-        Toast.show({
-          type: "error",
-          text1: "An error occurred trying to get posts.",
-        });
-      } else if (error.code === ("unavailable" satisfies FirestoreErrorCode)) {
-        console.error("Firestore service is currently unavailable.");
-        Toast.show({
-          type: "error",
-          text1: "Posts are currently unretrievable. Please try again later.",
-        });
-      }
-    } else {
-      console.error("Unexpected Error:", error);
-      Toast.show({
-        type: "error",
-        text1: "An unexpected error occurred while trying to get posts.",
-      });
-    }
+    genericFirestoreErrorLog(error);
     return [[], lastVisibleDoc];
   }
 };
@@ -223,30 +201,7 @@ export const getTestimonies = async (
 //     // console.log(`testimony size: ${testimonies.length}`);
 //     return [testimonies, lastVisibleDoc];
 //   } catch (error) {
-//     if (error instanceof FirebaseError) {
-//       console.error("Firebase Error:", error.code, error.message);
-//       if (error.code === "permission-denied" satisfies FirestoreErrorCode) {
-//         console.error(
-//           "User does not have permission to access this collection.",
-//         );
-//         Toast.show({
-//           type: "error",
-//           text1: "An error occurred trying to get posts.",
-//         });
-//       } else if (error.code === "unavailable" satisfies FirestoreErrorCode) {
-//         console.error("Firestore service is currently unavailable.");
-//         Toast.show({
-//           type: "error",
-//           text1: "Posts are currently unretrievable. Please try again later.",
-//         });
-//       }
-//     } else {
-//       console.error("Unexpected Error:", error);
-//       Toast.show({
-//         type: "error",
-//         text1: "An unexpected error occurred while trying to get posts.",
-//       });
-//     }
+//     genericFirestoreErrorLog(error);
 //     return [[], lastVisibleDoc];
 //   }
 // };
@@ -291,30 +246,7 @@ export const getEvents = async (
     console.log(`new last visible doc: ${lastVisibleDoc?.id}`);
     return [events, lastVisibleDoc];
   } catch (error) {
-    if (error instanceof FirebaseError) {
-      console.error("Firebase Error:", error.code, error.message);
-      if (error.code === ("permission-denied" satisfies FirestoreErrorCode)) {
-        console.error(
-          "User does not have permission to access this collection.",
-        );
-        Toast.show({
-          type: "error",
-          text1: "An error occurred trying to get posts.",
-        });
-      } else if (error.code === ("unavailable" satisfies FirestoreErrorCode)) {
-        console.error("Firestore service is currently unavailable.");
-        Toast.show({
-          type: "error",
-          text1: "Posts are currently unretrievable. Please try again later.",
-        });
-      }
-    } else {
-      console.error("Unexpected Error:", error);
-      Toast.show({
-        type: "error",
-        text1: "An unexpected error occurred while trying to get posts.",
-      });
-    }
+    genericFirestoreErrorLog(error);
     return [[], lastVisibleDoc];
   }
 };
@@ -381,30 +313,7 @@ export const getComments = async (
     console.log(`new last visible doc: ${lastVisibleDoc?.id}`);
     return [comments, lastVisibleDoc];
   } catch (error) {
-    if (error instanceof FirebaseError) {
-      console.error("Firebase Error:", error.code, error.message);
-      if (error.code === ("permission-denied" satisfies FirestoreErrorCode)) {
-        console.error(
-          "User does not have permission to access this collection.",
-        );
-        Toast.show({
-          type: "error",
-          text1: "An error occurred trying to get posts.",
-        });
-      } else if (error.code === ("unavailable" satisfies FirestoreErrorCode)) {
-        console.error("Firestore service is currently unavailable.");
-        Toast.show({
-          type: "error",
-          text1: "Posts are currently unretrievable. Please try again later.",
-        });
-      }
-    } else {
-      console.error("Unexpected Error:", error);
-      Toast.show({
-        type: "error",
-        text1: "An unexpected error occurred while trying to get comments.",
-      });
-    }
+    genericFirestoreErrorLog(error);
     return [[], lastVisibleDoc];
   }
 };
@@ -442,12 +351,8 @@ export const createPost = async (
       text1: "Post submitted successfully",
     });
   } catch (error) {
-    console.log(error);
+    genericFirestoreErrorLog(error);
     submittedSuccessfully = false;
-    Toast.show({
-      type: "error",
-      text1: "An error occurred while creating your post.",
-    });
   }
 
   console.log(submittedSuccessfully);
@@ -492,12 +397,23 @@ export const createComment = async (
     });
     return newComment;
   } catch (error) {
-    console.log(error);
+    genericFirestoreErrorLog(error);
     submittedSuccessfully = false;
-    Toast.show({
-      type: "error",
-      text1: "An error occurred while creating your comment.",
-    });
     return null;
   }
+};
+
+export const checkIfIsAdmin = async () => {
+  try {
+    const tokenResult = await auth.currentUser?.getIdTokenResult();
+    if (tokenResult) {
+      const isAdmin = tokenResult.claims.admin
+        ? (tokenResult.claims.admin as boolean)
+        : false;
+      return isAdmin;
+    }
+  } catch (error) {
+    console.error(error);
+  }
+  return false;
 };

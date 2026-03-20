@@ -6,10 +6,14 @@ import { auth } from "@/firebaseConfig";
 import { useAppDispatch } from "@/redux/hooks";
 import { resetUser, updateIsSignedIn } from "@/redux/features/usersSlice";
 import { router } from "expo-router";
+import { useEffect, useState } from "react";
+import { checkIfIsAdmin } from "@/firebase_functions/firebaseFunctions";
 
 const Settings = () => {
   const { colorScheme, toggleColorScheme } = useColorScheme();
   const dispatch = useAppDispatch();
+  const [showAdminContent, setShowAdminContent] = useState(false);
+
   const signOutUser = () => {
     signOut(auth)
       .then(() => {
@@ -23,6 +27,15 @@ const Settings = () => {
         console.log(error);
       });
   };
+
+  const checkIsAdmin = async () => {
+    const isAdmin = await checkIfIsAdmin();
+    setShowAdminContent(isAdmin);
+  };
+
+  useEffect(() => {
+    checkIsAdmin();
+  }, []);
   return (
     <View className="flex-1 flex justify-start items-center py-safe px-6 dark:bg-odbm-gray-digital">
       <View className="flex-row gap-5">
@@ -39,13 +52,15 @@ const Settings = () => {
         }}
         textStyles="text-odbm-gray"
       />
-      <CustomOpacityButton
-        title="Reports"
-        onPress={() => {
-          router.push("/(tabs)/settings/(admin)/reports");
-        }}
-        textStyles="text-odbm-gray"
-      />
+      {showAdminContent && (
+        <CustomOpacityButton
+          title="Reports"
+          onPress={() => {
+            router.push("/(tabs)/settings/(admin)/reports");
+          }}
+          textStyles="text-odbm-gray"
+        />
+      )}
       <CustomOpacityButton
         title="Sign Out"
         onPress={signOutUser}

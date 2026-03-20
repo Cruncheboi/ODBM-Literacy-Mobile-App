@@ -2,15 +2,18 @@ import { Comment, CommentUpdateFields } from "@/firebaseConfig";
 import {
   BasicStartAfterFieldValues,
   firestoreApi,
+  buildError,
   QueryFieldValues,
 } from "../firestore";
 import { FirebaseError } from "firebase/app";
 import { REPORT_THRESHOLD } from "@/firebase_functions/reportFunctions";
 import {
+  deleteComment,
   getComment,
   getComments,
   updateComment,
 } from "@/firebase_functions/commentFunctions";
+import Toast from "react-native-toast-message";
 
 const extendedApi = firestoreApi.injectEndpoints({
   endpoints: (build) => ({
@@ -50,8 +53,7 @@ const extendedApi = firestoreApi.injectEndpoints({
             data: data,
           };
         } catch (error) {
-          console.log(error);
-          return { error: error };
+          return buildError(error);
         }
       },
       providesTags: (result, error, queryArg) =>
@@ -78,16 +80,7 @@ const extendedApi = firestoreApi.injectEndpoints({
             data: data,
           };
         } catch (error) {
-          if (error instanceof FirebaseError) {
-            return {
-              error: {
-                code: error.code,
-                message: error.message,
-              },
-            };
-          }
-
-          return { error: "An unknown error occured." };
+          return buildError(error);
         }
       },
       providesTags: (result, error, queryArg) => [
@@ -100,7 +93,12 @@ const extendedApi = firestoreApi.injectEndpoints({
     }),
     updateComment: build.mutation<
       boolean,
-      { postId: string; documentId: string; udpatedFields: CommentUpdateFields }
+      {
+        postId: string;
+        documentId: string;
+        udpatedFields: CommentUpdateFields;
+        reports: number;
+      }
     >({
       queryFn: async ({ documentId, udpatedFields }) => {
         try {
@@ -109,19 +107,44 @@ const extendedApi = firestoreApi.injectEndpoints({
             data: wasSuccessful,
           };
         } catch (error) {
-          if (error instanceof FirebaseError) {
-            return {
-              error: {
-                code: error.code,
-                message: error.message,
-              },
-            };
-          }
-          return { error: "An unknown error occured." };
+          return buildError(error);
         }
       },
       invalidatesTags: (result, error, arg) => [
-        { type: "Reported", id: "comment" },
+        // Give a reported tag if the number of reports is >= to the report threshold.
+        arg.reports >= REPORT_THRESHOLD
+          ? { type: "Reported", id: "comment" }
+          : undefined,
+        // Invalidate comments from post where comment originates from
+        { type: "CommentList", id: arg.postId },
+        // Invalidate specific comment using document id
+        { type: "Comment", id: arg.documentId },
+      ],
+    }),
+    deleteComment: build.mutation<
+      boolean,
+      { documentId: string; postId: string; reports: number }
+    >({
+      queryFn: async ({ documentId }) => {
+        try {
+          const wasSuccessful = await deleteComment(documentId);
+
+          Toast.show({
+            type: "success",
+            text1: "Comment successfully deleted.",
+          });
+          return {
+            data: wasSuccessful,
+          };
+        } catch (error) {
+          return buildError(error);
+        }
+      },
+      invalidatesTags: (result, error, arg) => [
+        // Give a reported tag if the number of reports is >= to the report threshold.
+        arg.reports >= REPORT_THRESHOLD
+          ? { type: "Reported", id: "comment" }
+          : undefined,
         // Invalidate comments from post where comment originates from
         { type: "CommentList", id: arg.postId },
         // Invalidate specific comment using document id
@@ -136,4 +159,5 @@ export const {
   useGetCommentsInfiniteQuery,
   useGetCommentQuery,
   useUpdateCommentMutation,
+  useDeleteCommentMutation,
 } = extendedApi;

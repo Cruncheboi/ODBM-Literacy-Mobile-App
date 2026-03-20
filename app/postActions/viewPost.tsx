@@ -248,7 +248,7 @@ const ViewPost = () => {
         </Text>
         <Text className="dark:text-gray-300 text-lg mb-4 mt-2">{body}</Text>
         <CustomSectionSeparator />
-        <View className="mb-2 flex flex-row">
+        <View className="mb-3 flex flex-row items-center">
           <View className="flex-1">
             <Text className="dark:text-gray-200 text-xl font-semibold">
               Comments

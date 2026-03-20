@@ -8,6 +8,7 @@ import {
 } from "@/firebaseConfig";
 import {
   BasicStartAfterFieldValues,
+  buildError,
   firestoreApi,
   QueryFieldValues,
 } from "../firestore";
@@ -166,16 +167,7 @@ const extendedApi = firestoreApi.injectEndpoints({
             data: data,
           };
         } catch (error) {
-          if (error instanceof FirebaseError) {
-            return {
-              error: {
-                code: error.code,
-                message: error.message,
-              },
-            };
-          }
-
-          return { error: "An unknown error occured." };
+          return buildError(error);
         }
       },
       providesTags: () => [{ type: "Reported", id: "comment" }],
@@ -208,10 +200,9 @@ const extendedApi = firestoreApi.injectEndpoints({
           }
 
           console.log("using: ", startAfterFieldValues);
-          const [data, lastVisibleDoc] = await getReportsFromUserContent(
+          const data = await getReportsFromUserContent(
             queryArg.contentType,
             queryArg.reportedPostId,
-            undefined,
             startAfterFieldValues,
           );
           console.log("data: ", data);
@@ -220,16 +211,7 @@ const extendedApi = firestoreApi.injectEndpoints({
             data: data,
           };
         } catch (error) {
-          if (error instanceof FirebaseError) {
-            return {
-              error: {
-                code: error.code,
-                message: error.message,
-              },
-            };
-          }
-
-          return { error: "An unknown error occured." };
+          return buildError(error);
         }
       },
       providesTags: (result, error, queryArg) => [

@@ -1,5 +1,9 @@
 import { Testimony, TestimonyUpdateFields } from "@/firebaseConfig";
-import { BasicStartAfterFieldValues, firestoreApi } from "../firestore";
+import {
+  BasicStartAfterFieldValues,
+  buildError,
+  firestoreApi,
+} from "../firestore";
 import {
   getTestimonies,
   updateTestimony,
@@ -48,8 +52,7 @@ const extendedApi = firestoreApi.injectEndpoints({
             data: data,
           };
         } catch (error) {
-          console.log(error);
-          return { error: error };
+          return buildError(error);
         }
       },
       providesTags: () => ["Post", { type: "Testimony", id: "LIST" }],
@@ -62,16 +65,7 @@ const extendedApi = firestoreApi.injectEndpoints({
             data: data,
           };
         } catch (error) {
-          if (error instanceof FirebaseError) {
-            return {
-              error: {
-                code: error.code,
-                message: error.message,
-              },
-            };
-          }
-
-          return { error: "An unknown error occured." };
+          return buildError(error);
         }
       },
       providesTags: (result, error, queryArg) => [
@@ -96,15 +90,7 @@ const extendedApi = firestoreApi.injectEndpoints({
             data: wasSuccessful,
           };
         } catch (error) {
-          if (error instanceof FirebaseError) {
-            return {
-              error: {
-                code: error.code,
-                message: error.message,
-              },
-            };
-          }
-          return { error: "An unknown error occured." };
+          return buildError(error);
         }
       },
       invalidatesTags: (result, error, arg, meta) => {

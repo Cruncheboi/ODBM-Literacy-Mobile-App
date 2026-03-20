@@ -1,16 +1,14 @@
 import { TestimonyConverter } from "@/firebase_object_conversions/testimonies";
 import {
-  db,
+  genericFirestoreErrorLog,
   testimoniesCollection,
   Testimony,
   TestimonyUpdateFields,
 } from "@/firebaseConfig";
 import { BasicStartAfterFieldValues } from "@/redux/services/firestore";
-import { FirebaseError } from "firebase/app";
 import {
   doc,
   documentId,
-  FirestoreErrorCode,
   getDoc,
   getDocs,
   limit,
@@ -21,7 +19,6 @@ import {
   Timestamp,
   updateDoc,
 } from "firebase/firestore";
-import Toast from "react-native-toast-message";
 import { QUERY_LIMIT } from "./firebaseFunctions";
 
 /**
@@ -42,30 +39,7 @@ export const getTestimony = async (
       return null;
     }
   } catch (error) {
-    if (error instanceof FirebaseError) {
-      console.error("Firebase Error:", error.code, error.message);
-      if (error.code === ("permission-denied" satisfies FirestoreErrorCode)) {
-        console.error(
-          "User does not have permission to access this collection.",
-        );
-        Toast.show({
-          type: "error",
-          text1: "An error occurred trying to get post.",
-        });
-      } else if (error.code === ("unavailable" satisfies FirestoreErrorCode)) {
-        console.error("Firestore service is currently unavailable.");
-        Toast.show({
-          type: "error",
-          text1: "Post is currently unretrievable. Please try again later.",
-        });
-      }
-    } else {
-      console.error("Unexpected Error:", error);
-      Toast.show({
-        type: "error",
-        text1: "An unexpected error occurred while trying to get post.",
-      });
-    }
+    genericFirestoreErrorLog(error);
     return null;
   }
 };
@@ -115,30 +89,7 @@ export const getTestimonies = async (
 
     return testimonies;
   } catch (error) {
-    if (error instanceof FirebaseError) {
-      console.error("Firebase Error:", error.code, error.message);
-      if (error.code === ("permission-denied" satisfies FirestoreErrorCode)) {
-        console.error(
-          "User does not have permission to access this collection.",
-        );
-        Toast.show({
-          type: "error",
-          text1: "An error occurred trying to get posts.",
-        });
-      } else if (error.code === ("unavailable" satisfies FirestoreErrorCode)) {
-        console.error("Firestore service is currently unavailable.");
-        Toast.show({
-          type: "error",
-          text1: "Posts are currently unretrievable. Please try again later.",
-        });
-      }
-    } else {
-      console.error("Unexpected Error:", error);
-      Toast.show({
-        type: "error",
-        text1: "An unexpected error occurred while trying to get posts.",
-      });
-    }
+    genericFirestoreErrorLog(error);
     return [];
   }
 };
@@ -157,31 +108,7 @@ export const updateTestimony = async (
     await updateDoc(testimonyDoc, { ...updatedFields });
     return true;
   } catch (error) {
-    if (error instanceof FirebaseError) {
-      console.error("Firebase Error:", error.code, error.message);
-      if (error.code === ("permission-denied" satisfies FirestoreErrorCode)) {
-        console.error(
-          "User does not have permission to access this collection.",
-        );
-        Toast.show({
-          type: "error",
-          text1: "An error occurred trying to get posts.",
-        });
-      } else if (error.code === ("unavailable" satisfies FirestoreErrorCode)) {
-        console.error("Firestore service is currently unavailable.");
-        Toast.show({
-          type: "error",
-          text1:
-            "Posts are currently not able to update. Please try again later.",
-        });
-      }
-    } else {
-      console.error("Unexpected Error:", error);
-      Toast.show({
-        type: "error",
-        text1: "An unexpected error occurred while trying to update posts.",
-      });
-    }
+    genericFirestoreErrorLog(error);
     return false;
   }
 };

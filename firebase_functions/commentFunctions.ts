@@ -2,12 +2,17 @@ import {
   Comment,
   commentsCollection,
   CommentUpdateFields,
+  db,
+  genericFirestoreErrorLog,
+  reportsCollection,
 } from "@/firebaseConfig";
-import { BasicStartAfterFieldValues } from "@/redux/services/firestore";
+import {
+  BasicStartAfterFieldValues,
+  QueryFieldValues,
+} from "@/redux/services/firestore";
 import {
   doc,
   documentId,
-  FirestoreErrorCode,
   getDoc,
   getDocs,
   limit,
@@ -18,12 +23,13 @@ import {
   Timestamp,
   updateDoc,
   where,
+  writeBatch,
 } from "firebase/firestore";
 import { QUERY_LIMIT } from "./firebaseFunctions";
-import { EventConverter } from "@/firebase_object_conversions/events";
-import { FirebaseError } from "firebase/app";
 import Toast from "react-native-toast-message";
 import { CommentConverter } from "@/firebase_object_conversions/comments";
+import { forIn } from "lodash";
+import { getReportDocIdsForDeletion } from "./reportFunctions";
 
 export const getComment = async (
   documentId: string,
@@ -39,30 +45,7 @@ export const getComment = async (
       return null;
     }
   } catch (error) {
-    if (error instanceof FirebaseError) {
-      console.error("Firebase Error:", error.code, error.message);
-      if (error.code === ("permission-denied" satisfies FirestoreErrorCode)) {
-        console.error(
-          "User does not have permission to access this collection.",
-        );
-        Toast.show({
-          type: "error",
-          text1: "An error occurred trying to get posts.",
-        });
-      } else if (error.code === ("unavailable" satisfies FirestoreErrorCode)) {
-        console.error("Firestore service is currently unavailable.");
-        Toast.show({
-          type: "error",
-          text1: "Posts are currently unretrievable. Please try again later.",
-        });
-      }
-    } else {
-      console.error("Unexpected Error:", error);
-      Toast.show({
-        type: "error",
-        text1: "An unexpected error occurred while trying to get posts.",
-      });
-    }
+    genericFirestoreErrorLog(error);
     return null;
   }
 };
@@ -114,30 +97,7 @@ export const getComments = async (
     });
     return comments;
   } catch (error) {
-    if (error instanceof FirebaseError) {
-      console.error("Firebase Error:", error.code, error.message);
-      if (error.code === ("permission-denied" satisfies FirestoreErrorCode)) {
-        console.error(
-          "User does not have permission to access this collection.",
-        );
-        Toast.show({
-          type: "error",
-          text1: "An error occurred trying to get posts.",
-        });
-      } else if (error.code === ("unavailable" satisfies FirestoreErrorCode)) {
-        console.error("Firestore service is currently unavailable.");
-        Toast.show({
-          type: "error",
-          text1: "Posts are currently unretrievable. Please try again later.",
-        });
-      }
-    } else {
-      console.error("Unexpected Error:", error);
-      Toast.show({
-        type: "error",
-        text1: "An unexpected error occurred while trying to get posts.",
-      });
-    }
+    genericFirestoreErrorLog(error);
     return [];
   }
 };
@@ -154,33 +114,53 @@ export const updateComment = async (
   try {
     const commentDoc = doc(commentsCollection, documentId);
     await updateDoc(commentDoc, { ...updatedFields });
+    Toast.show({
+      type: "success",
+      text1: "Comment updated successfully.",
+    });
     return true;
   } catch (error) {
-    if (error instanceof FirebaseError) {
-      console.error("Firebase Error:", error.code, error.message);
-      if (error.code === ("permission-denied" satisfies FirestoreErrorCode)) {
-        console.error(
-          "User does not have permission to access this collection.",
-        );
-        Toast.show({
-          type: "error",
-          text1: "An error occurred trying to get posts.",
-        });
-      } else if (error.code === ("unavailable" satisfies FirestoreErrorCode)) {
-        console.error("Firestore service is currently unavailable.");
-        Toast.show({
-          type: "error",
-          text1:
-            "Posts are currently not able to update. Please try again later.",
-        });
-      }
-    } else {
-      console.error("Unexpected Error:", error);
-      Toast.show({
-        type: "error",
-        text1: "An unexpected error occurred while trying to update posts.",
-      });
+    genericFirestoreErrorLog(error);
+    return false;
+  }
+};
+
+/**
+ * Delete a comment, along with its related documents such as reports.
+ * @returns A boolean whether operation was successful.
+ */
+export const deleteComment = async (documentId: string): Promise<boolean> => {
+  const batch = writeBatch(db);
+
+  // Create a new report document
+  const commentDoc = doc(commentsCollection, documentId);
+  batch.delete(commentDoc);
+
+  let startAfterFieldValue: QueryFieldValues | null | undefined;
+  do {
+    // Get Report docs where the reported post was this comment.
+    const [reportIds, newFieldValue] = await getReportDocIdsForDeletion(
+      documentId,
+      startAfterFieldValue,
+    );
+    startAfterFieldValue = newFieldValue;
+    // An error occurred; abort comment deletion.
+    if (reportIds == null) {
+      console.error("Comment batch delete was aborted.");
+      return false;
     }
+
+    // Add a batch delete for each Report doc
+    reportIds.forEach((id) => {
+      const reportDoc = doc(reportsCollection, id);
+      batch.delete(reportDoc);
+    });
+  } while (startAfterFieldValue);
+  try {
+    await batch.commit();
+    return true;
+  } catch (error) {
+    genericFirestoreErrorLog(error);
     return false;
   }
 };

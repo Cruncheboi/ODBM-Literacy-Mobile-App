@@ -18,6 +18,7 @@ import KebabIcon from "@/components/kebabIcon";
 import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetBackdropProps,
+  BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import CustomBackground from "@/components/customBackground";
 import ContentOptionsBottomSheetView from "@/components/contentOptionsBottomSheetView";
@@ -147,7 +148,13 @@ const ViewReport = () => {
         backdropComponent={renderBackdrop}
         backgroundComponent={CustomBackground}
       >
-        <ContentOptionsBottomSheetView content={reportedPost.data} />
+        {reportedPost.data ? (
+          <ContentOptionsBottomSheetView content={reportedPost.data} />
+        ) : (
+          <BottomSheetView>
+            <View />
+          </BottomSheetView>
+        )}
       </BottomSheet>
     </View>
   );
