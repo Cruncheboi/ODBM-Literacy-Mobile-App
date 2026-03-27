@@ -13,7 +13,7 @@ export class EventConverter {
       }
 
       return {
-        displayName: currentUser.displayName,
+        displayName: currentUser.displayName ?? "Anonymous",
         user: currentUser.uid,
         date: serverTimestamp(),
         title: title,

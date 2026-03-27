@@ -8,19 +8,21 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { View, ScrollView } from "react-native";
 import { useUpdateCommentMutation } from "@/redux/services/injectedEndpoints.ts/comments";
+import { PostType } from "@/firebaseConfig";
 
 export type EditCommentSearchParams = {
   postID: string;
   documentId: string;
   oldBody: string;
   numOfreports: string;
+  postType: PostType;
 };
 
 type Status = "submitting" | "typing";
 
 const EditComment = () => {
   // Constant values
-  const { postID, documentId, oldBody, numOfreports } =
+  const { postID, documentId, oldBody, numOfreports, postType } =
     useLocalSearchParams<EditCommentSearchParams>();
   const [updateComment, result] = useUpdateCommentMutation();
 
@@ -39,8 +41,9 @@ const EditComment = () => {
         const wasSuccessful = await updateComment({
           postId: postID,
           documentId,
-          udpatedFields: { body },
+          updatedFields: { body },
           reports: Number.parseInt(numOfreports),
+          postType,
         }).unwrap();
 
         if (wasSuccessful) {

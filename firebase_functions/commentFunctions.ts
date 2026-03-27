@@ -1,9 +1,11 @@
 import {
+  auth,
   Comment,
   commentsCollection,
   CommentUpdateFields,
   db,
   genericFirestoreErrorLog,
+  PostType,
   reportsCollection,
 } from "@/firebaseConfig";
 import {
@@ -11,6 +13,7 @@ import {
   QueryFieldValues,
 } from "@/redux/services/firestore";
 import {
+  addDoc,
   doc,
   documentId,
   getDoc,
@@ -56,6 +59,7 @@ export const getComment = async (
  */
 export const getComments = async (
   postId: string, // Post to retrieve comments from
+  postType: PostType,
   startAfterFieldValues?: BasicStartAfterFieldValues,
 ): Promise<Comment[]> => {
   let q: Query;
@@ -65,6 +69,7 @@ export const getComments = async (
     q = query(
       commentsCollection,
       where("postID", "==", postId),
+      where("postType", "==", postType),
       orderBy("date", "desc"),
       orderBy(documentId()),
       limit(QUERY_LIMIT),
@@ -74,13 +79,14 @@ export const getComments = async (
   else {
     console.log(
       "using next query with field values: ",
-      startAfterFieldValues?.date,
-      startAfterFieldValues?.documentId,
+      startAfterFieldValues.date,
+      startAfterFieldValues.documentId,
     );
     const timestamp = Timestamp.fromDate(new Date(startAfterFieldValues.date));
     q = query(
       commentsCollection,
       where("postID", "==", postId),
+      where("postType", "==", postType),
       orderBy("date", "desc"),
       orderBy(documentId()),
       startAfter(timestamp, startAfterFieldValues.documentId),
@@ -162,5 +168,52 @@ export const deleteComment = async (documentId: string): Promise<boolean> => {
   } catch (error) {
     genericFirestoreErrorLog(error);
     return false;
+  }
+};
+
+/**
+ * Creates a new Comment document in Firebase Firestore.
+ * @returns A copy of the newly created Comment object.
+ */
+export const createComment = async (
+  postID: string,
+  body: string,
+  postType: PostType,
+): Promise<Comment | null> => {
+  body = body.trim();
+  if (body === "") return null;
+  console.log("Creating comment");
+
+  let submittedSuccessfully = true;
+  try {
+    const currentUser = auth.currentUser;
+    if (currentUser == null) return null;
+    console.log(postType);
+    const docRef = await addDoc(
+      commentsCollection,
+      CommentConverter.converter.toFirestore(postID, body, postType),
+    );
+    // Create a duplicate comment to save to local state.
+    const newComment: Comment = {
+      contentType: "comment",
+      body: body,
+      date: new Date().toISOString(),
+      displayName:
+        currentUser.displayName == null ? "Anonymous" : currentUser.displayName,
+      documentId: docRef.id,
+      postID: postID,
+      user: currentUser.uid,
+      reports: 0,
+      postType,
+    };
+    Toast.show({
+      type: "success",
+      text1: "Comment created successfully.",
+    });
+    return newComment;
+  } catch (error) {
+    genericFirestoreErrorLog(error);
+    submittedSuccessfully = false;
+    return null;
   }
 };

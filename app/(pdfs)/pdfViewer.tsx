@@ -1,6 +1,5 @@
 import Pdf from "@/components/pdf";
-import { Props } from "@/components/pdf";
-import { useLocalSearchParams, useNavigation } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import React from "react";
 import { View } from "react-native";
 

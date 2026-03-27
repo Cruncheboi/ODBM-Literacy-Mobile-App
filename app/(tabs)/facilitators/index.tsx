@@ -1,20 +1,12 @@
 import CustomNavigationDropdown, {
   NavigationDropdownItem,
 } from "@/components/customNavigationDropdown";
-import CustomOpacityButton from "@/components/customOpacityButton";
 import CustomSectionHeader from "@/components/customSectionHeader";
 import CustomSectionItem from "@/components/customSectionItem";
 import CustomSectionSeparator from "@/components/customSectionSeparator";
-import { Href, router, useFocusEffect } from "expo-router";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { Href, router } from "expo-router";
+import { useMemo, useRef } from "react";
 import { SectionList, SectionListData, Text, View } from "react-native";
-import Animated, {
-  Easing,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from "react-native-reanimated";
-import { VideoInfo } from "./videoLayout";
 
 type SectionItem = {
   title: string;

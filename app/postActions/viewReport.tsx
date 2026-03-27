@@ -1,6 +1,10 @@
 import { useAppDispatch } from "@/redux/hooks";
-import { useLocalSearchParams } from "expo-router";
-import { View, Text } from "react-native";
+import {
+  useFocusEffect,
+  useLocalSearchParams,
+  useNavigation,
+} from "expo-router";
+import { View, Text, ActivityIndicator } from "react-native";
 import CustomBackButton from "@/components/customBackButton";
 import React, { useCallback, useRef } from "react";
 import { ContentType, Report } from "@/firebaseConfig";
@@ -22,6 +26,7 @@ import BottomSheet, {
 } from "@gorhom/bottom-sheet";
 import CustomBackground from "@/components/customBackground";
 import ContentOptionsBottomSheetView from "@/components/contentOptionsBottomSheetView";
+import { QUERY_LIMIT } from "@/firebase_functions/firebaseFunctions";
 
 export type ViewReportSearchParams = {
   postId: string;
@@ -30,11 +35,12 @@ export type ViewReportSearchParams = {
 
 const ViewReport = () => {
   const dispatch = useAppDispatch();
+  const navigation = useNavigation();
   const { postId, contentType } =
     useLocalSearchParams<ViewReportSearchParams>();
 
   // Reported Post data
-  const reportedPost = getReportedPostData(contentType, postId);
+  const reportedPost = useGetReportedPostData(contentType, postId);
 
   // Report data
   const { data, isFetching, fetchNextPage } =
@@ -54,6 +60,17 @@ const ViewReport = () => {
   const sheetIndexRef = useRef<number>(-1);
 
   // Bottom sheet callbacks
+  useFocusEffect(
+    useCallback(() => {
+      // Close the bottom sheet when screen loses focus
+      const unsubscribe = navigation.addListener("blur", () => {
+        bottomSheetRef.current?.close();
+      });
+
+      return unsubscribe;
+    }, [navigation, bottomSheetRef]),
+  );
+
   const handleSheetChanges = useCallback((index: number) => {
     console.log("handleSheetChanges", index);
     sheetIndexRef.current = index;
@@ -82,7 +99,7 @@ const ViewReport = () => {
   // FlashList callbacks
   const onEndReached = async () => {
     console.log("last doc reached.");
-    if (reports.length == 0 || isFetching) return;
+    if (reports.length < QUERY_LIMIT || isFetching) return;
     fetchNextPage();
   };
 
@@ -95,12 +112,15 @@ const ViewReport = () => {
   };
 
   const ListEmptyComponent = useCallback(() => {
+    if (isFetching) {
+      return null;
+    }
     return (
       <View className="w-full">
         <Text className="dark:text-gray-400">No reports yet.</Text>
       </View>
     );
-  }, []);
+  }, [isFetching]);
 
   const renderItem = useCallback(({ item }: ListRenderItemInfo<Report>) => {
     return <ReportCard report={item} />;
@@ -151,8 +171,8 @@ const ViewReport = () => {
         {reportedPost.data ? (
           <ContentOptionsBottomSheetView content={reportedPost.data} />
         ) : (
-          <BottomSheetView>
-            <View />
+          <BottomSheetView className="flex items-center justify-center">
+            <ActivityIndicator />
           </BottomSheetView>
         )}
       </BottomSheet>
@@ -162,7 +182,10 @@ const ViewReport = () => {
 export default ViewReport;
 
 // Helper function to get the RTK Query hook in use
-const getReportedPostData = (contentType: ContentType, documentId: string) => {
+const useGetReportedPostData = (
+  contentType: ContentType,
+  documentId: string,
+) => {
   if (contentType === "testimony") {
     return useGetTestimonyQuery({ documentId: documentId });
   } else if (contentType === "event") {

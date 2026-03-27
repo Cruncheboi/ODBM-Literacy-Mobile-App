@@ -3,12 +3,8 @@ import CustomOpacityButton from "@/components/customOpacityButton";
 import ErrorText from "@/components/errorText";
 import StyledLabel from "@/components/styledLabel";
 import StyledTextInput from "@/components/styledTextInput";
-import { createPost } from "@/firebase_functions/firebaseFunctions";
-import {
-  EventUpdateFields,
-  PostType,
-  TestimonyUpdateFields,
-} from "@/firebaseConfig";
+import { PostType } from "@/firebaseConfig";
+import { useUpdateEventMutation } from "@/redux/services/injectedEndpoints.ts/events";
 import { useUpdateTestimonyMutation } from "@/redux/services/injectedEndpoints.ts/testimonies";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
@@ -23,7 +19,7 @@ export type EditPostSearchParams = {
 
 type Status = "submitting" | "typing";
 
-const CreatePost = () => {
+const EditPost = () => {
   // Post state
   const [status, setStatus] = useState<Status>("typing");
   const { oldTitle, oldBody, documentId, type } =
@@ -32,7 +28,8 @@ const CreatePost = () => {
     title: false,
     body: false,
   });
-  const [updateTestimonyPost, testimonyResult] = useUpdateTestimonyMutation();
+  const [updateTestimonyPost] = useUpdateTestimonyMutation();
+  const [updateEventPost] = useUpdateEventMutation();
 
   // Title state
   const [title, setTitle] = useState(oldTitle);
@@ -54,11 +51,14 @@ const CreatePost = () => {
         let wasSuccessful: boolean;
         if (type === "testimony") {
           wasSuccessful = await updateTestimonyPost({
-            documentId: documentId,
-            udpatedFields: { body, title },
+            documentId,
+            updatedFields: { body, title },
           }).unwrap();
         } else {
-          wasSuccessful = false;
+          wasSuccessful = await updateEventPost({
+            documentId,
+            updatedFields: { body, title },
+          }).unwrap();
         }
         if (wasSuccessful) {
           router.back();
@@ -150,4 +150,4 @@ const CreatePost = () => {
     </CustomHeader>
   );
 };
-export default CreatePost;
+export default EditPost;

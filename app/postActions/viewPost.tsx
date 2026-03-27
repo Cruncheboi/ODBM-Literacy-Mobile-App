@@ -1,25 +1,17 @@
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import { router, useLocalSearchParams } from "expo-router";
-import { View, Text, TouchableOpacity } from "react-native";
+import {
+  router,
+  useFocusEffect,
+  useLocalSearchParams,
+  useNavigation,
+} from "expo-router";
+import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
 import CustomBackButton from "@/components/customBackButton";
 import CustomSectionSeparator from "@/components/customSectionSeparator";
 import CommentCard from "@/components/commentCard";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Comment, Content, PostType } from "@/firebaseConfig";
-import {
-  addComments,
-  Comments,
-  getCommentCollection,
-  initializePostCommentData,
-  logCommentObjects,
-  resetCommentsOfAPost,
-} from "@/redux/features/commentsSlice";
+import { Comment, Content, ContentType, PostType } from "@/firebaseConfig";
 import { FlashList, ListRenderItemInfo } from "@shopify/flash-list";
-import { QueryDocumentSnapshot } from "firebase/firestore";
-import {
-  getComments,
-  QUERY_LIMIT,
-} from "@/firebase_functions/firebaseFunctions";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { useColorScheme } from "nativewind";
 import { CommentSearchParams } from "@/app/postActions/createComment";
@@ -29,11 +21,18 @@ import KebabIcon from "@/components/kebabIcon";
 import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetBackdropProps,
+  BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import CustomBackground from "@/components/customBackground";
 import ContentOptionsBottomSheetView from "@/components/contentOptionsBottomSheetView";
+import { useGetCommentsInfiniteQuery } from "@/redux/services/injectedEndpoints.ts/comments";
+import { firestoreApi } from "@/redux/services/firestore";
+import { useGetTestimonyQuery } from "@/redux/services/injectedEndpoints.ts/testimonies";
+import { useGetEventQuery } from "@/redux/services/injectedEndpoints.ts/events";
+import ErrorText from "@/components/errorText";
+import { QUERY_LIMIT } from "@/firebase_functions/firebaseFunctions";
 
-export type SearchParams = {
+export type ViewPostSearchParams = {
   postID: string;
   postType: PostType;
 };
@@ -41,45 +40,20 @@ export type SearchParams = {
 const ViewPost = () => {
   const dispatch = useAppDispatch();
   const { colorScheme } = useColorScheme();
+  const navigation = useNavigation();
 
   // Post data
-  const { postID, postType } = useLocalSearchParams<SearchParams>();
+  const { postID, postType } = useLocalSearchParams<ViewPostSearchParams>();
+  const postQuery = useGetPostQuery(postType, postID);
+  const post = postQuery.data;
 
-  const { displayName, body, title, date, documentId, user } = useAppSelector(
-    (state) => {
-      if (postType == "testimony") {
-        return state.posts.testimonies[postID];
-      }
-      return state.posts.events[postID];
-    },
-  );
-
-  const data = useAppSelector((state) => {
-    if (postType == "testimony") {
-      return state.posts.testimonies[postID];
-    }
-    return state.posts.events[postID];
+  // Comment data
+  const commentsQuery = useGetCommentsInfiniteQuery({
+    fieldValues: { documentId: postID },
+    postType,
   });
-
-  const postDate = new Date(date);
-
-  const [isLoading, setIsLoading] = useState(false);
-  const [postComments, setPostComments] = useState<Comment[]>([]);
-  const lastCommentDocSnapshotRef = useRef<QueryDocumentSnapshot | undefined>(
-    undefined,
-  );
-  const commentCollection = getCommentCollection(postType);
-  const lastCommentDocID = useAppSelector(
-    (state) => state.comments[commentCollection][postID]?.lastCommentDocID,
-  );
-  const comments = useAppSelector(
-    (state) => state.comments[commentCollection][postID]?.comments,
-  ) as Comments | undefined;
-
-  const lastCommentReached = useAppSelector(
-    (state) =>
-      state.comments[commentCollection][postID]?.lastDocReached ?? false,
-  );
+  const comments: Comment[] =
+    commentsQuery.data?.pages.flatMap((data) => data) ?? [];
 
   // Flashlist state
   const flashListRef = useRef<FlashList<Comment> | null>(null);
@@ -89,16 +63,29 @@ const ViewPost = () => {
   // Bottom Sheet refs
   const bottomSheetRef = useRef<BottomSheet>(null);
   const sheetIndexRef = useRef<number>(-1);
-  const [bottomSheetContent, setBottomSheetContent] = useState<Content>(data);
+  const [bottomSheetContent, setBottomSheetContent] = useState<
+    Content | null | undefined
+  >(post);
 
   // Bottom sheet callbacks
+  useFocusEffect(
+    useCallback(() => {
+      // Close the bottom sheet when screen loses focus
+      const unsubscribe = navigation.addListener("blur", () => {
+        bottomSheetRef.current?.close();
+      });
+
+      return unsubscribe;
+    }, [navigation, bottomSheetRef]),
+  );
+
   const handleSheetChanges = useCallback((index: number) => {
     console.log("handleSheetChanges", index);
     sheetIndexRef.current = index;
   }, []);
 
-  const onMoreOptionsPress = useCallback((data: Content) => {
-    setBottomSheetContent(data);
+  const onMoreOptionsPress = useCallback((post?: Content | null) => {
+    setBottomSheetContent(post);
     if (sheetIndexRef.current < 0) {
       bottomSheetRef.current?.expand();
     } else {
@@ -119,117 +106,53 @@ const ViewPost = () => {
   );
 
   // Post Callbacks
-  const setInitialCommentState = async () => {
-    if (comments == undefined) {
-      console.log("Comments are undefined in local storage.");
-    }
-    if (comments != undefined) {
-      console.log("setting initial state");
-      console.log("attempting retrieval of initial state from store");
-      console.log(comments);
-      const loadedComments = Object.values(comments);
-      console.log(loadedComments);
-      if (loadedComments.length > 0) {
-        console.log("using comments from existing state");
-        setPostComments(loadedComments);
-        return;
-      }
-    }
-    setIsLoading(true);
-    console.log("getting new initial comments");
-    await getPostComments(lastCommentDocID);
-    setIsLoading(false);
-    console.log("finished setting initial state");
-  };
-
-  useEffect(() => {
-    if (comments != undefined) {
-      setPostComments(Object.values(comments));
-    }
-  }, [comments]);
-
-  useEffect(() => {
-    (async () => {
-      console.log("Initializing post comments");
-      if (comments == undefined) {
-        console.log("Initializing post comment data");
-        dispatch(logCommentObjects());
-        dispatch(initializePostCommentData({ postID: postID, type: postType }));
-      }
-      dispatch(logCommentObjects());
-      console.log("Setting comment state");
-      await setInitialCommentState();
-      console.log("Finished setting comment state");
-    })();
-  }, []);
-
-  const resetCommentsState = () => {
-    lastCommentDocSnapshotRef.current = undefined;
-    setPostComments([]);
-  };
-
-  const getPostComments = async (lastVisibleCommentDocID?: string) => {
-    if (lastCommentReached) return;
-    console.log(lastVisibleCommentDocID);
-    try {
-      const [newComments, lastDoc] = await getComments(
-        documentId,
-        lastCommentDocSnapshotRef.current,
-        lastVisibleCommentDocID,
-      );
-      lastCommentDocSnapshotRef.current = lastDoc;
-      console.log(newComments, postType);
-      dispatch(
-        addComments({
-          comments: newComments,
-          lastCommentDocID: lastDoc?.id,
-          type: postType,
-          lastDocReached: newComments.length < QUERY_LIMIT,
-        }),
-      );
-      dispatch(logCommentObjects());
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
   const onEndReached = async () => {
     console.log("last doc reached.");
-    if (
-      lastCommentReached ||
-      (lastCommentDocSnapshotRef.current == undefined &&
-        lastCommentDocID == undefined) ||
-      postComments.length == 0 ||
-      isLoading
-    )
-      return;
-    setIsLoading(true);
-    console.log(" loading more...");
-    await getPostComments(lastCommentDocID);
-    setIsLoading(false);
+    if (comments.length < QUERY_LIMIT || commentsQuery.isFetching) return;
+    commentsQuery.fetchNextPage();
   };
 
   const onRefresh = async () => {
-    console.log("refreshing");
-    setIsLoading(true);
-    resetCommentsState();
-    dispatch(resetCommentsOfAPost({ postID: postID, type: postType }));
-    await getPostComments();
-    setIsLoading(false);
-    console.log("finished refreshing");
+    if (postType === "testimony") {
+      dispatch(
+        firestoreApi.util.invalidateTags([
+          { type: "TestimonyComments", id: postID },
+        ]),
+      );
+    } else {
+      dispatch(
+        firestoreApi.util.invalidateTags([
+          { type: "EventComments", id: postID },
+        ]),
+      );
+    }
   };
 
   const onAddPost = () => {
     router.push({
       pathname: "/postActions/createComment",
       params: {
-        postID: postID,
-        postType: postType,
+        postID,
+        postType,
       } as CommentSearchParams,
     });
   };
 
   const postSection = () => {
+    if (!post) {
+      if (!postQuery.isFetching) {
+        return (
+          <ErrorText>
+            There was an error while trying to get data for this post.
+          </ErrorText>
+        );
+      } else {
+        return;
+      }
+    }
+
+    const { date, displayName, title, body } = post;
+    const postDate = new Date(date);
     return (
       <>
         <View className="flex">
@@ -268,12 +191,15 @@ const ViewPost = () => {
   };
 
   const ListEmptyComponent = useCallback(() => {
+    if (commentsQuery.isFetching) {
+      return null;
+    }
     return (
       <View className="w-full">
         <Text className="dark:text-gray-400">No comments yet.</Text>
       </View>
     );
-  }, []);
+  }, [commentsQuery.isFetching]);
 
   const renderComment = useCallback(
     ({ item }: ListRenderItemInfo<Comment>) => {
@@ -286,7 +212,7 @@ const ViewPost = () => {
         </TouchableOpacity>
       );
     },
-    [postComments],
+    [comments],
   );
 
   const itemSeparatorComponent = useCallback(() => {
@@ -298,16 +224,16 @@ const ViewPost = () => {
       {/* Header */}
       <View className="h-14 flex flex-row items-center justify-between">
         <CustomBackButton />
-        <KebabIcon className="p-2" onPress={() => onMoreOptionsPress(data)} />
+        <KebabIcon className="p-2" onPress={() => onMoreOptionsPress(post)} />
       </View>
       <FlashList
         stickyHeaderHiddenOnScroll={true}
         ListHeaderComponent={postSection}
         ItemSeparatorComponent={itemSeparatorComponent}
         ListEmptyComponent={ListEmptyComponent}
-        data={postComments}
+        data={comments}
         renderItem={renderComment}
-        refreshing={isLoading}
+        refreshing={commentsQuery.isFetching}
         onRefresh={onRefresh}
         onEndReached={onEndReached}
         onEndReachedThreshold={0.3}
@@ -329,9 +255,22 @@ const ViewPost = () => {
         backdropComponent={renderBackdrop}
         backgroundComponent={CustomBackground}
       >
-        <ContentOptionsBottomSheetView content={bottomSheetContent} />
+        {bottomSheetContent ? (
+          <ContentOptionsBottomSheetView content={bottomSheetContent} />
+        ) : (
+          <BottomSheetView className="flex items-center justify-center">
+            <ActivityIndicator />
+          </BottomSheetView>
+        )}
       </BottomSheet>
     </View>
   );
 };
 export default ViewPost;
+
+const useGetPostQuery = (postType: PostType, postId: string) => {
+  if (postType === "testimony") {
+    return useGetTestimonyQuery({ documentId: postId });
+  }
+  return useGetEventQuery({ documentId: postId });
+};

@@ -3,14 +3,12 @@ import CustomOpacityButton from "@/components/customOpacityButton";
 import ErrorText from "@/components/errorText";
 import StyledLabel from "@/components/styledLabel";
 import StyledTextInput from "@/components/styledTextInput";
-import { createComment } from "@/firebase_functions/firebaseFunctions";
-import { appendCommentToStart } from "@/redux/features/commentsSlice";
-import { useAppDispatch } from "@/redux/hooks";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { View, ScrollView } from "react-native";
-import { SearchParams } from "@/app/postActions/viewPost";
+import { ViewPostSearchParams } from "@/app/postActions/viewPost";
 import { PostType } from "@/firebaseConfig";
+import { useCreateCommentMutation } from "@/redux/services/injectedEndpoints.ts/comments";
 
 export type CommentSearchParams = {
   postID: string;
@@ -22,7 +20,6 @@ type Status = "submitting" | "typing";
 const CreateComment = () => {
   // Constant values
   const { postID, postType } = useLocalSearchParams<CommentSearchParams>();
-  const dispatch = useAppDispatch();
   const bodyCharLimit = 5000;
 
   // Comment state
@@ -30,22 +27,27 @@ const CreateComment = () => {
   const [status, setStatus] = useState<Status>("typing");
   const hasValidBody = body.length > 0 && body.trim() !== "";
   const [hasTouched, setHasTouched] = useState(false);
+  const [createComment] = useCreateCommentMutation();
 
   const onPostSubmit = async () => {
     if (status === "submitting") return;
     if (hasValidBody) {
       setStatus("submitting");
-      const newComment = await createComment(postID, body);
-      if (newComment) {
-        dispatch(appendCommentToStart({ comment: newComment, type: postType }));
+      console.log("postType in CreateComment:", postType);
+      try {
+        await createComment({
+          postId: postID,
+          body,
+          postType,
+        }).unwrap();
         router.dismissTo({
           pathname: "/postActions/viewPost",
           params: {
             postID: postID,
-            postType: postType,
-          } as SearchParams,
+            postType,
+          } as ViewPostSearchParams,
         });
-      } else {
+      } catch {
         setStatus("typing");
       }
     }

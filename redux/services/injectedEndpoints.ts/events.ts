@@ -7,13 +7,16 @@ import {
 import { FirebaseError } from "firebase/app";
 import { getTestimony } from "@/firebase_functions/testimonyFunctions";
 import {
+  createEvent,
   getEvent,
   getEvents,
   updateEvent,
 } from "@/firebase_functions/eventFunctions";
 import { REPORT_THRESHOLD } from "@/firebase_functions/reportFunctions";
+import { reportsApi } from "./reports";
+import { commentsApi } from "./comments";
 
-const extendedApi = firestoreApi.injectEndpoints({
+const eventsApi = firestoreApi.injectEndpoints({
   endpoints: (build) => ({
     getEvents: build.infiniteQuery<
       Event[],
@@ -72,6 +75,7 @@ const extendedApi = firestoreApi.injectEndpoints({
       },
       providesTags: (result, error, queryArg) => [
         { type: "Event", id: queryArg.documentId },
+        // Give a reported tag if the number of reports is >= to the report threshold.
         (result?.reports ?? 0 >= REPORT_THRESHOLD)
           ? { type: "Reported", id: "event" }
           : undefined,
@@ -79,11 +83,11 @@ const extendedApi = firestoreApi.injectEndpoints({
     }),
     updateEvent: build.mutation<
       boolean,
-      { documentId: string; udpatedFields: EventUpdateFields }
+      { documentId: string; updatedFields: EventUpdateFields }
     >({
-      queryFn: async ({ documentId, udpatedFields }) => {
+      queryFn: async ({ documentId, updatedFields }) => {
         try {
-          const wasSuccessful = await updateEvent(documentId, udpatedFields);
+          const wasSuccessful = await updateEvent(documentId, updatedFields);
           return {
             data: wasSuccessful,
           };
@@ -91,11 +95,123 @@ const extendedApi = firestoreApi.injectEndpoints({
           return buildError(error);
         }
       },
-      invalidatesTags: (result, error, arg, meta) => {
-        return [
-          { type: "Event", id: arg.documentId },
-          { type: "Event", id: "LIST" },
-        ];
+      onQueryStarted: async (
+        { documentId, updatedFields },
+        { queryFulfilled, dispatch },
+      ) => {
+        // Patch "getEvents" query list
+        const listPatchResult = dispatch(
+          eventsApi.util.updateQueryData("getEvents", undefined, (draft) => {
+            // Find post that needs to be updated
+            draft.pages.forEach((postPage) => {
+              const postIndex = postPage.findIndex(
+                (post) => post.documentId === documentId,
+              );
+              if (postIndex !== -1) {
+                Object.assign(postPage[postIndex], updatedFields);
+                return;
+              }
+            });
+          }),
+        );
+
+        // Patch "getEvent" query
+        const itemPatchResult = dispatch(
+          eventsApi.util.updateQueryData(
+            "getEvent",
+            { documentId },
+            (draft) => {
+              if (!draft) return;
+              // Update post
+              Object.assign(draft, updatedFields);
+            },
+          ),
+        );
+
+        // Patch "getReportedEvents" query list
+        const reportListPatchResult = dispatch(
+          reportsApi.util.updateQueryData(
+            "getReportedEvents",
+            undefined,
+            (draft) => {
+              // Find post that needs to be updated
+              draft.pages.forEach((postPage) => {
+                const postIndex = postPage.findIndex(
+                  (post) => post.documentId === documentId,
+                );
+                if (postIndex !== -1) {
+                  Object.assign(postPage[postIndex], updatedFields);
+                  return;
+                }
+              });
+            },
+          ),
+        );
+
+        try {
+          const { data } = await queryFulfilled;
+          if (!data) {
+            listPatchResult.undo();
+            itemPatchResult.undo();
+            reportListPatchResult.undo();
+          }
+        } catch {
+          listPatchResult.undo();
+          itemPatchResult.undo();
+          reportListPatchResult.undo();
+        }
+      },
+    }),
+    createEvent: build.mutation<Event, { title: string; body: string }>({
+      queryFn: async ({ title, body }) => {
+        try {
+          const event = await createEvent(title, body);
+          if (!event) {
+            throw "Error occurred while creating event.";
+          }
+          return {
+            data: event,
+          };
+        } catch (error) {
+          return buildError(error);
+        }
+      },
+      onQueryStarted: async (queryArgs, { queryFulfilled, dispatch }) => {
+        try {
+          // Pessimistic cache update
+          const { data } = await queryFulfilled;
+          const { documentId } = data;
+
+          // Patch "getEvents" query list
+          dispatch(
+            eventsApi.util.updateQueryData("getEvents", undefined, (draft) => {
+              // Add post to beginning of array
+              if (draft.pages.length > 0) {
+                draft.pages[0].unshift(data);
+              }
+            }),
+          );
+
+          // Patch "getEvent" query
+          dispatch(
+            eventsApi.util.upsertQueryData(
+              "getEvent",
+              { documentId: documentId },
+              data,
+            ),
+          );
+
+          // Patch "getComments" query
+          dispatch(
+            commentsApi.util.upsertQueryData(
+              "getComments",
+              { fieldValues: { documentId }, postType: "event" },
+              { pages: [], pageParams: [] },
+            ),
+          );
+        } catch {
+          return;
+        }
       },
     }),
   }),
@@ -106,4 +222,5 @@ export const {
   useGetEventsInfiniteQuery,
   useGetEventQuery,
   useUpdateEventMutation,
-} = extendedApi;
+  useCreateEventMutation,
+} = eventsApi;

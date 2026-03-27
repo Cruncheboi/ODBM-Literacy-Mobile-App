@@ -26,7 +26,7 @@ export interface ReportQueryFieldValues extends QueryFieldValues {
   postId: string;
 }
 
-const extendedApi = firestoreApi.injectEndpoints({
+export const reportsApi = firestoreApi.injectEndpoints({
   endpoints: (build) => ({
     getReportedEvents: build.infiniteQuery<
       Event[],
@@ -227,4 +227,4 @@ export const {
   useGetReportedTestimoniesInfiniteQuery,
   useGetReportedCommentsInfiniteQuery,
   useGetReportsFromUserContentInfiniteQuery,
-} = extendedApi;
+} = reportsApi;

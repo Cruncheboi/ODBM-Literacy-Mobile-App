@@ -6,8 +6,10 @@ import {
 } from "@/firebaseConfig";
 import { BasicStartAfterFieldValues } from "@/redux/services/firestore";
 import {
+  addDoc,
   doc,
   documentId,
+  FirestoreErrorCode,
   getDoc,
   getDocs,
   limit,
@@ -108,4 +110,46 @@ export const updateEvent = async (
     genericFirestoreErrorLog(error);
     return false;
   }
+};
+
+/**
+ * Creates a new Event document in Firebase Firestore.
+ * @returns A newly created Event.
+ */
+export const createEvent = async (
+  title: string,
+  body: string,
+): Promise<Event | null> => {
+  title = title.trim();
+  body = body.trim();
+
+  if (body === "" || title === "") return null;
+
+  console.log("Creating post");
+
+  const firestoreEvent = EventConverter.converter.toFirestore(title, body);
+
+  try {
+    if (!firestoreEvent) {
+      throw "unauthenticated" satisfies FirestoreErrorCode;
+    }
+    let docRef = await addDoc(eventsCollection, firestoreEvent);
+
+    const event: Event = {
+      ...firestoreEvent,
+      contentType: "event",
+      documentId: docRef.id,
+      date: new Date().toISOString(),
+    };
+
+    Toast.show({
+      type: "success",
+      text1: "Post submitted successfully.",
+    });
+    return event;
+  } catch (error) {
+    genericFirestoreErrorLog(error);
+  }
+
+  return null;
 };

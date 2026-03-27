@@ -23,13 +23,12 @@ export type SectionName =
   | "Bible";
 type SectionItem = { title: string; pdfSource?: { uri: string }; route?: Href };
 type SectionData = { sectionName: SectionName };
-
 type Section = SectionListData<SectionItem, SectionData>;
 
 const Index = () => {
   const sectionListRef = useRef<SectionList<SectionItem, SectionData>>(null);
   const recommendedStart = useAppSelector(
-    (state) => state.quiz.recommendedStart
+    (state) => state.quiz.recommendedStart,
   );
   const [forceHideDropDown, setForceHideDropDown] = useState<boolean>(false);
   const tap = Gesture.Tap()

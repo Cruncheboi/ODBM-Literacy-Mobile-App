@@ -20,7 +20,8 @@ export const firestoreApi = createApi({
     "Comment",
     "Report",
     "Reported",
-    "CommentList",
+    "TestimonyComments",
+    "EventComments",
   ],
   endpoints: (build) => ({}),
 });

@@ -3,7 +3,6 @@ import { useAppSelector } from "@/redux/hooks";
 import CustomOpacityButton from "@/components/customOpacityButton";
 import { auth } from "@/firebaseConfig";
 import { router } from "expo-router";
-import CustomNavigationButton from "@/components/customNavigationButton";
 
 const Home = () => {
   const username = useAppSelector((state) => state.users.firstName);

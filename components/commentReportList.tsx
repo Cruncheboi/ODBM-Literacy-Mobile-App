@@ -12,6 +12,7 @@ import ScrollToButton from "./scrollToButton";
 import CommentCard from "./commentCard";
 import { router } from "expo-router";
 import { ViewReportSearchParams } from "@/app/postActions/viewReport";
+import { QUERY_LIMIT } from "@/firebase_functions/firebaseFunctions";
 const CommentReportList = () => {
   const dispatch = useAppDispatch();
 
@@ -87,7 +88,7 @@ const CommentReportList = () => {
 
   const onEndReached = async () => {
     console.log("end reached.");
-    if (isFetching || comments.length == 0) return;
+    if (isFetching || comments.length < QUERY_LIMIT) return;
     console.log("fetching new data.");
     fetchNextPage();
   };

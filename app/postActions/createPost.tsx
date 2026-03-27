@@ -5,6 +5,8 @@ import StyledLabel from "@/components/styledLabel";
 import StyledTextInput from "@/components/styledTextInput";
 import { createPost } from "@/firebase_functions/firebaseFunctions";
 import { PostType } from "@/firebaseConfig";
+import { useCreateEventMutation } from "@/redux/services/injectedEndpoints.ts/events";
+import { useCreateTestimonyMutation } from "@/redux/services/injectedEndpoints.ts/testimonies";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { View, ScrollView } from "react-native";
@@ -31,6 +33,8 @@ const CreatePost = () => {
     title: false,
     body: false,
   });
+  const [createTestimony] = useCreateTestimonyMutation();
+  const [createEvent] = useCreateEventMutation();
 
   // Constant post values
   const titleCharLimit = 256;
@@ -40,10 +44,14 @@ const CreatePost = () => {
     if (status === "submitting") return;
     if (hasValidTitle && hasValidBody) {
       setStatus("submitting");
-      const wasSuccessful = await createPost(title, body, { type: type });
-      if (wasSuccessful) {
+      try {
+        if (type === "testimony") {
+          await createTestimony({ body, title }).unwrap();
+        } else {
+          await createEvent({ body, title }).unwrap();
+        }
         router.back();
-      } else {
+      } catch {
         setStatus("typing");
       }
     }

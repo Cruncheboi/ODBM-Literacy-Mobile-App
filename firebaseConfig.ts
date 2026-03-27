@@ -127,6 +127,7 @@ export interface Comment {
   contentType: "comment";
   documentId: string;
   postID: string;
+  postType: PostType;
   displayName: string;
   user: string;
   date: string;
@@ -136,6 +137,7 @@ export interface Comment {
 
 export interface CommentFromFirestore {
   postID: string;
+  postType: PostType;
   displayName: string;
   user: string;
   date: Timestamp;
@@ -204,6 +206,13 @@ export const genericFirestoreErrorLog = (error: any) => {
         text1: "Database is currently unavailable. Please try again later.",
       });
     }
+  } else if (error.code === ("unauthenticated" satisfies FirestoreErrorCode)) {
+    console.error("Firestore service is currently unavailable.");
+    Toast.show({
+      type: "error",
+      text1: "You are currently not authenticaed.",
+      text2: "Please log in.",
+    });
   } else {
     console.error("Unexpected Error:", error);
     Toast.show({

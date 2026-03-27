@@ -7,8 +7,10 @@ import {
 } from "@/firebaseConfig";
 import { BasicStartAfterFieldValues } from "@/redux/services/firestore";
 import {
+  addDoc,
   doc,
   documentId,
+  FirestoreErrorCode,
   getDoc,
   getDocs,
   limit,
@@ -20,6 +22,7 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { QUERY_LIMIT } from "./firebaseFunctions";
+import Toast from "react-native-toast-message";
 
 /**
  * Retrieves the Testimony document with the matching documentId
@@ -111,4 +114,49 @@ export const updateTestimony = async (
     genericFirestoreErrorLog(error);
     return false;
   }
+};
+
+/**
+ * Creates a new Testimony document in Firebase Firestore.
+ * @returns A newly created Testimony.
+ */
+export const createTestimony = async (
+  title: string,
+  body: string,
+): Promise<Testimony | null> => {
+  title = title.trim();
+  body = body.trim();
+
+  if (body === "" || title === "") return null;
+
+  console.log("Creating post");
+
+  const firestoreTestimony = TestimonyConverter.converter.toFirestore(
+    title,
+    body,
+  );
+
+  try {
+    if (!firestoreTestimony) {
+      throw "unauthenticated" satisfies FirestoreErrorCode;
+    }
+    let docRef = await addDoc(testimoniesCollection, firestoreTestimony);
+
+    const testimony: Testimony = {
+      ...firestoreTestimony,
+      contentType: "testimony",
+      documentId: docRef.id,
+      date: new Date().toISOString(),
+    };
+
+    Toast.show({
+      type: "success",
+      text1: "Post submitted successfully.",
+    });
+    return testimony;
+  } catch (error) {
+    genericFirestoreErrorLog(error);
+  }
+
+  return null;
 };

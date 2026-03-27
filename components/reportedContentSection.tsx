@@ -1,6 +1,11 @@
 import { Comment, Content, Event, Testimony } from "@/firebaseConfig";
 import { Text, View } from "react-native";
 import CustomSectionSeparator from "./customSectionSeparator";
+import StyledButton from "./styledButton";
+import StyledLabel from "./styledLabel";
+import { useCallback } from "react";
+import { router } from "expo-router";
+import { ViewPostSearchParams } from "@/app/postActions/viewPost";
 
 interface Props {
   content?: Content | null;
@@ -9,10 +14,11 @@ interface Props {
 const ReportedContentSection = ({ content }: Props) => {
   let contentSection: React.JSX.Element | undefined;
   if (content) {
-    const { contentType } = content;
+    const { contentType, body } = content;
     const postDate = new Date(content.date);
+    // Display a testimony or event report
     if (contentType === "testimony" || contentType === "event") {
-      const { displayName, title, body } = content as Testimony | Event;
+      const { displayName, title } = content as Testimony | Event;
       contentSection = (
         <>
           <View className="flex">
@@ -32,9 +38,29 @@ const ReportedContentSection = ({ content }: Props) => {
           <Text className="dark:text-gray-300 text-lg mb-4 mt-2">{body}</Text>
         </>
       );
+      // Display a comment report
     } else {
-      const { displayName, body } = content as Comment;
+      const { displayName, postID, contentType, postType } = content as Comment;
       const postDate = new Date(content.date);
+
+      const linkToParentPost = useCallback(
+        () => (
+          <StyledButton
+            label={<StyledLabel label="View parent post" />}
+            onPress={() => {
+              router.push({
+                pathname: "/postActions/viewPost",
+                params: {
+                  postID,
+                  postType,
+                } as ViewPostSearchParams,
+              });
+            }}
+          />
+        ),
+        [content],
+      );
+
       contentSection = (
         <>
           <View className="flex">
@@ -49,10 +75,12 @@ const ReportedContentSection = ({ content }: Props) => {
             </Text>
           </View>
           <Text className="dark:text-gray-300 text-lg mb-4 mt-2">{body}</Text>
+          {linkToParentPost()}
         </>
       );
     }
   }
+
   return (
     <>
       {contentSection}

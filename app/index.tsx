@@ -27,13 +27,6 @@ export default function Index() {
         className="size-48"
         resizeMode="contain"
       />
-      {/* <TouchableHighlight
-        className="bg-highlight rounded-full p-5 w-3/4 flex items-center justify-center focus:bg-shadow min-h-[50px]"
-        underlayColor="#ad7d1a"
-        onPress={handlePress}
-      >
-        <Text className="text-xl text-white font-bold">Begin</Text>
-      </TouchableHighlight> */}
     </View>
   );
 }

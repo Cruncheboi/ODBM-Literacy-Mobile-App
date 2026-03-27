@@ -9,6 +9,7 @@ import { View, Text } from "react-native";
 import PostCard from "./postCard";
 import CustomSectionSeparator from "./customSectionSeparator";
 import ScrollToButton from "./scrollToButton";
+import { QUERY_LIMIT } from "@/firebase_functions/firebaseFunctions";
 const TestimonyReportList = () => {
   const dispatch = useAppDispatch();
 
@@ -70,7 +71,7 @@ const TestimonyReportList = () => {
 
   const onEndReached = async () => {
     console.log("end reached.");
-    if (isFetching || testimonies.length == 0) return;
+    if (isFetching || testimonies.length < QUERY_LIMIT) return;
     console.log("fetching new data.");
     fetchNextPage();
   };

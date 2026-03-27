@@ -31,7 +31,6 @@ const ContentOptionsBottomSheetView = ({ content }: ContentOptionsProps) => {
   const [isAdmin, setIsAdmin] = useState(false);
 
   const isOwner = user === auth.currentUser?.uid;
-  console.log("Options: ", user, "===", auth.currentUser?.uid);
 
   const getIsAdmin = async () => {
     const isAdmin = await checkIfIsAdmin();
@@ -49,6 +48,7 @@ const ContentOptionsBottomSheetView = ({ content }: ContentOptionsProps) => {
           documentId,
           postId: content.postID,
           reports,
+          postType: content.postType,
         });
       }
     } catch (error) {
@@ -109,6 +109,7 @@ const ContentOptionsBottomSheetView = ({ content }: ContentOptionsProps) => {
                     postID: content.postID,
                     oldBody: body,
                     numOfreports: reports.toString(),
+                    postType: content.postType,
                   } as EditCommentSearchParams,
                 });
               }

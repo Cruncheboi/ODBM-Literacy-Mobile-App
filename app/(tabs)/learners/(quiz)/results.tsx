@@ -3,9 +3,10 @@ import { useAppSelector } from "@/redux/hooks";
 import cn from "@/utility_functions/cn";
 import { router } from "expo-router";
 import { View, Text } from "react-native";
+
 const Results = () => {
   const recommendedStart = useAppSelector(
-    (state) => state.quiz.recommendedStart
+    (state) => state.quiz.recommendedStart,
   );
   const contentTextClassName = "dark:text-white text-center";
 

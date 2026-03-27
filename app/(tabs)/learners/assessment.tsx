@@ -1,9 +1,8 @@
 import CustomOpacityButton from "@/components/customOpacityButton";
 import Quiz from "@/components/quiz";
 import { router } from "expo-router";
-import { View, Text, ScrollView, StyleSheet } from "react-native";
+import { View, ScrollView, StyleSheet } from "react-native";
 import Animated, { FadeInLeft } from "react-native-reanimated";
-import { SectionName } from ".";
 import {
   updateRecommendedStart,
   type StartPoint,

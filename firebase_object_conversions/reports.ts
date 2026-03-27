@@ -28,7 +28,7 @@ export class ReportConverter {
       return {
         postId: postId,
         reporterUid: currentUser.uid,
-        displayName: currentUser.displayName ?? "",
+        displayName: currentUser.displayName ?? "Anonymous",
         contentType: contentType,
         reason: reason,
         explanation: explanation,

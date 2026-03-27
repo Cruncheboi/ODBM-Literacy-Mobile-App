@@ -1,73 +1,45 @@
 import Card from "@/components/postCard";
 import CustomSectionSeparator from "@/components/customSectionSeparator";
 import { Event } from "@/firebaseConfig";
-import { getEvents } from "@/firebase_functions/firebaseFunctions";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { router } from "expo-router";
 import { useColorScheme } from "nativewind";
-import { forwardRef, useCallback, useEffect, useRef } from "react";
+import { useCallback, useRef } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { useAppDispatch } from "@/redux/hooks";
-import { addEventPosts, resetEventPosts } from "@/redux/features/postsSlice";
-import { resetCommentCollection } from "@/redux/features/commentsSlice";
-import {
-  FlashList,
-  ListRenderItemInfo,
-  useBenchmark,
-} from "@shopify/flash-list";
+
+import { FlashList, ListRenderItemInfo } from "@shopify/flash-list";
 import ScrollToButton from "@/components/scrollToButton";
 import useListScrollController from "@/hooks/useListScrollController";
-import useListDataController from "@/hooks/useListDataController";
 import { CreatePostSearchParams } from "../../postActions/createPost";
 import Octicons from "@expo/vector-icons/Octicons";
+import { useGetEventsInfiniteQuery } from "@/redux/services/injectedEndpoints.ts/events";
+import { firestoreApi } from "@/redux/services/firestore";
+import { QUERY_LIMIT } from "@/firebase_functions/firebaseFunctions";
 
-const Index = () => {
+const Events = () => {
   const dispatch = useAppDispatch();
   const { colorScheme } = useColorScheme();
 
   // Post state
-  const { data, isLoading, onEndReached, onListRefreshed } =
-    useListDataController<Event>({
-      dataInUse: true,
-      getData: getEvents,
-      updateLocalStorage: (events) => dispatch(addEventPosts(events)),
-      resetLocalStorage: () => {
-        dispatch(resetEventPosts());
-        dispatch(resetCommentCollection({ type: "event" }));
-      },
-    });
+  const { data, isFetching, fetchNextPage } =
+    useGetEventsInfiniteQuery(undefined);
+  const events = data?.pages.flatMap((data) => data) ?? [];
 
   // FlashList state
   const flashListRef = useRef<FlashList<Event> | null>(null);
   const { showScrollToButton, onScrollToPressed, onScroll } =
     useListScrollController(flashListRef);
 
-  // A filter component
-  const filter = forwardRef(() => {
-    return (
-      <View className="w-full h-16">
-        <Text>YO this is the filter</Text>
-      </View>
-    );
-    // return (
-    //   <View className="my-4 px-4 border-2 w-5/12 h-14 rounded-full border-odbm-blue-600 dark:border-slate-700 bg-odbm-gray flex">
-    //     <View className="flex-1 flex-row bg-purple-300">
-    //       <View className="flex-1 items-center justify-center">
-    //         <Text>Sort By: ASC</Text>
-    //       </View>
-    //       <View className="flex-1">
-    //         <Text>Yo</Text>
-    //       </View>
-    //     </View>
-    //   </View>
-    // );
-  });
-
   const renderListItem = ({ item }: ListRenderItemInfo<Event>) => {
     return <Card post={item} />;
   };
 
-  const itemSeparatorComponent = () => <CustomSectionSeparator />;
+  // Flashlist components
+  const itemSeparatorComponent = useCallback(
+    () => <CustomSectionSeparator />,
+    [],
+  );
 
   // Retrieves component to display when there are no posts to show
   const showItemOnEmptyList = useCallback(() => {
@@ -93,7 +65,7 @@ const Index = () => {
 
   // Returns the component to display on an empty list based on loading and post data state.
   const listEmptyComponent = () => {
-    if (isLoading) {
+    if (isFetching) {
       return null;
     }
 
@@ -103,33 +75,29 @@ const Index = () => {
     return showItemOnEmptyList();
   };
 
-  const onAddPostPressed = () => {
+  // FlashList callbacks
+  const onEndReached = async () => {
+    console.log("last doc reached.");
+    if (events.length < QUERY_LIMIT || isFetching) return;
+    fetchNextPage();
+  };
+
+  const onRefresh = useCallback(async () => {
+    dispatch(firestoreApi.util.invalidateTags([{ type: "Event", id: "LIST" }]));
+  }, []);
+
+  const onAddPostPressed = useCallback(() => {
     router.push({
       pathname: "/postActions/createPost",
       params: {
         type: "event",
       } as CreatePostSearchParams,
     });
-  };
-
-  const listHeaderComponent = () => {
-    return (
-      <View className="px-4 border-2 w-5/12 h-14 rounded-full border-odbm-blue-600 dark:border-slate-700 bg-odbm-gray-digital flex">
-        <View className="flex-1 items-center justify-center">
-          <Text className="dark:text-white">My posts</Text>
-        </View>
-      </View>
-    );
-  };
-
-  // Sets the initial state of the list on component load.
-  useEffect(() => {
-    onListRefreshed();
   }, []);
 
-  const onSwitchPostPressed = () => {
+  const onSwitchPostPressed = useCallback(() => {
     router.navigate("/(tabs)/posts");
-  };
+  }, []);
 
   return (
     <View className="py-safe dark:bg-odbm-gray-digital flex flex-1">
@@ -162,18 +130,16 @@ const Index = () => {
       </View>
       <View className="flex-1 dark:bg-odbm-gray-digital relative">
         <FlashList
-          // maintainVisibleContentPosition={{ minIndexForVisible: 0 }}
           contentContainerClassName="w-full flex py-3"
-          data={data}
-          // ListHeaderComponent={listHeaderComponent}
+          data={events}
           renderItem={renderListItem}
           ListEmptyComponent={listEmptyComponent}
           className="w-full dark:bg-odbm-gray-digital"
           ItemSeparatorComponent={itemSeparatorComponent}
           onEndReached={onEndReached}
           onEndReachedThreshold={0.5}
-          refreshing={isLoading}
-          onRefresh={onListRefreshed}
+          refreshing={isFetching}
+          onRefresh={onRefresh}
           estimatedItemSize={230}
           ref={flashListRef}
           onScroll={onScroll}
@@ -186,4 +152,4 @@ const Index = () => {
     </View>
   );
 };
-export default Index;
+export default Events;

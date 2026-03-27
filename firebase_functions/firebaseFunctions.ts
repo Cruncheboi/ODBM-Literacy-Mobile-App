@@ -19,12 +19,14 @@ import {
   reportsCollection,
   ContentType,
   genericFirestoreErrorLog,
+  PostType,
 } from "@/firebaseConfig";
 import { FirebaseError } from "firebase/app";
 import {
   addDoc,
   doc,
   documentId,
+  DocumentReference,
   FirestoreError,
   FirestoreErrorCode,
   getDoc,
@@ -325,7 +327,7 @@ export const getComments = async (
 export const createPost = async (
   title: string,
   body: string,
-  { type }: CreatePostSearchParams,
+  type: PostType,
 ): Promise<boolean> => {
   title = title.trim();
   body = body.trim();
@@ -335,17 +337,19 @@ export const createPost = async (
   console.log("Creating post");
   let submittedSuccessfully = true;
   try {
+    let newPost: Testimony | Event;
     if (type == "testimony") {
-      await addDoc(
+      let docRef = await addDoc(
         testimoniesCollection,
         TestimonyConverter.converter.toFirestore(title, body),
       );
     } else {
-      await addDoc(
+      let docRef = await addDoc(
         eventsCollection,
         EventConverter.converter.toFirestore(title, body),
       );
     }
+
     Toast.show({
       type: "success",
       text1: "Post submitted successfully",
@@ -357,50 +361,6 @@ export const createPost = async (
 
   console.log(submittedSuccessfully);
   return submittedSuccessfully;
-};
-
-/**
- * Creates a new Comment document in Firebase Firestore.
- * @returns A copy of the newly created Comment object.
- */
-export const createComment = async (
-  postID: string,
-  body: string,
-): Promise<Comment | null> => {
-  body = body.trim();
-  if (body === "") return null;
-  console.log("Creating comment");
-
-  let submittedSuccessfully = true;
-  try {
-    const currentUser = auth.currentUser;
-    if (currentUser == null) return null;
-    const docRef = await addDoc(
-      commentsCollection,
-      CommentConverter.converter.toFirestore(postID, body),
-    );
-    // Create a duplicate comment to save to local state.
-    const newComment: Comment = {
-      contentType: "comment",
-      body: body,
-      date: new Date().toISOString(),
-      displayName:
-        currentUser.displayName == null ? "Anonymous" : currentUser.displayName,
-      documentId: docRef.id,
-      postID: postID,
-      user: currentUser.uid,
-      reports: 0,
-    };
-    Toast.show({
-      type: "success",
-      text1: "Comment created successfully.",
-    });
-    return newComment;
-  } catch (error) {
-    genericFirestoreErrorLog(error);
-    submittedSuccessfully = false;
-    return null;
-  }
 };
 
 export const checkIfIsAdmin = async () => {

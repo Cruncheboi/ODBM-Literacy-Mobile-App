@@ -4,7 +4,7 @@ import { useColorScheme } from "nativewind";
 import { Event, Testimony } from "@/firebaseConfig";
 import { useCallback } from "react";
 import { router, useLocalSearchParams } from "expo-router";
-import { SearchParams } from "@/app/postActions/viewPost";
+import { ViewPostSearchParams } from "@/app/postActions/viewPost";
 import { ViewReportSearchParams } from "@/app/postActions/viewReport";
 
 interface Props {
@@ -31,7 +31,7 @@ const PostCard = ({ post, isReported }: Props) => {
         params: {
           postID: post.documentId,
           postType: post.contentType,
-        } as SearchParams,
+        } as ViewPostSearchParams,
       });
     }
   };

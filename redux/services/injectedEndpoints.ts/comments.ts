@@ -1,4 +1,4 @@
-import { Comment, CommentUpdateFields } from "@/firebaseConfig";
+import { Comment, CommentUpdateFields, PostType } from "@/firebaseConfig";
 import {
   BasicStartAfterFieldValues,
   firestoreApi,
@@ -8,18 +8,21 @@ import {
 import { FirebaseError } from "firebase/app";
 import { REPORT_THRESHOLD } from "@/firebase_functions/reportFunctions";
 import {
+  createComment,
   deleteComment,
   getComment,
   getComments,
   updateComment,
 } from "@/firebase_functions/commentFunctions";
 import Toast from "react-native-toast-message";
+import { reportsApi } from "./reports";
+import { documentId } from "firebase/firestore";
 
-const extendedApi = firestoreApi.injectEndpoints({
+export const commentsApi = firestoreApi.injectEndpoints({
   endpoints: (build) => ({
     getComments: build.infiniteQuery<
       Comment[],
-      QueryFieldValues,
+      { fieldValues: QueryFieldValues; postType: PostType },
       BasicStartAfterFieldValues | undefined
     >({
       infiniteQueryOptions: {
@@ -44,7 +47,8 @@ const extendedApi = firestoreApi.injectEndpoints({
           }
           console.log("using: ", startAfterFieldValues);
           const data = await getComments(
-            queryArg.documentId,
+            queryArg.fieldValues.documentId,
+            queryArg.postType,
             startAfterFieldValues,
           );
           console.log("data: ", data);
@@ -56,11 +60,15 @@ const extendedApi = firestoreApi.injectEndpoints({
           return buildError(error);
         }
       },
-      providesTags: (result, error, queryArg) =>
+      providesTags: (result, error, { fieldValues, postType }) =>
         result
           ? [
-              // Provides a CommentList tag with an id of the post it originates from
-              { type: "CommentList", id: queryArg.documentId },
+              // Provides a "(postType)Comments" tag with an id of the post it originates from
+              {
+                type:
+                  postType === "event" ? "EventComments" : "TestimonyComments",
+                id: fieldValues.documentId,
+              },
               // Creates tags for each comment with the id being
               // their respective document id
               ...result.pages.flatMap((comments) =>
@@ -70,7 +78,13 @@ const extendedApi = firestoreApi.injectEndpoints({
                 })),
               ),
             ]
-          : [{ type: "CommentList", id: queryArg.documentId }],
+          : [
+              {
+                type:
+                  postType === "event" ? "EventComments" : "TestimonyComments",
+                id: fieldValues.documentId,
+              },
+            ],
     }),
     getComment: build.query<Comment | null, { documentId: string }>({
       queryFn: async ({ documentId }) => {
@@ -96,13 +110,14 @@ const extendedApi = firestoreApi.injectEndpoints({
       {
         postId: string;
         documentId: string;
-        udpatedFields: CommentUpdateFields;
+        updatedFields: CommentUpdateFields;
         reports: number;
+        postType: PostType;
       }
     >({
-      queryFn: async ({ documentId, udpatedFields }) => {
+      queryFn: async ({ documentId, updatedFields }) => {
         try {
-          const wasSuccessful = await updateComment(documentId, udpatedFields);
+          const wasSuccessful = await updateComment(documentId, updatedFields);
           return {
             data: wasSuccessful,
           };
@@ -110,20 +125,126 @@ const extendedApi = firestoreApi.injectEndpoints({
           return buildError(error);
         }
       },
-      invalidatesTags: (result, error, arg) => [
-        // Give a reported tag if the number of reports is >= to the report threshold.
-        arg.reports >= REPORT_THRESHOLD
-          ? { type: "Reported", id: "comment" }
-          : undefined,
-        // Invalidate comments from post where comment originates from
-        { type: "CommentList", id: arg.postId },
-        // Invalidate specific comment using document id
-        { type: "Comment", id: arg.documentId },
-      ],
+      onQueryStarted: async (
+        { documentId, updatedFields, postId, postType, reports },
+        { queryFulfilled, dispatch },
+      ) => {
+        // Patch "getComments" query list
+        const listPatchResult = dispatch(
+          commentsApi.util.updateQueryData(
+            "getComments",
+            { fieldValues: { documentId: postId }, postType },
+            (draft) => {
+              // Find post that needs to be updated
+              draft.pages.forEach((postPage) => {
+                const postIndex = postPage.findIndex(
+                  (post) => post.documentId === documentId,
+                );
+                if (postIndex !== -1) {
+                  Object.assign(postPage[postIndex], updatedFields);
+                  return;
+                }
+              });
+            },
+          ),
+        );
+
+        // Patch "getComment" query
+        const itemPatchResult = dispatch(
+          commentsApi.util.updateQueryData(
+            "getComment",
+            { documentId },
+            (draft) => {
+              if (!draft) return;
+              // Update post
+              Object.assign(draft, updatedFields);
+            },
+          ),
+        );
+
+        // Patch "getReportedComments" query list
+        const reportListPatchResult = dispatch(
+          reportsApi.util.updateQueryData(
+            "getReportedComments",
+            undefined,
+            (draft) => {
+              // Find post that needs to be updated
+              draft.pages.forEach((postPage) => {
+                const postIndex = postPage.findIndex(
+                  (post) => post.documentId === documentId,
+                );
+                if (postIndex !== -1) {
+                  Object.assign(postPage[postIndex], updatedFields);
+                  return;
+                }
+              });
+            },
+          ),
+        );
+
+        try {
+          const { data } = await queryFulfilled;
+          if (!data) {
+            listPatchResult.undo();
+            itemPatchResult.undo();
+            reportListPatchResult.undo();
+          }
+        } catch {
+          listPatchResult.undo();
+          itemPatchResult.undo();
+          reportListPatchResult.undo();
+        }
+      },
+    }),
+    createComment: build.mutation<
+      Comment,
+      { postId: string; body: string; postType: PostType }
+    >({
+      queryFn: async ({ postId, body, postType }) => {
+        try {
+          const comment = await createComment(postId, body, postType);
+          if (!comment) {
+            throw "Error occurred while creating comment.";
+          }
+          return {
+            data: comment,
+          };
+        } catch (error) {
+          return buildError(error);
+        }
+      },
+      onQueryStarted: async (
+        { postId, postType },
+        { queryFulfilled, dispatch },
+      ) => {
+        try {
+          const { data } = await queryFulfilled;
+
+          // Patch "getComments" query
+          dispatch(
+            commentsApi.util.updateQueryData(
+              "getComments",
+              { fieldValues: { documentId: postId }, postType },
+              (draft) => {
+                if (draft.pages.length > 0) {
+                  draft.pages[0].unshift(data);
+                }
+              },
+            ),
+          );
+        } catch {
+          return;
+        }
+      },
     }),
     deleteComment: build.mutation<
       boolean,
-      { documentId: string; postId: string; reports: number }
+      {
+        documentId: string;
+        postId: string;
+        reports: number;
+        postType: PostType;
+      }
     >({
       queryFn: async ({ documentId }) => {
         try {
@@ -140,16 +261,69 @@ const extendedApi = firestoreApi.injectEndpoints({
           return buildError(error);
         }
       },
-      invalidatesTags: (result, error, arg) => [
-        // Give a reported tag if the number of reports is >= to the report threshold.
-        arg.reports >= REPORT_THRESHOLD
-          ? { type: "Reported", id: "comment" }
-          : undefined,
-        // Invalidate comments from post where comment originates from
-        { type: "CommentList", id: arg.postId },
-        // Invalidate specific comment using document id
-        { type: "Comment", id: arg.documentId },
-      ],
+      onQueryStarted: async (
+        { documentId, postId, postType },
+        { queryFulfilled, dispatch },
+      ) => {
+        // Patch "getComments" query
+        const listPatchResult = dispatch(
+          commentsApi.util.updateQueryData(
+            "getComments",
+            { fieldValues: { documentId: postId }, postType },
+            (draft) => {
+              // Find and remove comment
+              draft.pages.forEach((page) => {
+                const itemIndex = page.findIndex(
+                  (comment) => comment.documentId === documentId,
+                );
+                if (itemIndex !== -1) {
+                  page.splice(itemIndex, 1);
+                  return;
+                }
+              });
+            },
+          ),
+        );
+
+        // Patch "getComment" query
+        const itemPatchResult = dispatch(
+          commentsApi.util.updateQueryData(
+            "getComment",
+            { documentId },
+            (draft) => {
+              draft = null;
+            },
+          ),
+        );
+
+        // Patch "getReportedComments" query
+        const reportListPatchResult = dispatch(
+          reportsApi.util.updateQueryData(
+            "getReportedComments",
+            undefined,
+            (draft) => {
+              // Find and remove comment
+              draft.pages.forEach((page) => {
+                const itemIndex = page.findIndex(
+                  (comment) => comment.documentId === documentId,
+                );
+                if (itemIndex !== -1) {
+                  page.splice(itemIndex, 1);
+                  return;
+                }
+              });
+            },
+          ),
+        );
+
+        try {
+          await queryFulfilled;
+        } catch {
+          listPatchResult.undo();
+          itemPatchResult.undo();
+          reportListPatchResult.undo();
+        }
+      },
     }),
   }),
   overrideExisting: true,
@@ -159,5 +333,6 @@ export const {
   useGetCommentsInfiniteQuery,
   useGetCommentQuery,
   useUpdateCommentMutation,
+  useCreateCommentMutation,
   useDeleteCommentMutation,
-} = extendedApi;
+} = commentsApi;
