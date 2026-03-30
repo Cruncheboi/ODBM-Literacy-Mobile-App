@@ -157,7 +157,9 @@ const ViewPost = () => {
       <>
         <View className="flex">
           <View className="flex-1">
-            <Text className="text-odbm-gold">@{displayName}</Text>
+            <Text className="text-odbm-blue-300 dark:text-odbm-gold">
+              @{displayName}
+            </Text>
           </View>
           <Text className="dark:text-gray-300 text-odbm-blue-600">
             {postDate.toLocaleDateString([], {
@@ -166,14 +168,16 @@ const ViewPost = () => {
             })}
           </Text>
         </View>
-        <Text className="dark:text-gray-200 text-xl font-bold mt-4">
+        <Text className="text-odbm-blue-600 dark:text-gray-200 text-xl font-bold mt-4">
           {title}
         </Text>
-        <Text className="dark:text-gray-300 text-lg mb-4 mt-2">{body}</Text>
+        <Text className="text-odbm-blue-500 dark:text-gray-300 text-lg mb-4 mt-2">
+          {body}
+        </Text>
         <CustomSectionSeparator />
         <View className="mb-3 flex flex-row items-center">
           <View className="flex-1">
-            <Text className="dark:text-gray-200 text-xl font-semibold">
+            <Text className="text-odbm-blue-600 dark:text-gray-200 text-xl font-semibold">
               Comments
             </Text>
           </View>
@@ -196,7 +200,9 @@ const ViewPost = () => {
     }
     return (
       <View className="w-full">
-        <Text className="dark:text-gray-400">No comments yet.</Text>
+        <Text className="text-odbm-blue-500 dark:text-gray-400">
+          No comments yet.
+        </Text>
       </View>
     );
   }, [commentsQuery.isFetching]);

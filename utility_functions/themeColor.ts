@@ -1,7 +1,6 @@
 import { colorScheme } from "nativewind";
 
-type ColorScheme = "light" | "dark" | undefined;
-
+type ColorScheme = ReturnType<typeof colorScheme.get>;
 /**
  *
  * @param colorScheme Current color scheme in use.

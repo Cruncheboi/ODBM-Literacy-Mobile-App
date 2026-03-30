@@ -20,6 +20,7 @@ module.exports = {
           pale: "#E5DBB8",
           light: "#f5f5f5",
           "blue-300": "#6DACDE",
+          "blue-500": "#25538a",
           "blue-600": "#173A64",
           "blue-700": "#334155",
           "blue-800": "#1e293b",

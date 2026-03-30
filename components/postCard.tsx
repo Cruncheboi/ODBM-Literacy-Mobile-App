@@ -40,9 +40,11 @@ const PostCard = ({ post, isReported }: Props) => {
     <View className="w-11/12 self-center p-3 max-h-[340px] rounded-xl">
       <TouchableOpacity className="w-full" onPress={onPressPost}>
         <View className="flex flex-row justify-items-center">
-          <Text className="text-odbm-gold">@</Text>
+          <Text className="text-odbm-blue-300 dark:text-odbm-gold">@</Text>
           <View className="flex-1">
-            <Text className="text-odbm-gold">{post.displayName}</Text>
+            <Text className="text-odbm-blue-300 dark:text-odbm-gold">
+              {post.displayName}
+            </Text>
           </View>
           <Text className="dark:text-gray-300 text-odbm-blue-600">
             {date.toLocaleDateString([], {
@@ -51,11 +53,11 @@ const PostCard = ({ post, isReported }: Props) => {
             })}
           </Text>
         </View>
-        <Text className="dark:text-gray-200 text-xl font-bold line-clamp-3 mt-2">
+        <Text className="text-odbm-blue-600 dark:text-gray-200 text-xl font-bold line-clamp-3 mt-2">
           {post.title}
         </Text>
         <View className="max-h-40 mb-4">
-          <Text className="dark:text-gray-300 text-lg line-clamp-5">
+          <Text className="text-odbm-blue-500 dark:text-gray-300 text-lg line-clamp-5">
             {post.body}
           </Text>
         </View>

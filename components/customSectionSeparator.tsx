@@ -10,7 +10,7 @@ const CustomSectionSeparator = ({ className }: Props) => {
     <View
       className={cn(
         "w-full h-[1px] bg-odbm-blue-600 dark:bg-zinc-300 my-3 rounded-full",
-        className
+        className,
       )}
     />
   );
