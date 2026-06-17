@@ -1,4 +1,4 @@
-import clsx from "clsx";
+import cn from "@/utility_functions/cn";
 import { Text } from "react-native";
 
 interface Props {
@@ -8,7 +8,7 @@ interface Props {
 
 const InfoText = ({ children, className }: Props) => {
   return (
-    <Text className={clsx("font-semibold py-1", className)}>{children}</Text>
+    <Text className={cn("py-1 font-semibold", className)}>{children}</Text>
   );
 };
 export default InfoText;

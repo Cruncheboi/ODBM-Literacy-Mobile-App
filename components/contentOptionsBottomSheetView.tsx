@@ -44,7 +44,7 @@ const ContentOptionsBottomSheetView = ({ content }: ContentOptionsProps) => {
   const onDeleteContent = async () => {
     try {
       if (contentType === "comment") {
-        const wasSuccessful = await deleteCommentMutation({
+        await deleteCommentMutation({
           documentId,
           postId: content.postID,
           reports,
@@ -58,9 +58,9 @@ const ContentOptionsBottomSheetView = ({ content }: ContentOptionsProps) => {
 
   if (showDeleteConfirmation) {
     return (
-      <BottomSheetView className="p-4 justify-center items-center gap-3">
+      <BottomSheetView className="items-center justify-center gap-3 p-4">
         <StyledButton
-          className="bg-red-700 dark:bg-red-700"
+          className="bg-red-700"
           label={<StyledLabel label="Delete" />}
           onPress={async () => {
             onDeleteContent();
@@ -76,7 +76,7 @@ const ContentOptionsBottomSheetView = ({ content }: ContentOptionsProps) => {
   }
 
   return (
-    <BottomSheetView className="p-4 justify-center items-center">
+    <BottomSheetView className="items-center justify-center p-4">
       {isOwner && (
         <>
           <StyledButton

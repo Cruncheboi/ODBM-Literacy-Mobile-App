@@ -1,6 +1,6 @@
 import { colorScheme } from "nativewind";
-
 type ColorScheme = ReturnType<typeof colorScheme.get>;
+
 /**
  *
  * @param colorScheme Current color scheme in use.
@@ -18,7 +18,7 @@ export default getThemeMainColor;
  * @returns The font color to use that contrasts the current theme.
  */
 export const getThemeFontColor = (colorScheme: ColorScheme) => {
-  return colorScheme == "dark" ? "#f5f5f5" : "#0f0f0f";
+  return colorScheme == "dark" ? "#f5f5f5" : "#173A64";
 };
 
 /**
@@ -37,3 +37,6 @@ export const getPrimaryColor = () => {
 export const getAccentColor = (colorScheme: ColorScheme) => {
   return colorScheme == "dark" ? "#173A64" : "#D5E2E9";
 };
+
+export const getThemeHighlightColor = (colorScheme: ColorScheme) =>
+  colorScheme == "dark" ? "#FAB432" : "#6DACDE";

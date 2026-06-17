@@ -9,18 +9,18 @@ const ReportCard = ({ report }: Props) => {
   const date = new Date(report.date);
 
   return (
-    <View className="flex w-full border p-2 rounded-2xl border-gray-400 bg-odbm-gray-digital-dark">
+    <View className="border-borderColor-primary flex w-full rounded-2xl border bg-bgColor-primary p-2">
       <View className="flex flex-row">
-        <Text className="text-odbm-gold flex-1">@{report.displayName}</Text>
-        <Text className="dark:text-gray-300 text-odbm-blue-600">
+        <Text className="flex-1 text-highlight">@{report.displayName}</Text>
+        <Text className="text-textColor-body">
           {date.toLocaleDateString([], {
             hour: "2-digit",
             minute: "2-digit",
           })}
         </Text>
       </View>
-      <Text className="dark:text-gray-300">{`Reason: ${report.reason}`}</Text>
-      <Text className="dark:text-gray-300">{`Explanation: ${report.explanation}`}</Text>
+      <Text className="text-textColor-body">{`Reason: ${report.reason}`}</Text>
+      <Text className="text-textColor-body">{`Explanation: ${report.explanation}`}</Text>
     </View>
   );
 };

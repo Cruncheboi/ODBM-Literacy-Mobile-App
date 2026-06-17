@@ -45,7 +45,7 @@ const Events = () => {
   const showItemOnEmptyList = useCallback(() => {
     return (
       <View>
-        <Text className="text-center dark:text-gray-300 text-xl">
+        <Text className="text-center text-xl dark:text-gray-300">
           Hmm... Looks like there are no items yet.
         </Text>
       </View>
@@ -56,7 +56,7 @@ const Events = () => {
   const showItemOnError = useCallback(() => {
     return (
       <View>
-        <Text className="text-center dark:text-gray-300 text-xl">
+        <Text className="text-center text-xl dark:text-gray-300">
           Hmm... Looks like an error occurred.
         </Text>
       </View>
@@ -100,13 +100,13 @@ const Events = () => {
   }, []);
 
   return (
-    <View className="py-safe dark:bg-odbm-gray-digital flex flex-1">
-      <View className="py-3 px-4 border-b-2 border-odbm-blue-600 dark:border-odbm-blue-700">
+    <View className="py-safe flex flex-1 bg-primary">
+      <View className="border-b-2 border-textColor-primary px-4 py-3">
         {/* Header */}
-        <View className="h-12 flex flex-row items-center px-2">
-          <View className="flex-1 flex flex-row">
+        <View className="flex h-12 flex-row items-center px-2">
+          <View className="flex flex-1 flex-row">
             {/* Title */}
-            <Text className="text-4xl tracking-wide font-bold text-odbm-blue-600 dark:text-white">
+            <Text className="text-4xl font-bold tracking-wide text-textColor-primary">
               Event Posts
             </Text>
           </View>
@@ -128,13 +128,13 @@ const Events = () => {
           </TouchableOpacity>
         </View>
       </View>
-      <View className="flex-1 dark:bg-odbm-gray-digital relative">
+      <View className="relative flex-1 bg-primary">
         <FlashList
           contentContainerClassName="w-full flex py-3"
           data={events}
           renderItem={renderListItem}
           ListEmptyComponent={listEmptyComponent}
-          className="w-full dark:bg-odbm-gray-digital"
+          className="w-full bg-primary"
           ItemSeparatorComponent={itemSeparatorComponent}
           onEndReached={onEndReached}
           onEndReachedThreshold={0.5}

@@ -8,7 +8,10 @@ import StyledTextInput from "@/components/styledTextInput";
 import { createReport } from "@/firebase_functions/reportFunctions";
 import { ContentType, ReportReason } from "@/firebaseConfig";
 import cn from "@/utility_functions/cn";
-import { getAccentColor } from "@/utility_functions/themeColor";
+import {
+  getAccentColor,
+  getThemeHighlightColor,
+} from "@/utility_functions/themeColor";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import BottomSheet, {
   BottomSheetBackdrop,
@@ -45,9 +48,14 @@ const CreateReport = () => {
     () =>
       reasons.map((currentReason) => (
         <StyledButton
-          className={cn(currentReason === reason && "dark:bg-odbm-gray")}
+          className={cn(currentReason === reason && "bg-highlight")}
           key={currentReason}
-          label={<StyledLabel label={currentReason} className="capitalize" />}
+          label={
+            <StyledLabel
+              label={currentReason}
+              className="font-semibold capitalize"
+            />
+          }
           onPress={() => {
             setReason(currentReason);
             bottomSheetRef.current?.close();
@@ -105,31 +113,31 @@ const CreateReport = () => {
   return (
     <CustomHeader title="Create Report">
       <ScrollView
-        className="w-full px-3 pb-3 flex"
+        className="flex w-full px-3 pb-3"
         contentContainerClassName="gap-3"
       >
         {/** Reason */}
-        <View className="h-16 flex flex-row w-full items-center justify-start mt-6">
-          <StyledLabel label="Reason" className="text-2xl" />
+        <View className="mt-6 flex h-16 w-full flex-row items-center justify-start">
+          <StyledLabel label="Reason" className="text-2xl font-bold" />
           <TouchableOpacity
-            className="ml-5 bg-odbm-gray rounded-md px-3 py-2 flex flex-row justify-start items-center "
+            className="ml-5 flex flex-row items-center justify-start rounded-md bg-bgColor-primary px-3 py-2"
             onPress={onEditReasonPress}
           >
             <FontAwesome5
               name="edit"
               size={20}
-              color={getAccentColor(colorScheme)}
+              color={getThemeHighlightColor(colorScheme)}
             />
-            <Text className="pl-2 dark:text-white capitalize text-xl">
+            <Text className="pl-2 text-xl font-semibold capitalize text-textColor-primary">
               {reason}
             </Text>
           </TouchableOpacity>
         </View>
         {/** Explanation */}
         <View className="h-60">
-          <View className="flex-row gap-2 items-center">
-            <StyledLabel label="Explanation" className="text-2xl" />
-            <StyledLabel label="(Optional)" className="dark:color-odbm-gray" />
+          <View className="flex-row items-center gap-2">
+            <StyledLabel label="Explanation" className="text-2xl font-bold" />
+            <StyledLabel label="(Optional)" />
           </View>
           <StyledTextInput
             placeholder="Enter your explanation here..."
@@ -162,7 +170,7 @@ const CreateReport = () => {
         backdropComponent={renderBackdrop}
         backgroundComponent={CustomBackground}
       >
-        <BottomSheetView className="p-4 justify-center items-center gap-3">
+        <BottomSheetView className="items-center justify-center gap-3 p-4">
           {reasonSelectorButtons()}
         </BottomSheetView>
       </BottomSheet>

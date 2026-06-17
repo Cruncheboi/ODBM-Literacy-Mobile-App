@@ -35,7 +35,7 @@ const YoutubePlayer = ({ videoId }: YoutubePlayerProps) => {
     <>
       {isLoading && (
         <Animated.View
-          className="bg-black flex items-center justify-center"
+          className="flex items-center justify-center bg-black"
           style={{ height: iframeHeight(), width: iframeWidth() }}
           entering={FadeInRight.delay(300)}
         >

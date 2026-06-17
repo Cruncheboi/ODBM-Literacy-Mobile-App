@@ -10,9 +10,10 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: "#0a0a0a",
-        secondary: "#d46124",
-        highlight: "#FAB432",
+        primary: "var(--primary)",
+        secondary: "var(--secondary)",
+        highlight: "var(--highlight)",
+        pop: "var(--pop)",
         shadow: "#916813",
         odbm: {
           gold: "#FAB432",
@@ -29,6 +30,18 @@ module.exports = {
           "gray-digital": "#222222",
           "gray-digital-dark": "#1c1c1c",
           "gray-dark": "#0f0f0f",
+        },
+        textColor: {
+          primary: "var(--text-primary)",
+          title: "var(--text-title)",
+          body: "var(--text-body)",
+        },
+        bgColor: {
+          primary: "var(--bg-primary)",
+          secondary: "var(--bg-secondary)",
+        },
+        borderColor: {
+          primary: "var(--border-primary)",
         },
       },
       fontFamily: {

@@ -14,7 +14,7 @@ const ScrollToButton = ({ onPress, isHidden = false }: Props) => {
         <TouchableOpacity
           onPress={onPress}
           className={cn(
-            "flex bg-odbm-gold rounded-full p-2",
+            "flex rounded-full bg-highlight p-2",
             isHidden && "hidden",
           )}
         >

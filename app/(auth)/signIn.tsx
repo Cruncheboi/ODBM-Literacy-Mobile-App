@@ -9,7 +9,7 @@ import SecureTextInput from "@/components/secureTextInput";
 import StyledTextInput from "@/components/styledTextInput";
 import StyledLabel from "@/components/styledLabel";
 import ErrorText from "@/components/errorText";
-import { clsx } from "clsx";
+import cn from "@/utility_functions/cn";
 import { router } from "expo-router";
 import { updateCurrentUserInfo } from "@/redux/storageSync";
 import { getCurrentUserInfo } from "@/firebase_functions/firebaseFunctions";
@@ -58,12 +58,9 @@ const SignIn = () => {
   };
 
   return (
-    <ScrollView
-      className="bg-odbm-light dark:bg-odbm-gray-digital"
-      keyboardShouldPersistTaps="handled"
-    >
+    <ScrollView className="bg-primary" keyboardShouldPersistTaps="handled">
       <View className="py-safe">
-        <View className="w-full flex items-center">
+        <View className="flex w-full items-center">
           <Image
             source={require("@/assets/images/our-daily-bread-logo.png")}
             className="size-56"
@@ -72,8 +69,8 @@ const SignIn = () => {
         </View>
         {/* Form Section*/}
         <View className="mx-3">
-          <View className="p-6 border rounded-md border-odbm-gray bg-gray-50 dark:bg-odbm-gray-dark">
-            <Text className="dark:color-white text-center text-3xl font-bold py-3 tracking-widest">
+          <View className="bg-pop rounded-md border border-odbm-gray p-6">
+            <Text className="text-textColor-primary py-3 text-center text-3xl font-bold tracking-widest">
               Sign In
             </Text>
             <View className="gap-3">
@@ -81,8 +78,8 @@ const SignIn = () => {
               <View>
                 <StyledLabel label="Email" />
                 <StyledTextInput
-                  containerClassName={clsx(
-                    !emailValid && "border border-red-600"
+                  containerClassName={cn(
+                    !emailValid && "border border-red-600",
                   )}
                   onChangeText={handleEmail}
                   keyboardType="email-address"
@@ -102,7 +99,7 @@ const SignIn = () => {
             <CustomOpacityButton
               title="Sign In"
               onPress={handleSignIn}
-              className="w-full bg-white dark:bg-odbm-gold"
+              className="w-full bg-highlight"
             />
             {/* Register account redirect */}
             <TouchableOpacity
@@ -110,9 +107,9 @@ const SignIn = () => {
                 router.push("/(auth)/register");
               }}
             >
-              <Text className="dark:text-white">
+              <Text className="text-textColor-primary">
                 Don't have an account?{" "}
-                <Text className="text-odbm-gold">Register here</Text>
+                <Text className="text-highlight">Register here</Text>
               </Text>
             </TouchableOpacity>
           </View>

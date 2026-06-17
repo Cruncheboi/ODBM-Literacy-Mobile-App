@@ -33,18 +33,13 @@ const CustomSectionItem = ({
     <GestureDetector gesture={singleTap}>
       <View
         className={cn(
-          "w-full min-h-11 px-7 py-2 rounded-xl bg-odbm-gray-light dark:bg-slate-800 border border-odbm-blue-600 dark:border-slate-700 active:opacity-50",
+          "border-borderColor-primary min-h-11 w-full rounded-xl border bg-bgColor-primary px-7 py-2 active:opacity-50",
           className,
-          disabled && "opacity-50"
+          disabled && "opacity-50",
         )}
         collapsable={false}
       >
-        <Text
-          className={cn(
-            "text-xl text-odbm-blue-600 dark:text-white opacity-80",
-            textStyles
-          )}
-        >
+        <Text className={cn("text-xl text-textColor-primary", textStyles)}>
           {title}
         </Text>
       </View>

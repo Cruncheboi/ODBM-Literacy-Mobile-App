@@ -15,6 +15,10 @@ import { CreatePostSearchParams } from "@/app/postActions/createPost";
 import { useGetTestimoniesInfiniteQuery } from "@/redux/services/injectedEndpoints.ts/testimonies";
 import { firestoreApi } from "@/redux/services/firestore";
 import { QUERY_LIMIT } from "@/firebase_functions/firebaseFunctions";
+import {
+  getThemeFontColor,
+  getThemeHighlightColor,
+} from "@/utility_functions/themeColor";
 
 const Index = () => {
   const dispatch = useAppDispatch();
@@ -44,7 +48,7 @@ const Index = () => {
   const showItemOnEmptyList = useCallback(() => {
     return (
       <View>
-        <Text className="text-center dark:text-gray-300 text-xl">
+        <Text className="text-center text-xl dark:text-gray-300">
           Hmm... Looks like there are no items yet.
         </Text>
       </View>
@@ -55,7 +59,7 @@ const Index = () => {
   const showItemOnError = useCallback(() => {
     return (
       <View>
-        <Text className="text-center dark:text-gray-300 text-xl">
+        <Text className="text-center text-xl dark:text-gray-300">
           Hmm... Looks like an error occurred.
         </Text>
       </View>
@@ -101,13 +105,13 @@ const Index = () => {
   }, []);
 
   return (
-    <View className="py-safe dark:bg-odbm-gray-digital flex flex-1">
-      <View className="py-3 px-4 border-b-2 border-odbm-blue-600 dark:border-odbm-blue-700">
+    <View className="py-safe flex flex-1 bg-primary">
+      <View className="border-b-2 border-textColor-body px-4 py-3">
         {/* Header */}
-        <View className="h-12 flex flex-row items-center px-2">
-          <View className="flex-1 flex flex-row">
+        <View className="flex h-12 flex-row items-center px-2">
+          <View className="flex flex-1 flex-row">
             {/* Title */}
-            <Text className="text-4xl tracking-wide font-bold text-odbm-blue-600 dark:text-white">
+            <Text className="text-4xl font-bold tracking-wide text-textColor-primary">
               Testimony Posts
             </Text>
           </View>
@@ -116,7 +120,7 @@ const Index = () => {
             <Octicons
               name="arrow-switch"
               size={28}
-              color={colorScheme == "light" ? "#173A64" : "white"}
+              color={getThemeFontColor(colorScheme)}
             />
           </TouchableOpacity>
           {/* Button to add a post */}
@@ -124,15 +128,15 @@ const Index = () => {
             <FontAwesome6
               name="plus"
               size={24}
-              color={colorScheme == "light" ? "#173A64" : "white"}
+              color={getThemeFontColor(colorScheme)}
             />
           </TouchableOpacity>
         </View>
       </View>
-      <View className="flex-1 dark:bg-odbm-gray-digital relative">
+      <View className="relative flex-1 bg-primary">
         <FlashList
           contentContainerClassName="w-full flex py-3"
-          className="w-full dark:bg-odbm-gray-digital"
+          className="w-full bg-primary"
           data={testimonies}
           renderItem={renderListItem}
           ListEmptyComponent={listEmptyComponent}

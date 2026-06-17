@@ -17,9 +17,9 @@ const VideoLayout = () => {
     <CustomHeader title={title}>
       <View className="py-6">
         {videoHeader ? (
-          <Text className="dark:text-white text-lg">{videoHeader}</Text>
+          <Text className="text-lg dark:text-white">{videoHeader}</Text>
         ) : (
-          <Text className="dark:text-white text-lg">
+          <Text className="text-lg dark:text-white">
             Watch to learn more about
             <Text className="font-semibold italic"> {title}</Text>.
           </Text>
@@ -28,7 +28,7 @@ const VideoLayout = () => {
       <YoutubePlayer videoId={videoId} />
       <View className="py-6">
         {videoFooter && (
-          <Text className="dark:text-white text-lg">{videoFooter}</Text>
+          <Text className="text-lg dark:text-white">{videoFooter}</Text>
         )}
       </View>
     </CustomHeader>

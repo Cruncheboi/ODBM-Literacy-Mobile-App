@@ -8,9 +8,7 @@ interface Props {
 
 const StyledLabel = ({ label, className }: Props) => {
   return (
-    <Text
-      className={cn("color-odbm-gray dark:color-white py-2 text-xl", className)}
-    >
+    <Text className={cn("py-2 text-xl text-textColor-primary", className)}>
       {label}
     </Text>
   );

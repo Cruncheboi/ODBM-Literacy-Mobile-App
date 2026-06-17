@@ -13,7 +13,6 @@ import SecureTextInput from "@/components/secureTextInput";
 import StyledTextInput from "@/components/styledTextInput";
 import StyledLabel from "@/components/styledLabel";
 import ErrorText from "@/components/errorText";
-import { clsx } from "clsx";
 import { createUserAccountInfo } from "@/redux/storageSync";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { router } from "expo-router";
@@ -21,6 +20,7 @@ import { checkIfDisplayNameIsAvailable } from "@/firebase_functions/firebaseFunc
 import { debounce } from "lodash";
 import InfoText from "@/components/infoText";
 import Toast from "react-native-toast-message";
+import cn from "@/utility_functions/cn";
 
 // Constants
 const PASSWORD_MIN_LEN = 8;
@@ -182,7 +182,7 @@ const Register = () => {
       console.log(isAvailable);
       setLoadingDisplayNameCheck(false);
     }, 2000),
-    []
+    [],
   );
 
   useEffect(() => {
@@ -205,12 +205,9 @@ const Register = () => {
   console.log(displayName);
 
   return (
-    <ScrollView
-      className="bg-odbm-light dark:bg-odbm-gray-digital"
-      keyboardShouldPersistTaps="handled"
-    >
+    <ScrollView className="bg-primary" keyboardShouldPersistTaps="handled">
       <View className="py-safe mb-5">
-        <View className="w-full flex items-center">
+        <View className="flex w-full items-center">
           <Image
             source={require("@/assets/images/our-daily-bread-logo.png")}
             className="size-56"
@@ -218,9 +215,9 @@ const Register = () => {
           />
         </View>
         {/* Form Section*/}
-        <View className="mx-3">
-          <View className="p-6 border rounded-md border-odbm-gray bg-white dark:bg-odbm-gray-dark">
-            <Text className="dark:color-white text-center text-3xl tracking-wider font-bold text-odbm-gray py-3">
+        <View>
+          <View className="bg-pop mx-3 rounded-md border border-odbm-gray p-6">
+            <Text className="text-textColor-primary py-3 text-center text-3xl font-bold tracking-wider">
               Create an Account
             </Text>
             <View className="gap-3">
@@ -228,8 +225,8 @@ const Register = () => {
               <View>
                 <StyledLabel label="Display Name" />
                 <StyledTextInput
-                  containerClassName={clsx(
-                    displayName === "" && "border border-red-600"
+                  containerClassName={cn(
+                    displayName === "" && "border border-red-600",
                   )}
                   onChangeText={(text) => {
                     setDisplayName(text.trim());
@@ -259,8 +256,8 @@ const Register = () => {
               <View>
                 <StyledLabel label="First Name" />
                 <StyledTextInput
-                  containerClassName={clsx(
-                    firstName === "" && "border border-red-600"
+                  containerClassName={cn(
+                    firstName === "" && "border border-red-600",
                   )}
                   onChangeText={(text) => {
                     setFirstName(text.trim());
@@ -276,8 +273,8 @@ const Register = () => {
               <View>
                 <StyledLabel label="Last Name" />
                 <StyledTextInput
-                  containerClassName={clsx(
-                    lastName === "" && "border border-red-600"
+                  containerClassName={cn(
+                    lastName === "" && "border border-red-600",
                   )}
                   onChangeText={(text) => {
                     setLastName(text.trim());
@@ -293,8 +290,8 @@ const Register = () => {
               <View className="">
                 <StyledLabel label="Email" />
                 <StyledTextInput
-                  containerClassName={clsx(
-                    !emailValid && "border border-red-600"
+                  containerClassName={cn(
+                    !emailValid && "border border-red-600",
                   )}
                   onChangeText={handleEmail}
                   keyboardType="email-address"
@@ -320,7 +317,6 @@ const Register = () => {
               title="Sign Up!"
               onPress={handleRegister}
               className="w-full"
-              textStyles="text-odbm-gray"
             />
             {/* Register account redirect */}
             <TouchableOpacity
@@ -328,9 +324,9 @@ const Register = () => {
                 router.push("/(auth)/signIn");
               }}
             >
-              <Text className="dark:text-white">
+              <Text className="text-textColor-primary">
                 Already have an account?{" "}
-                <Text className="text-odbm-gold">Sign in here</Text>
+                <Text className="text-highlight">Sign in here</Text>
               </Text>
             </TouchableOpacity>
           </View>
@@ -390,7 +386,7 @@ const StyledValidationText = ({ isValid, children }: ValidationText) => {
       </View>
       <ErrorText
         hasError={!isValid}
-        className={clsx(isValid && "text-green-600")}
+        className={cn(isValid && "text-green-600")}
       >
         {children}
       </ErrorText>

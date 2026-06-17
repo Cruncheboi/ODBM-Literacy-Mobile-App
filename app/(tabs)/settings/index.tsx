@@ -37,9 +37,9 @@ const Settings = () => {
     checkIsAdmin();
   }, []);
   return (
-    <View className="flex-1 flex justify-start items-center py-safe px-6 dark:bg-odbm-gray-digital">
+    <View className="py-safe flex flex-1 items-center justify-start bg-primary px-6">
       <View className="flex-row gap-5">
-        <Text className="dark:text-white text-lg">Switch Default Theme</Text>
+        <Text className="text-lg dark:text-white">Switch Default Theme</Text>
         <Switch
           value={colorScheme == "light"}
           onValueChange={toggleColorScheme}
@@ -50,7 +50,7 @@ const Settings = () => {
         onPress={() => {
           router.push("/(tabs)/settings/(userInfo)/profile");
         }}
-        textStyles="text-odbm-gray"
+        // textStyles="text-odbm-gray"
       />
       {showAdminContent && (
         <CustomOpacityButton
@@ -58,13 +58,13 @@ const Settings = () => {
           onPress={() => {
             router.push("/(tabs)/settings/(admin)/reports");
           }}
-          textStyles="text-odbm-gray"
+          // textStyles="text-odbm-gray"
         />
       )}
       <CustomOpacityButton
         title="Sign Out"
         onPress={signOutUser}
-        textStyles="text-odbm-gray"
+        // textStyles="text-odbm-gray"
       />
     </View>
   );

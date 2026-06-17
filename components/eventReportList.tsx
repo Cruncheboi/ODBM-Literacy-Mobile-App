@@ -36,7 +36,7 @@ const EventReportList = () => {
   const showItemOnEmptyList = useCallback(() => {
     return (
       <View>
-        <Text className="text-center dark:text-gray-300 text-xl">
+        <Text className="text-center text-xl dark:text-gray-300">
           Hmm... Looks like there are no items yet.
         </Text>
       </View>
@@ -47,7 +47,7 @@ const EventReportList = () => {
   const showItemOnError = useCallback(() => {
     return (
       <View>
-        <Text className="text-center dark:text-gray-300 text-xl">
+        <Text className="text-center text-xl dark:text-gray-300">
           Hmm... Looks like an error occurred.
         </Text>
       </View>
@@ -80,10 +80,10 @@ const EventReportList = () => {
   };
 
   return (
-    <View className="flex-1 dark:bg-odbm-gray-digital relative">
+    <View className="relative flex-1 bg-primary">
       <FlashList
         contentContainerClassName="w-full flex py-3"
-        className="w-full dark:bg-odbm-gray-digital"
+        className="w-full bg-primary"
         data={events}
         renderItem={renderListItem}
         ListEmptyComponent={listEmptyComponent}

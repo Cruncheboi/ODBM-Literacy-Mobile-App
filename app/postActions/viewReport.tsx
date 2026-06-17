@@ -117,7 +117,9 @@ const ViewReport = () => {
     }
     return (
       <View className="w-full">
-        <Text className="dark:text-gray-400">No reports yet.</Text>
+        <Text className="text-odbm-blue-500 dark:text-gray-400">
+          No reports yet.
+        </Text>
       </View>
     );
   }, [isFetching]);
@@ -131,9 +133,9 @@ const ViewReport = () => {
   }, []);
 
   return (
-    <View className="py-safe-offset-3 dark:bg-odbm-gray-digital flex flex-1 px-4">
+    <View className="py-safe-offset-3 flex flex-1 bg-primary px-4">
       {/* Header */}
-      <View className="h-14 flex flex-row items-center justify-between">
+      <View className="flex h-14 flex-row items-center justify-between">
         <CustomBackButton />
         <KebabIcon className="p-2" onPress={onKebabPress} />
       </View>

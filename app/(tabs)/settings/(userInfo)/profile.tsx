@@ -9,7 +9,7 @@ import {
   updateFirstNameDB,
   updateLastNameDB,
 } from "@/redux/storageSync";
-import clsx from "clsx";
+import cn from "@/utility_functions/cn";
 import { useEffect, useState } from "react";
 import {
   View,
@@ -37,7 +37,7 @@ const Profile = () => {
   return (
     <CustomHeader title="Profile">
       <ScrollView
-        className="dark:bg-odbm-gray-digital w-full"
+        className="w-full bg-primary"
         contentContainerClassName="py-8 px-5"
         keyboardShouldPersistTaps="handled"
       >
@@ -87,12 +87,10 @@ const InputFieldButton = ({
   return (
     <TouchableOpacity
       disabled={disabled}
-      className={clsx("justify-center p-1", className)}
+      className={cn("justify-center p-1", className)}
       onPress={onPress}
     >
-      {!disabled && (
-        <Text className="dark:text-white text-odbm-gray text-2xl">Update</Text>
-      )}
+      {!disabled && <Text className="text-2xl text-highlight">Update</Text>}
     </TouchableOpacity>
   );
 };
@@ -106,5 +104,5 @@ interface LoadingIndicatorProps {
 }
 const LoadingIndicator = ({ isLoading }: LoadingIndicatorProps) => {
   if (!isLoading) return false;
-  return <ActivityIndicator className="dark:color-white color-odbm-gray" />;
+  return <ActivityIndicator className="color-odbm-gray dark:color-white" />;
 };

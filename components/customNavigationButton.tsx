@@ -45,7 +45,7 @@ const CustomNavigationButton = ({
     translateY.value = withRepeat(
       withTiming(translateY.value + 10, { duration: duration }),
       -1,
-      true
+      true,
     );
   }, []);
 
@@ -57,25 +57,25 @@ const CustomNavigationButton = ({
 
   return (
     <GestureDetector gesture={tapGesture}>
-      <View className="w-28 h-28 bg-odbm-gold rounded-full flex items-center justify-center relative my-5">
+      <View className="relative my-5 flex h-28 w-28 items-center justify-center rounded-full bg-odbm-gold">
         {/* <View className="w-full min-h-20 bg-odbm-gold rounded-full flex items-center justify-center relative"> */}
-        <Text className="text-lg font-semibold text-white dark:text-odbm-gray-dark text-center ">
+        <Text className="text-center text-lg font-semibold text-white dark:text-odbm-gray-dark">
           {buttonTitle}
         </Text>
         {/* Floating title */}
         {showFloatingTitle && (
           <View
             className={cn(
-              "absolute top-[50%] left-[50%] w-40 h-16 rounded-xl flex justify-center items-center bg-transparent",
+              "absolute left-[50%] top-[50%] flex h-16 w-40 items-center justify-center rounded-xl bg-transparent",
               "-translate-x-[50%]",
-              "-translate-y-[150%]"
+              "-translate-y-[150%]",
             )}
           >
             <Animated.View
               className="flex items-center justify-center"
               style={smoothBounceStyles}
             >
-              <Text className="text-white bg-[#0f0f0f99] p-2 rounded-xl font-semibold">
+              <Text className="rounded-xl bg-[#0f0f0f99] p-2 font-semibold text-white">
                 {floatingTitle}
               </Text>
               <AntDesign

@@ -63,10 +63,10 @@ const CreateComment = () => {
   return (
     <CustomHeader title="Create a Comment">
       <ScrollView
-        className="w-full px-3 pb-3 flex"
+        className="flex w-full px-3 pb-3"
         contentContainerClassName="gap-3"
       >
-        <View className="w-full flex items-center mt-3">
+        <View className="mt-3 flex w-full items-center">
           <StyledLabel label="Share your thoughts about this post!" />
         </View>
         {/** Body */}

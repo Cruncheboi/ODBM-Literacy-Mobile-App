@@ -34,7 +34,7 @@ const FloatingIndicator: React.FC<PropsWithChildren<Props>> = ({
     translateY.value = withRepeat(
       withTiming(translateY.value + 10, { duration: duration }),
       -1,
-      true
+      true,
     );
   }, []);
 
@@ -45,22 +45,22 @@ const FloatingIndicator: React.FC<PropsWithChildren<Props>> = ({
   });
 
   return (
-    <View className="bg-transparent flex items-center justify-center relative">
+    <View className="relative flex items-center justify-center bg-transparent">
       {children}
       {showFloatingTitle && (
         // Floating title
         <View
           className={cn(
-            "absolute top-[50%] left-[80%] w-40 h-16 rounded-xl flex justify-center items-center bg-transparent",
+            "absolute left-[80%] top-[50%] flex h-16 w-40 items-center justify-center rounded-xl bg-transparent",
             "-translate-x-[50%]",
-            "-translate-y-[115%]"
+            "-translate-y-[115%]",
           )}
         >
           <Animated.View
             className="flex items-center justify-center"
             style={smoothBounceStyles}
           >
-            <Text className="text-white bg-[#0f0f0f99] p-2 rounded-xl font-semibold">
+            <Text className="rounded-xl bg-[#0f0f0f99] p-2 font-semibold text-white">
               {floatingTitle}
             </Text>
             <AntDesign

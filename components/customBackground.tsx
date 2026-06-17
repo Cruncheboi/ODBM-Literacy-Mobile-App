@@ -6,6 +6,6 @@ import { View, Text } from "react-native";
  * @returns
  */
 const CustomBackground = ({ style }: BottomSheetBackgroundProps) => {
-  return <View className="dark:bg-odbm-gray-digital-dark" style={style}></View>;
+  return <View className="bg-primary" style={style} />;
 };
 export default CustomBackground;

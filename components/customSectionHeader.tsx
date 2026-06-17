@@ -11,15 +11,12 @@ const CustomSectionHeader = ({ title, className, textStyles }: Props) => {
   return (
     <View
       className={cn(
-        "min-h-20 py-5 flex items-start justify-center bg-odbm-light dark:bg-odbm-gray-digital",
-        className
+        "flex min-h-20 items-start justify-center bg-primary py-5",
+        className,
       )}
     >
       <Text
-        className={cn(
-          "text-2xl font-bold text-odbm-blue-600 dark:text-white",
-          textStyles
-        )}
+        className={cn("text-textColor-primary text-2xl font-bold", textStyles)}
       >
         {title}
       </Text>

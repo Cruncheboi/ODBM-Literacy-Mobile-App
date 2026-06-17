@@ -21,14 +21,17 @@ const CustomOpacityButton = ({
       disabled={disabled}
       onPress={onPress}
       className={cn(
-        "w-full bg-highlight min-h-14 rounded-full my-5 elevation-lg shadow-highlight",
+        "elevation-lg my-5 min-h-14 w-full rounded-full bg-highlight shadow-highlight",
         className,
-        disabled && "opacity-50"
+        disabled && "opacity-50",
       )}
     >
-      <View className="flex-1 justify-center items-center">
+      <View className="flex-1 items-center justify-center">
         <Text
-          className={cn("dark:text-white text-xl font-semibold", textStyles)}
+          className={cn(
+            "text-textColor-title text-xl font-semibold",
+            textStyles,
+          )}
         >
           {title}
         </Text>

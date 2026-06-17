@@ -13,6 +13,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { useCallback, useEffect, useState } from "react";
 import CustomSectionItem from "./customSectionItem";
+import { getThemeFontColor } from "@/utility_functions/themeColor";
 export type NavigationDropdownItem = {
   title: string;
   onTap: () => void;
@@ -77,11 +78,11 @@ const CustomNavigationDropdown = ({ title, data }: Props) => {
 
   return (
     <>
-      <View className="flex flex-row items-center justify-start gap-4 py-3 w-full px-5 border-b border-odbm-blue-600 dark:border-slate-700 dark:bg-odbm-gray-digital">
+      <View className="flex w-full flex-row items-center justify-start gap-4 border-b border-textColor-primary bg-primary px-5 py-3">
         {/** header */}
         <GestureDetector gesture={dropdownTapGesture}>
-          <View className="w-full flex flex-row">
-            <Text className="text-4xl font-bold text-odbm-blue-600 dark:text-white flex-1 text-center">
+          <View className="flex w-full flex-row">
+            <Text className="flex-1 text-center text-4xl font-bold text-textColor-primary">
               {title}
             </Text>
             <View collapsable={false} className="px-2">
@@ -89,13 +90,13 @@ const CustomNavigationDropdown = ({ title, data }: Props) => {
                 <AntDesign
                   name="down"
                   size={iconSize}
-                  color={colorScheme == "dark" ? "white" : "#173a64"}
+                  color={getThemeFontColor(colorScheme)}
                 />
               ) : (
                 <AntDesign
                   name="up"
                   size={iconSize}
-                  color={colorScheme == "dark" ? "white" : "#173a64"}
+                  color={getThemeFontColor(colorScheme)}
                 />
               )}
             </View>
@@ -105,7 +106,7 @@ const CustomNavigationDropdown = ({ title, data }: Props) => {
       {/** dropdown */}
       <Animated.View
         style={animatedStyle}
-        className="w-full border-b border-odbm-blue-600 dark:border-slate-700"
+        className="w-full border-b border-textColor-primary"
       >
         {showDropdown && dropdownList()}
       </Animated.View>

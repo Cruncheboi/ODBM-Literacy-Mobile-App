@@ -52,7 +52,7 @@ const Index = () => {
     }, 500);
   };
   return (
-    <View className="flex-1 py-safe flex justify-start items-center dark:bg-odbm-gray-digital">
+    <View className="py-safe flex flex-1 items-center justify-start bg-primary">
       <CustomNavigationDropdown
         title="For Facilitators"
         data={navigationItems}

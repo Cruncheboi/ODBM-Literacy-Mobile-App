@@ -19,7 +19,7 @@ export default function Index() {
   }, [navigatorReady]);
 
   return (
-    <View className="flex-1 justify-around items-center bg-white dark:bg-odbm-gray-digital">
+    <View className="flex-1 items-center justify-around bg-primary">
       {/* <StatusBar style="light"></StatusBar> */}
       <Image
         source={require("@/assets/images/our-daily-bread-logo.png")}

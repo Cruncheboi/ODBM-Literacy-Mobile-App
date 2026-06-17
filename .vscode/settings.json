@@ -1,4 +1,11 @@
 {
   "java.configuration.updateBuildConfiguration": "interactive",
-  "tailwindCSS.classAttributes": ["class", "className", ".*ClassName", "ngClass", ".*Styles", "color"]
+  "tailwindCSS.classAttributes": [
+    "class",
+    "className",
+    ".*ClassName",
+    "ngClass",
+    ".*Styles",
+    "color"
+  ]
 }

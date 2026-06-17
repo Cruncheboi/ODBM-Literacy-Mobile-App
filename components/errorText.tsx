@@ -1,4 +1,4 @@
-import clsx from "clsx";
+import cn from "@/utility_functions/cn";
 import { Text } from "react-native";
 
 interface Props {
@@ -10,10 +10,10 @@ interface Props {
 const ErrorText = ({ children, className, hasError = true }: Props) => {
   return (
     <Text
-      className={clsx(
-        "font-semibold py-1",
+      className={cn(
+        "py-1 font-semibold",
         hasError && "text-red-600",
-        className
+        className,
       )}
     >
       {children}

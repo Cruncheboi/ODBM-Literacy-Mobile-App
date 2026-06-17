@@ -43,7 +43,7 @@ const PassageViewer = () => {
         opacity.value = 0;
         setShowText(0);
       };
-    }, [])
+    }, []),
   );
 
   return (
@@ -51,7 +51,7 @@ const PassageViewer = () => {
       <Stack.Screen
         options={{
           headerTitle: () => (
-            <Text className="pl-3 text-2xl font-bold dark:text-odbm-light">
+            <Text className="pl-3 text-2xl font-bold dark:text-primary">
               {book} {chapter}:{verses[0].verseNumber}-
               {verses[verses.length - 1].verseNumber}
             </Text>
@@ -61,12 +61,12 @@ const PassageViewer = () => {
           headerLeft: () => <CustomBackButton />,
         }}
       />
-      <ScrollView className="dark:bg-odbm-gray-dark">
+      <ScrollView className="bg-pop">
         <Animated.Text
           // style={animatedStyles}
           key={showText}
           entering={FadeIn.delay(300)}
-          className="dark:text-white px-4 py-2 leading-6"
+          className="px-4 py-2 leading-6 dark:text-white"
         >
           {verses.map(({ verseNumber, verse }, index) => {
             return (

@@ -37,31 +37,32 @@ const PostCard = ({ post, isReported }: Props) => {
   };
 
   return (
-    <View className="w-11/12 self-center p-3 max-h-[340px] rounded-xl">
+    <View className="max-h-[340px] w-11/12 self-center rounded-xl p-3">
       <TouchableOpacity className="w-full" onPress={onPressPost}>
         <View className="flex flex-row justify-items-center">
-          <Text className="text-odbm-blue-300 dark:text-odbm-gold">@</Text>
+          <Text className="text-highlight">@</Text>
           <View className="flex-1">
-            <Text className="text-odbm-blue-300 dark:text-odbm-gold">
-              {post.displayName}
-            </Text>
+            <Text className="text-highlight">{post.displayName}</Text>
           </View>
-          <Text className="dark:text-gray-300 text-odbm-blue-600">
+          <Text className="text-textColor-body">
             {date.toLocaleDateString([], {
               hour: "2-digit",
               minute: "2-digit",
             })}
           </Text>
         </View>
-        <Text className="text-odbm-blue-600 dark:text-gray-200 text-xl font-bold line-clamp-3 mt-2">
+        <Text className="mt-2 line-clamp-3 text-xl font-bold text-textColor-title">
           {post.title}
         </Text>
-        <View className="max-h-40 mb-4">
-          <Text className="text-odbm-blue-500 dark:text-gray-300 text-lg line-clamp-5">
+        <View className="max-h-40 pb-4">
+          <Text className="line-clamp-5 text-lg text-textColor-body">
             {post.body}
           </Text>
         </View>
-        <TouchableOpacity className="w-full border-2 rounded-full border-odbm-blue-600 dark:border-gray-400 items-center py-2">
+        <TouchableOpacity
+          className="border-borderColor-primary w-full items-center rounded-full border-2 py-2"
+          onPress={onPressPost}
+        >
           <Ionicons
             name="chatbubble-ellipses-outline"
             size={24}

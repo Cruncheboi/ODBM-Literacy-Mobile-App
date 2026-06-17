@@ -10,8 +10,8 @@ const Home = () => {
   const email = useAppSelector((state) => state.users.email);
 
   return (
-    <View className="flex-1 px-5 dark:bg-odbm-gray-digital py-safe">
-      <Text className="dark:text-white text-2xl">Welcome, {username}!</Text>
+    <View className="py-safe flex-1 bg-primary px-5">
+      <Text className="text-2xl dark:text-white">Welcome, {username}!</Text>
       <Text className="dark:color-white">{username}</Text>
       <Text className="dark:color-white">{"" + signedIn}</Text>
       <Text className="dark:color-white">{"" + email}</Text>

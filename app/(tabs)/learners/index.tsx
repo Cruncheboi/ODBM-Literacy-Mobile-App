@@ -67,7 +67,7 @@ const Index = () => {
   };
 
   return (
-    <View className="flex-1 bg-odbm-light dark:bg-odbm-gray-digital flex justify-start items-center py-safe">
+    <View className="py-safe flex flex-1 items-center justify-start bg-primary">
       <CustomNavigationDropdown title="For Learners" data={navigationItems} />
       <GestureDetector gesture={tap}>
         <SectionList

@@ -3,7 +3,9 @@ import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useColorScheme } from "nativewind";
-import getThemeMainColor from "@/utility_functions/themeColor";
+import getThemeMainColor, {
+  getThemeHighlightColor,
+} from "@/utility_functions/themeColor";
 
 export default function TabLayout() {
   const { colorScheme } = useColorScheme();
@@ -12,7 +14,7 @@ export default function TabLayout() {
     <Tabs
       initialRouteName="home"
       screenOptions={{
-        tabBarActiveTintColor: "#FAB432",
+        tabBarActiveTintColor: getThemeHighlightColor(colorScheme),
         tabBarInactiveTintColor: colorScheme == "dark" ? "white" : "gray",
         tabBarInactiveBackgroundColor: getThemeMainColor(colorScheme),
         tabBarActiveBackgroundColor: getThemeMainColor(colorScheme),

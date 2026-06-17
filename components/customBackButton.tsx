@@ -6,7 +6,7 @@ import { View, TouchableOpacity } from "react-native";
 const CustomBackButton = () => {
   const { colorScheme } = useColorScheme();
   return (
-    <View className="flex justify-center items-center">
+    <View className="flex items-center justify-center">
       <TouchableOpacity
         onPressOut={() => {
           router.back();

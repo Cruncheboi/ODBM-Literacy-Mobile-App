@@ -8,7 +8,7 @@ export interface Props {
 
 const Pdf = React.memo(({ source }: Props) => {
   return (
-    <View className="flex-1 justify-center place-items-center">
+    <View className="flex-1 place-items-center justify-center">
       <WebView
         setBuiltInZoomControls={false}
         className="flex-1"

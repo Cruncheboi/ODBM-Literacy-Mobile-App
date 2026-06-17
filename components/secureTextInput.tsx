@@ -2,6 +2,8 @@ import { View, TouchableOpacity } from "react-native";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { useState } from "react";
 import StyledTextInput from "./styledTextInput";
+import { getThemeHighlightColor } from "@/utility_functions/themeColor";
+import { colorScheme, useColorScheme } from "nativewind";
 
 interface Props {
   /**
@@ -20,9 +22,10 @@ const SecureTextInput = ({
   editable = true,
 }: Props) => {
   const [hideText, setHideText] = useState(true);
+  const { colorScheme } = useColorScheme();
 
   return (
-    <View className=" bg-odbm-gray-light dark:bg-odbm-gray rounded-md flex flex-row items-center">
+    <View className="flex flex-row items-center rounded-md bg-secondary">
       <StyledTextInput
         placeholder={placeholder}
         secureTextEntry={hideText}
@@ -32,12 +35,20 @@ const SecureTextInput = ({
       />
       <TouchableOpacity
         onPress={() => setHideText((state) => !state)}
-        className="pr-2 ml-2"
+        className="ml-2 pr-2"
       >
         {hideText ? (
-          <FontAwesome5 name="eye" size={28} color="black" />
+          <FontAwesome5
+            name="eye"
+            size={28}
+            color={getThemeHighlightColor(colorScheme)}
+          />
         ) : (
-          <FontAwesome5 name="eye-slash" size={28} color="black" />
+          <FontAwesome5
+            name="eye-slash"
+            size={28}
+            color={getThemeHighlightColor(colorScheme)}
+          />
         )}
       </TouchableOpacity>
     </View>

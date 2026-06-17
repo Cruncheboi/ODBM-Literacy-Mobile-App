@@ -67,10 +67,10 @@ const EditComment = () => {
   return (
     <CustomHeader title="Edit Your Comment">
       <ScrollView
-        className="w-full px-3 pb-3 flex"
+        className="flex w-full px-3 pb-3"
         contentContainerClassName="gap-3"
       >
-        <View className="w-full flex items-center mt-3">
+        <View className="mt-3 flex w-full items-center">
           <StyledLabel label="Update your thoughts about this post!" />
         </View>
         {/** Body */}

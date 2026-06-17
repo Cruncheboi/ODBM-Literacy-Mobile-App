@@ -23,19 +23,19 @@ const ReportedContentSection = ({ content }: Props) => {
         <>
           <View className="flex">
             <View className="flex-1">
-              <Text className="text-odbm-gold">@{displayName}</Text>
+              <Text className="text-highlight">@{displayName}</Text>
             </View>
-            <Text className="dark:text-gray-300 text-odbm-blue-600">
+            <Text className="text-textColor-title">
               {postDate.toLocaleDateString([], {
                 hour: "2-digit",
                 minute: "2-digit",
               })}
             </Text>
           </View>
-          <Text className="dark:text-gray-200 text-xl font-bold mt-4">
+          <Text className="mt-4 text-xl font-bold text-odbm-blue-600 dark:text-gray-200">
             {title}
           </Text>
-          <Text className="dark:text-gray-300 text-lg mb-4 mt-2">{body}</Text>
+          <Text className="mb-4 mt-2 text-lg text-textColor-body">{body}</Text>
         </>
       );
       // Display a comment report
@@ -46,6 +46,7 @@ const ReportedContentSection = ({ content }: Props) => {
       const linkToParentPost = useCallback(
         () => (
           <StyledButton
+            className="border-borderColor-primary bg-bgColor-primary"
             label={<StyledLabel label="View parent post" />}
             onPress={() => {
               router.push({
@@ -65,16 +66,16 @@ const ReportedContentSection = ({ content }: Props) => {
         <>
           <View className="flex">
             <View className="flex-1">
-              <Text className="text-odbm-gold">@{displayName}</Text>
+              <Text className="text-highlight">@{displayName}</Text>
             </View>
-            <Text className="dark:text-gray-300 text-odbm-blue-600">
+            <Text className="text-textColor-title">
               {postDate.toLocaleDateString([], {
                 hour: "2-digit",
                 minute: "2-digit",
               })}
             </Text>
           </View>
-          <Text className="dark:text-gray-300 text-lg mb-4 mt-2">{body}</Text>
+          <Text className="mb-4 mt-2 text-lg text-textColor-body">{body}</Text>
           {linkToParentPost()}
         </>
       );
@@ -87,7 +88,7 @@ const ReportedContentSection = ({ content }: Props) => {
       <CustomSectionSeparator />
       <View className="mb-2 flex flex-row">
         <View className="flex-1">
-          <Text className="dark:text-gray-200 text-xl font-semibold">
+          <Text className="text-xl font-semibold text-odbm-blue-600 dark:text-gray-200">
             Reports
           </Text>
         </View>

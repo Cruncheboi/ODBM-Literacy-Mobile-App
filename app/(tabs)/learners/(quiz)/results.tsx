@@ -14,14 +14,14 @@ const Results = () => {
     router.replace("/(tabs)/learners");
   };
   return (
-    <View className="py-safe px-5 flex-1 flex bg-odbm-light dark:bg-odbm-gray-digital items-center justify-center">
+    <View className="py-safe flex flex-1 items-center justify-center bg-primary px-5">
       <View className="">
-        <Text className={cn(contentTextClassName, "font-bold text-2xl")}>
+        <Text className={cn(contentTextClassName, "text-2xl font-bold")}>
           Congratulations on finishing the quiz!
         </Text>
         <Text className={cn(contentTextClassName, "text-lg")}>
           {"\n"}Based on your results, we recommend that you start at the{" "}
-          <Text className="text-odbm-gold font-extrabold">
+          <Text className="font-extrabold text-odbm-gold">
             {recommendedStart}
           </Text>{" "}
           section.
@@ -30,7 +30,7 @@ const Results = () => {
       <CustomOpacityButton
         onPress={onContinue}
         title="Continue"
-        className="w-full mt-16"
+        className="mt-16 w-full"
       />
     </View>
   );

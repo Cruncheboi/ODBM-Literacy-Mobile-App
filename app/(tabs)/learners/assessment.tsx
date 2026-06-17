@@ -186,14 +186,14 @@ const Assesment = () => {
   };
   return (
     <ScrollView
-      className="flex-1 dark:bg-odbm-gray-digital"
+      className="flex-1 bg-primary"
       contentContainerStyle={styles.container}
     >
-      <View className="py-safe flex-1 mt-10">
+      <View className="py-safe mt-10 flex-1">
         <View className="gap-2">
           {/** Passage Section */}
           <Animated.Text
-            className="dark:text-white text-xl"
+            className="text-xl dark:text-white"
             entering={FadeInLeft.delay(100)}
           >
             Read the passage below from
@@ -203,13 +203,13 @@ const Assesment = () => {
           </Animated.Text>
           <CustomOpacityButton
             title="View Passage"
-            className="w-full bg-odbm-light dark:bg-slate-600"
+            className="w-full bg-primary dark:bg-slate-600"
             onPress={() => {
               router.push("/(tabs)/learners/(quiz)/passageViewer");
             }}
           />
         </View>
-        <View className="w-10/12 flex-1 gap-2 justify-end mt-16">
+        <View className="mt-16 w-10/12 flex-1 justify-end gap-2">
           <Quiz questions={quiz} onSubmitQuiz={onSubmitQuiz} />
         </View>
       </View>

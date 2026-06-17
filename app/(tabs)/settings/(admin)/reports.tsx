@@ -55,14 +55,14 @@ const Reports = () => {
   };
 
   return (
-    <View className="py-safe dark:bg-odbm-gray-digital flex flex-1">
-      <View className="py-3 px-2 border-b-2 border-odbm-blue-600 dark:border-odbm-blue-700">
+    <View className="py-safe flex flex-1 bg-primary">
+      <View className="border-borderColor-primary border-b-2 px-2 py-3">
         {/* Header */}
-        <View className="h-12 flex flex-row items-center px-4">
+        <View className="flex h-12 flex-row items-center px-4">
           <CustomBackButton />
-          <View className="flex-1 flex flex-row pl-2 items-center">
+          <View className="flex flex-1 flex-row items-center pl-2">
             {/* Title */}
-            <Text className="text-3xl tracking-wide font-bold text-odbm-blue-600 dark:text-white">
+            <Text className="text-3xl font-bold tracking-wide text-textColor-primary">
               Reported Content
             </Text>
             <View className="flex-1 items-end">

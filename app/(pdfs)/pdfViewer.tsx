@@ -13,7 +13,7 @@ const PdfViewer = () => {
   console.log(uri);
 
   return (
-    <View className="absolute top-0 left-0 w-full h-full z-10">
+    <View className="absolute left-0 top-0 z-10 h-full w-full">
       <Pdf source={{ uri: uri }}></Pdf>
     </View>
   );

@@ -107,7 +107,7 @@ const Quiz = ({ questions, onSubmitQuiz }: Quiz) => {
       withTiming(0, reduceMotionConfig, () => {
         runOnJS(setNextQuestionIndex)();
       }),
-      withTiming(1, reduceMotionConfig)
+      withTiming(1, reduceMotionConfig),
     );
   };
 
@@ -119,7 +119,7 @@ const Quiz = ({ questions, onSubmitQuiz }: Quiz) => {
       withTiming(0, reduceMotionConfig, () => {
         runOnJS(setPrevQuestionIndex)();
       }),
-      withTiming(1, reduceMotionConfig)
+      withTiming(1, reduceMotionConfig),
     );
   };
 
@@ -133,7 +133,7 @@ const Quiz = ({ questions, onSubmitQuiz }: Quiz) => {
     <View className="flex-col gap-2">
       <Animated.Text style={animatedChoiceStyles}>
         <Animated.Text
-          className="dark:text-white font-semibold"
+          className="font-semibold dark:text-white"
           entering={FadeInLeft.delay(200)}
         >
           Question {questionIndex + 1}
@@ -142,7 +142,7 @@ const Quiz = ({ questions, onSubmitQuiz }: Quiz) => {
       {/* Quiz Question */}
       <Animated.Text style={animatedChoiceStyles}>
         <Animated.Text
-          className="text-lg line mb-2 dark:text-white"
+          className="line mb-2 text-lg dark:text-white"
           entering={FadeInLeft.delay(300)}
         >
           {questions[questionIndex].question}
@@ -160,14 +160,14 @@ const Quiz = ({ questions, onSubmitQuiz }: Quiz) => {
                 activeOpacity={0.6}
                 underlayColor={colorScheme === "dark" ? "#334155" : "#94a3b8"}
                 className={cn(
-                  "rounded-xl px-2 py-1 border border-l-[3px] border-r-2 border-b-[4px] border-slate-400 dark:border-slate-600 h-14",
+                  "h-14 rounded-xl border border-b-[4px] border-l-[3px] border-r-2 border-slate-400 px-2 py-1 dark:border-slate-600",
                   selectedAnswer === index
                     ? "bg-slate-400 dark:bg-slate-600"
-                    : "bg-odbm-light dark:bg-slate-800"
+                    : "bg-primary dark:bg-slate-800",
                 )}
                 onPress={() => onAnswerSelect(index)}
               >
-                <View className="flex items-center justify-center flex-1">
+                <View className="flex flex-1 items-center justify-center">
                   <Text className="dark:text-white">{choice}</Text>
                 </View>
               </TouchableHighlight>
@@ -176,11 +176,11 @@ const Quiz = ({ questions, onSubmitQuiz }: Quiz) => {
         );
       })}
       {/* Quiz Navigation */}
-      <View className="w-full flex flex-row gap-1">
+      <View className="flex w-full flex-row gap-1">
         {questionIndex !== 0 && (
           // Previous Question Button
           <CustomOpacityButton
-            className="flex-1 rounded-r-none bg-odbm-light dark:bg-slate-800"
+            className="flex-1 rounded-r-none bg-primary dark:bg-slate-800"
             title="Previous"
             onPress={onPrevQuestion}
           />
@@ -201,7 +201,7 @@ const Quiz = ({ questions, onSubmitQuiz }: Quiz) => {
           // Next Question Button
           <CustomOpacityButton
             disabled={selectedAnswer === undefined}
-            className={`flex-1 bg-odbm-light dark:bg-slate-600 ${
+            className={`flex-1 bg-primary dark:bg-slate-600 ${
               questionIndex !== 0 && "rounded-l-none"
             }`}
             title="Next"

@@ -17,7 +17,7 @@ const StyledButton = ({
   return (
     <TouchableOpacity
       className={cn(
-        "flex flex-row w-full justify-center items-center dark:bg-odbm-gray-dark border rounded-md dark:border-odbm-gray-dark",
+        "flex w-full flex-row items-center justify-center rounded-md border border-gray-400 bg-bgColor-primary",
         className,
       )}
       onPress={onPress}

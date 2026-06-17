@@ -7,7 +7,7 @@ module.exports = function (api) {
     ],
     plugins: [
       // "transform-remove-console",
-      'react-native-reanimated/plugin', // must be last
-    ]
+      "react-native-reanimated/plugin", // must be last
+    ],
   };
 };

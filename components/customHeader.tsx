@@ -19,8 +19,8 @@ const CustomHeader = ({
   const fadeInDelay = 300;
 
   return (
-    <View className="flex-1 flex justify-start items-center bg-odbm-light dark:bg-odbm-gray-digital py-safe">
-      <View className="flex-row gap-3 px-2 py-3 border-b-2 border-odbm-blue-600 dark:border-slate-600">
+    <View className="py-safe flex flex-1 items-center justify-start bg-primary">
+      <View className="border-borderColor-primary flex-row gap-3 border-b-2 px-2 py-3">
         {showBackButton && (
           <Animated.View entering={FadeInRight.delay(fadeInDelay)}>
             <CustomBackButton />
@@ -28,15 +28,15 @@ const CustomHeader = ({
         )}
         <Animated.Text
           entering={FadeInRight.delay(fadeInDelay)}
-          className="text-3xl font-bold text-odbm-blue-600 dark:text-white flex-shrink flex-1"
+          className="flex-1 flex-shrink text-3xl font-bold text-textColor-primary"
         >
           {title}
         </Animated.Text>
       </View>
       <Animated.View
         className={cn(
-          "flex-1 flex items-center w-full gap-4 justify-start",
-          contentContainerClassName
+          "flex w-full flex-1 items-center justify-start gap-4",
+          contentContainerClassName,
         )}
         entering={FadeInRight.delay(fadeInDelay)}
       >

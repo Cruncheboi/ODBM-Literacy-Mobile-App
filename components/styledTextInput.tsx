@@ -1,8 +1,9 @@
 import {
   getPrimaryColor,
   getThemeFontColor,
+  getThemeHighlightColor,
 } from "@/utility_functions/themeColor";
-import clsx from "clsx";
+import cn from "@/utility_functions/cn";
 import { useColorScheme } from "nativewind";
 import { View, TextInput } from "react-native";
 import type {
@@ -49,8 +50,8 @@ const StyledTextInput = ({
 
   return (
     <View
-      className={clsx(
-        "p-2 bg-odbm-gray-light dark:bg-odbm-gray rounded-md flex-1 min-h-14",
+      className={cn(
+        "min-h-14 flex-1 rounded-md bg-secondary p-2",
         "flex-row",
         containerClassName,
       )}
@@ -63,7 +64,7 @@ const StyledTextInput = ({
         numberOfLines={13}
         textAlignVertical={multiline ? "top" : "center"}
         cursorColor={getThemeFontColor(colorScheme)}
-        selectionColor={getPrimaryColor()}
+        selectionColor={getThemeHighlightColor(colorScheme)}
         maxLength={maxLen}
         keyboardType={keyboardType}
         autoCapitalize={autoCapitalize}
@@ -71,12 +72,10 @@ const StyledTextInput = ({
         selectTextOnFocus={false}
         secureTextEntry={secureTextEntry}
         onChangeText={onChangeText}
-        className={clsx(
-          "color-odbm-gray dark:color-white flex-1",
-          inputClassName,
-        )}
+        className={cn("flex-1 text-textColor-body", inputClassName)}
         placeholder={placeholder}
-        placeholderClassName="color-odbm-gray dark:color-white"
+        placeholderClassName="opacity-70"
+        placeholderTextColor={getThemeFontColor(colorScheme)}
       />
       {children}
     </View>
