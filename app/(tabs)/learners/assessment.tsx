@@ -203,7 +203,7 @@ const Assesment = () => {
           </Animated.Text>
           <CustomOpacityButton
             title="View Passage"
-            className="w-full bg-primary dark:bg-slate-600"
+            className="w-full"
             onPress={() => {
               router.push("/(tabs)/learners/(quiz)/passageViewer");
             }}

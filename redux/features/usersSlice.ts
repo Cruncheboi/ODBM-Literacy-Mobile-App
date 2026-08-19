@@ -12,6 +12,7 @@ interface UsersState {
     facilitator: boolean;
   };
   isSignedIn: boolean;
+  blockedUserIds: string[];
 }
 
 const initialState: UsersState = {
@@ -24,6 +25,7 @@ const initialState: UsersState = {
     facilitator: false,
   },
   isSignedIn: false,
+  blockedUserIds: [],
 };
 
 export const usersSlice = createSlice({
@@ -54,6 +56,19 @@ export const usersSlice = createSlice({
     updateIsSignedIn: (state, action: PayloadAction<boolean>) => {
       state.isSignedIn = action.payload;
     },
+    updateBlockedUserIds: (state, action: PayloadAction<string[]>) => {
+      state.blockedUserIds = action.payload;
+    },
+    addBlockedUserId: (state, action: PayloadAction<string>) => {
+      if (!state.blockedUserIds.includes(action.payload)) {
+        state.blockedUserIds.push(action.payload);
+      }
+    },
+    removeBlockedUserId: (state, action: PayloadAction<string>) => {
+      state.blockedUserIds = state.blockedUserIds.filter(
+        (id) => id !== action.payload,
+      );
+    },
     resetUser: () => initialState,
   },
 });
@@ -67,6 +82,9 @@ export const {
   updateCertificateLearner,
   updateCertificateFacilitator,
   updateIsSignedIn,
+  updateBlockedUserIds,
+  addBlockedUserId,
+  removeBlockedUserId,
   resetUser,
 } = usersSlice.actions;
 export default usersSlice.reducer;

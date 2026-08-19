@@ -158,17 +158,17 @@ const Quiz = ({ questions, onSubmitQuiz }: Quiz) => {
             <Animated.View style={animatedChoiceStyles}>
               <TouchableHighlight
                 activeOpacity={0.6}
-                underlayColor={colorScheme === "dark" ? "#334155" : "#94a3b8"}
+                underlayColor={colorScheme === "dark" ? "#FAB432" : "#6DACDE"}
                 className={cn(
-                  "h-14 rounded-xl border border-b-[4px] border-l-[3px] border-r-2 border-slate-400 px-2 py-1 dark:border-slate-600",
+                  "h-14 rounded-xl border border-b-[4px] border-l-[3px] border-r-2 border-borderColor-primary px-2 py-1 dark:border-textColor-body",
                   selectedAnswer === index
-                    ? "bg-slate-400 dark:bg-slate-600"
-                    : "bg-primary dark:bg-slate-800",
+                    ? "bg-highlight"
+                    : "bg-bgColor-primary dark:bg-borderColor-primary",
                 )}
                 onPress={() => onAnswerSelect(index)}
               >
                 <View className="flex flex-1 items-center justify-center">
-                  <Text className="dark:text-white">{choice}</Text>
+                  <Text className="text-textColor-primary">{choice}</Text>
                 </View>
               </TouchableHighlight>
             </Animated.View>
@@ -180,7 +180,7 @@ const Quiz = ({ questions, onSubmitQuiz }: Quiz) => {
         {questionIndex !== 0 && (
           // Previous Question Button
           <CustomOpacityButton
-            className="flex-1 rounded-r-none bg-primary dark:bg-slate-800"
+            className="flex-1 rounded-r-none bg-primary"
             title="Previous"
             onPress={onPrevQuestion}
           />
@@ -201,7 +201,7 @@ const Quiz = ({ questions, onSubmitQuiz }: Quiz) => {
           // Next Question Button
           <CustomOpacityButton
             disabled={selectedAnswer === undefined}
-            className={`flex-1 bg-primary dark:bg-slate-600 ${
+            className={`flex-1 bg-highlight ${
               questionIndex !== 0 && "rounded-l-none"
             }`}
             title="Next"

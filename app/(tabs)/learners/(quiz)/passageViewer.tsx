@@ -14,7 +14,6 @@ import Animated, {
 import { useAppSelector } from "@/redux/hooks";
 
 const PassageViewer = () => {
-  // const { book, chapter, verses } = useContext(PassageContext);
   const book = useAppSelector((state) => state.quiz.passage.book);
   const chapter = useAppSelector((state) => state.quiz.passage.chapter);
   const verses = useAppSelector((state) => state.quiz.passage.verses);
@@ -51,7 +50,7 @@ const PassageViewer = () => {
       <Stack.Screen
         options={{
           headerTitle: () => (
-            <Text className="pl-3 text-2xl font-bold dark:text-primary">
+            <Text className="pl-3 text-2xl font-bold text-textColor-primary">
               {book} {chapter}:{verses[0].verseNumber}-
               {verses[verses.length - 1].verseNumber}
             </Text>
@@ -66,7 +65,7 @@ const PassageViewer = () => {
           // style={animatedStyles}
           key={showText}
           entering={FadeIn.delay(300)}
-          className="px-4 py-2 leading-6 dark:text-white"
+          className="px-4 py-2 leading-6 text-textColor-primary"
         >
           {verses.map(({ verseNumber, verse }, index) => {
             return (

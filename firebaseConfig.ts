@@ -71,6 +71,7 @@ export interface UserInfo {
     facilitator: boolean;
     learner: boolean;
   };
+  blockedUserIds: string[];
 }
 
 export interface Testimony {

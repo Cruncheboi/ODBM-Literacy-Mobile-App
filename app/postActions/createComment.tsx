@@ -20,7 +20,7 @@ type Status = "submitting" | "typing";
 const CreateComment = () => {
   // Constant values
   const { postID, postType } = useLocalSearchParams<CommentSearchParams>();
-  const bodyCharLimit = 5000;
+  const bodyCharLimit = 1000;
 
   // Comment state
   const [body, setBody] = useState("");

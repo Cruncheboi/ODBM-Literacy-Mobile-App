@@ -5,6 +5,7 @@ import { auth, db, UserInfo, usersPath } from "@/firebaseConfig";
 import { doc, setDoc, updateDoc } from "firebase/firestore";
 import { AppDispatch } from "./store";
 import {
+  updateBlockedUserIds,
   updateCertificateFacilitator,
   updateCertificateLearner,
   updateDisplayNameLowerCase,
@@ -139,4 +140,5 @@ export const updateCurrentUserInfo = (
     updateCertificateFacilitator(user.certificatesCompleted.facilitator),
   );
   dispatch(updateCertificateLearner(user.certificatesCompleted.learner));
+  dispatch(updateBlockedUserIds(user.blockedUserIds));
 };

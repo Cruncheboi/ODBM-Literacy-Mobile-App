@@ -144,31 +144,31 @@ const Register = () => {
     const status = await validatePassword(auth, password);
     // Only create account with a valid password
     if (status.isValid) {
-      createUserWithEmailAndPassword(auth, emailLowerCased, password)
-        .then(() => {
-          const userInfo: UserInfo = {
-            firstName: firstName,
-            lastName: lastName,
-            certificatesCompleted: { facilitator: false, learner: false },
-            displayName: displayName,
-            displayNameLowerCase: displayName.toLowerCase(),
-          };
-          createUserAccountInfo(dispatch, userInfo);
-          Toast.show({
-            type: "success",
-            text1: "Account successfully created",
-          });
-          dispatch(updateIsSignedIn(true));
-        })
-        .catch((error) => {
-          const errorCode = error.code;
-          const errorMessage = error.message;
-          console.log(errorMessage);
-          Toast.show({
-            type: "error",
-            text1: "An error occurred while creating an account",
-          });
+      try {
+        await createUserWithEmailAndPassword(auth, emailLowerCased, password);
+        const userInfo: UserInfo = {
+          firstName: firstName,
+          lastName: lastName,
+          certificatesCompleted: { facilitator: false, learner: false },
+          displayName: displayName,
+          displayNameLowerCase: displayName.toLowerCase(),
+          blockedUserIds: [],
+        };
+        createUserAccountInfo(dispatch, userInfo);
+        Toast.show({
+          type: "success",
+          text1: "Account successfully created",
         });
+        dispatch(updateIsSignedIn(true));
+      } catch (error: any) {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        console.log(errorMessage);
+        Toast.show({
+          type: "error",
+          text1: "An error occurred while creating an account",
+        });
+      }
     }
   };
 
@@ -216,8 +216,8 @@ const Register = () => {
         </View>
         {/* Form Section*/}
         <View>
-          <View className="bg-pop mx-3 rounded-md border border-odbm-gray p-6">
-            <Text className="text-textColor-primary py-3 text-center text-3xl font-bold tracking-wider">
+          <View className="mx-3 rounded-md border border-odbm-gray bg-pop p-6">
+            <Text className="py-3 text-center text-3xl font-bold tracking-wider text-textColor-primary">
               Create an Account
             </Text>
             <View className="gap-3">
