@@ -8,10 +8,10 @@ import { useState } from "react";
 import { View, ScrollView } from "react-native";
 import { ViewPostSearchParams } from "@/app/postActions/viewPost";
 import { PostType } from "@/firebaseConfig";
-import { useCreateCommentMutation } from "@/redux/services/injectedEndpoints.ts/comments";
+import { useCreateCommentMutation } from "@/redux/query_services/injectedEndpoints.ts/comments";
 
 export type CommentSearchParams = {
-  postID: string;
+  postId: string;
   postType: PostType;
 };
 
@@ -19,7 +19,7 @@ type Status = "submitting" | "typing";
 
 const CreateComment = () => {
   // Constant values
-  const { postID, postType } = useLocalSearchParams<CommentSearchParams>();
+  const { postId, postType } = useLocalSearchParams<CommentSearchParams>();
   const bodyCharLimit = 1000;
 
   // Comment state
@@ -36,18 +36,18 @@ const CreateComment = () => {
       console.log("postType in CreateComment:", postType);
       try {
         await createComment({
-          postId: postID,
+          postId,
           body,
-          postType,
         }).unwrap();
         router.dismissTo({
           pathname: "/postActions/viewPost",
           params: {
-            postID: postID,
+            postId,
             postType,
           } as ViewPostSearchParams,
         });
-      } catch {
+      } catch (error) {
+        console.log(error);
         setStatus("typing");
       }
     }

@@ -13,11 +13,13 @@ import usersReducer from "./features/usersSlice";
 import quizReducer from "./features/quizSlice";
 import { firestoreApi } from "./services/firestore";
 import { setupListeners } from "@reduxjs/toolkit/query";
+import { databaseApi } from "./query_services/databaseApi";
 
 const reducers = combineReducers({
   users: usersReducer,
   quiz: quizReducer,
   [firestoreApi.reducerPath]: firestoreApi.reducer,
+  [databaseApi.reducerPath]: databaseApi.reducer,
 });
 
 const persistConfig = {
@@ -34,7 +36,9 @@ const store = configureStore({
       serializableCheck: {
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
-    }).concat(firestoreApi.middleware),
+    })
+      .concat(firestoreApi.middleware)
+      .concat(databaseApi.middleware),
 });
 
 setupListeners(store.dispatch);

@@ -1,62 +1,87 @@
 import CustomHeader from "@/components/customHeader";
 import CustomOpacityButton from "@/components/customOpacityButton";
 import ErrorText from "@/components/errorText";
+import StyledEditPostBackground from "@/components/posts/styledEditPostContent";
 import StyledLabel from "@/components/styledLabel";
 import StyledTextInput from "@/components/styledTextInput";
-import { PostType } from "@/firebaseConfig";
-import { useCreateTestimonyMutation } from "@/redux/query_services/injectedEndpoints.ts/testimonies";
-import { useCreateEventMutation } from "@/redux/query_services/injectedEndpoints.ts/events";
-
+import { PostType } from "@/definitions/posts";
+import { auth } from "@/firebaseConfig";
+import {
+  useGetEventQuery,
+  useUpdateEventMutation,
+} from "@/redux/query_services/injectedEndpoints.ts/events";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { View, ScrollView } from "react-native";
 
-export type CreatePostSearchParams = {
-  type: PostType;
+export type EditEventPostSearchParams = {
+  postId: string;
 };
 
 type Status = "submitting" | "typing";
 
-const CreatePost = () => {
-  // Title state
-  const [title, setTitle] = useState("");
-  const hasValidTitle = title.length > 0 && title.trim() !== "";
-
-  // Body state
-  const [body, setBody] = useState("");
-  const hasValidBody = body.length > 0 && body.trim() !== "";
-
+const EditEventPost = () => {
   // Post state
   const [status, setStatus] = useState<Status>("typing");
-  const { type } = useLocalSearchParams<CreatePostSearchParams>();
+  const { postId } = useLocalSearchParams<EditEventPostSearchParams>();
   const [hasTouched, setHasTouched] = useState({
     title: false,
     body: false,
   });
-  const [createTestimony] = useCreateTestimonyMutation();
-  const [createEvent] = useCreateEventMutation();
+  const eventResult = useGetEventQuery({
+    postId,
+    userId: auth.currentUser?.uid,
+  });
+  const event = eventResult.data;
+
+  if (!event) {
+    if (eventResult.isFetching) {
+      return (
+        <StyledEditPostBackground>
+          <StyledLabel label="Loading the details of your perfect post!" />
+        </StyledEditPostBackground>
+      );
+    } else {
+      return (
+        <StyledEditPostBackground>
+          <StyledLabel label="Post was unable to load." />
+        </StyledEditPostBackground>
+      );
+    }
+  }
+  const { title: oldTitle, body: oldBody, images, youtubeId } = event;
+  const [updateEventPost] = useUpdateEventMutation();
+  const isEditable = status !== "submitting" && !eventResult.isFetching;
+  // Title state
+  const [title, setTitle] = useState(oldTitle);
+  const hasValidTitle = title.length > 0 && title.trim() !== "";
+
+  // Body state
+  const [body, setBody] = useState(oldBody);
+  const hasValidBody = body.length > 0 && body.trim() !== "";
 
   // Constant post values
-  const titleCharLimit = 150;
-  const bodyCharLimit = 3000;
+  const titleCharLimit = 256;
+  const bodyCharLimit = 5000;
 
   const onPostSubmit = async () => {
     if (status === "submitting") return;
     if (hasValidTitle && hasValidBody) {
       setStatus("submitting");
       try {
-        if (type === "testimony") {
-          await createTestimony({ body, title }).unwrap();
-        } else {
-          await createEvent({ body, title }).unwrap();
-        }
+        await updateEventPost({
+          postId,
+          body,
+          images,
+          title,
+          youtubeId,
+        }).unwrap();
         router.back();
       } catch (error) {
-        console.log(error);
+        console.error("An error occurred on Post Update:", error);
         setStatus("typing");
       }
     }
-    console.log("continued");
   };
 
   const onTitleInputBlur = () => {
@@ -72,13 +97,13 @@ const CreatePost = () => {
   };
 
   return (
-    <CustomHeader title="Create a Post">
+    <CustomHeader title="Edit Your Post">
       <ScrollView
         className="flex w-full px-3 pb-3"
         contentContainerClassName="gap-3"
       >
         <View className="mt-3 flex w-full items-center">
-          <StyledLabel label="Share your testimony with others!" />
+          <StyledLabel label="Make your edits down below!" />
         </View>
         {/** Title */}
         <View className="h-32">
@@ -89,7 +114,7 @@ const CreatePost = () => {
             value={title}
             maxLen={titleCharLimit}
             multiline={true}
-            editable={status !== "submitting"}
+            editable={isEditable}
             onBlur={onTitleInputBlur}
             autoCapitalize="sentences"
           />
@@ -111,7 +136,7 @@ const CreatePost = () => {
             value={body}
             maxLen={bodyCharLimit}
             multiline={true}
-            editable={status !== "submitting"}
+            editable={isEditable}
             onBlur={onBodyInputBlur}
             autoCapitalize="sentences"
           />
@@ -126,7 +151,7 @@ const CreatePost = () => {
         )}
         <View>
           <CustomOpacityButton
-            title="Create Post"
+            title="Update Post"
             onPress={onPostSubmit}
             disabled={
               status === "submitting" || !hasValidBody || !hasValidTitle
@@ -137,4 +162,4 @@ const CreatePost = () => {
     </CustomHeader>
   );
 };
-export default CreatePost;
+export default EditEventPost;

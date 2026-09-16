@@ -14,6 +14,8 @@ const Layout = () => {
       <Stack.Screen name="viewPost" />
       <Stack.Screen name="viewReport" />
       <Stack.Screen name="editPost" />
+      <Stack.Screen name="editTestimonyPost" />
+      <Stack.Screen name="editEventPost" />
     </Stack>
   );
 };

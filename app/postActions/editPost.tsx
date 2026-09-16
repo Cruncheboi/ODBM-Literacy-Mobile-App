@@ -1,20 +1,29 @@
 import CustomHeader from "@/components/customHeader";
 import CustomOpacityButton from "@/components/customOpacityButton";
 import ErrorText from "@/components/errorText";
+import StyledEditPostBackground, {
+  StyledTitleInput,
+} from "@/components/posts/styledEditPostContent";
 import StyledLabel from "@/components/styledLabel";
 import StyledTextInput from "@/components/styledTextInput";
-import { PostType } from "@/firebaseConfig";
-import { useUpdateEventMutation } from "@/redux/services/injectedEndpoints.ts/events";
-import { useUpdateTestimonyMutation } from "@/redux/services/injectedEndpoints.ts/testimonies";
+import { Post, PostType } from "@/definitions/posts";
+import { auth } from "@/firebaseConfig";
+import {
+  useGetEventQuery,
+  useUpdateEventMutation,
+} from "@/redux/query_services/injectedEndpoints.ts/events";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { View, ScrollView } from "react-native";
 
 export type EditPostSearchParams = {
-  documentId: string;
-  oldTitle: string;
-  oldBody: string;
-  type: PostType;
+  postId: string;
+  postType: PostType;
+};
+
+export type TouchedFields = {
+  title: boolean;
+  body: boolean;
 };
 
 type Status = "submitting" | "typing";
@@ -22,15 +31,15 @@ type Status = "submitting" | "typing";
 const EditPost = () => {
   // Post state
   const [status, setStatus] = useState<Status>("typing");
-  const { oldTitle, oldBody, documentId, type } =
-    useLocalSearchParams<EditPostSearchParams>();
-  const [hasTouched, setHasTouched] = useState({
+  const { postId, postType } = useLocalSearchParams<EditPostSearchParams>();
+  const [hasTouched, setHasTouched] = useState<TouchedFields>({
     title: false,
     body: false,
   });
-  const [updateTestimonyPost] = useUpdateTestimonyMutation();
-  const [updateEventPost] = useUpdateEventMutation();
 
+  const [post, setPost] = useState<Post>();
+
+  const isEditable = status !== "submitting" && !eventResult.isFetching;
   // Title state
   const [title, setTitle] = useState(oldTitle);
   const hasValidTitle = title.length > 0 && title.trim() !== "";
@@ -48,23 +57,14 @@ const EditPost = () => {
     if (hasValidTitle && hasValidBody) {
       setStatus("submitting");
       try {
-        let wasSuccessful: boolean;
-        if (type === "testimony") {
-          wasSuccessful = await updateTestimonyPost({
-            documentId,
-            updatedFields: { body, title },
-          }).unwrap();
-        } else {
-          wasSuccessful = await updateEventPost({
-            documentId,
-            updatedFields: { body, title },
-          }).unwrap();
-        }
-        if (wasSuccessful) {
-          router.back();
-        } else {
-          setStatus("typing");
-        }
+        await updateEventPost({
+          postId,
+          body,
+          images,
+          title,
+          youtubeId,
+        }).unwrap();
+        router.back();
       } catch (error) {
         console.error("An error occurred on Post Update:", error);
         setStatus("typing");
@@ -84,70 +84,18 @@ const EditPost = () => {
     }
   };
 
-  return (
-    <CustomHeader title="Edit Your Post">
-      <ScrollView
-        className="flex w-full px-3 pb-3"
-        contentContainerClassName="gap-3"
-      >
-        <View className="mt-3 flex w-full items-center">
-          <StyledLabel label="Make your corrections down below!" />
-        </View>
-        {/** Title */}
-        <View className="h-32">
-          <StyledLabel label="Title" />
-          <StyledTextInput
-            placeholder="Enter a title"
-            onChangeText={setTitle}
-            value={title}
-            maxLen={titleCharLimit}
-            multiline={true}
-            editable={status !== "submitting"}
-            onBlur={onTitleInputBlur}
-            autoCapitalize="sentences"
-          />
-        </View>
-        {hasTouched.title && !hasValidTitle && (
-          <ErrorText>Your title cannot be empty.</ErrorText>
-        )}
-        {title.length == titleCharLimit && (
-          <ErrorText>
-            Max length of {titleCharLimit.toString()} characters reached.
-          </ErrorText>
-        )}
-        {/** Body */}
-        <View className="h-60">
-          <StyledLabel label="Story" />
-          <StyledTextInput
-            placeholder="Enter your story here..."
-            onChangeText={setBody}
-            value={body}
-            maxLen={bodyCharLimit}
-            multiline={true}
-            editable={status !== "submitting"}
-            onBlur={onBodyInputBlur}
-            autoCapitalize="sentences"
-          />
-        </View>
-        {body.length == bodyCharLimit && (
-          <ErrorText>
-            Max length of {bodyCharLimit.toString()} characters reached.
-          </ErrorText>
-        )}
-        {hasTouched.body && !hasValidBody && (
-          <ErrorText>Your story cannot be empty.</ErrorText>
-        )}
-        <View>
-          <CustomOpacityButton
-            title="Update Post"
-            onPress={onPostSubmit}
-            disabled={
-              status === "submitting" || !hasValidBody || !hasValidTitle
-            }
-          />
-        </View>
-      </ScrollView>
-    </CustomHeader>
-  );
+  const postComponent = () => {
+    if (postType === "event") {
+      return (
+        <>
+          <StyledTitleInput title={title} setTitle={() => setT} />
+        </>
+      );
+    }
+
+    return <></>;
+  };
+
+  return <StyledEditPostBackground>{postComponent()}</StyledEditPostBackground>;
 };
 export default EditPost;

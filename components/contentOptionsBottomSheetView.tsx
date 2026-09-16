@@ -6,26 +6,32 @@ import { getThemeFontColor } from "@/utility_functions/themeColor";
 import StyledLabel from "./styledLabel";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColorScheme } from "nativewind";
-import { auth, Content } from "@/firebaseConfig";
+import { auth } from "@/firebaseConfig";
 import { router } from "expo-router";
 import { CreateReportSearchParams } from "@/app/postActions/createReport";
-import { EditPostSearchParams } from "@/app/postActions/editPost";
 import { EditCommentSearchParams } from "@/app/postActions/editComment";
 import { useDeleteCommentMutation } from "@/redux/services/injectedEndpoints.ts/comments";
 import { useEffect, useState } from "react";
 import { checkIfIsAdmin } from "@/firebase_functions/firebaseFunctions";
+import { Post } from "@/definitions/posts";
+import { CommentPost } from "@/definitions/comments";
+import { Content, ContentType } from "@/definitions/api";
 
 interface ContentOptionsProps {
   content?: Content | null;
+  contentType: ContentType;
 }
 
-const ContentOptionsBottomSheetView = ({ content }: ContentOptionsProps) => {
+const ContentOptionsBottomSheetView = ({
+  content,
+  contentType,
+}: ContentOptionsProps) => {
   const { colorScheme } = useColorScheme();
   // Content does not exist or has not loaded yet
   if (!content) {
     return;
   }
-  const { documentId, user, contentType, body, reports } = content;
+
   const [deleteCommentMutation, result] = useDeleteCommentMutation();
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -91,14 +97,18 @@ const ContentOptionsBottomSheetView = ({ content }: ContentOptionsProps) => {
             }
             label={<StyledLabel label="Edit Post" />}
             onPress={() => {
-              if (contentType === "testimony" || contentType === "event") {
+              if (contentType === "testimony") {
                 router.push({
-                  pathname: "/postActions/editPost",
+                  pathname: "/postActions/vie",
                   params: {
                     documentId,
-                    oldBody: body,
-                    oldTitle: content.title,
-                    type: contentType,
+                  } as EditPostSearchParams,
+                });
+              } else if (contentType === "event") {
+                router.push({
+                  pathname: "/postActions/",
+                  params: {
+                    documentId,
                   } as EditPostSearchParams,
                 });
               } else {

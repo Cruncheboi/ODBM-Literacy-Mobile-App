@@ -44,7 +44,7 @@ import Toast from "react-native-toast-message";
 import { BasicStartAfterFieldValues } from "@/redux/services/firestore";
 
 /**
- * @description The maximum number of document to be retreived from a query.
+ * @description The maximum number of documents to be retreived from a query.
  */
 export const QUERY_LIMIT = 15;
 

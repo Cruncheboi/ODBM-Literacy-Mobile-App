@@ -1,78 +1,41 @@
 import Card from "@/components/postCard";
 import CustomSectionSeparator from "@/components/customSectionSeparator";
-import { Event } from "@/firebaseConfig";
+import { auth } from "@/firebaseConfig";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { router } from "expo-router";
 import { useColorScheme } from "nativewind";
 import { useCallback, useRef } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { useAppDispatch } from "@/redux/hooks";
-
 import { FlashList, ListRenderItemInfo } from "@shopify/flash-list";
 import ScrollToButton from "@/components/scrollToButton";
 import useListScrollController from "@/hooks/useListScrollController";
 import { CreatePostSearchParams } from "../../postActions/createPost";
 import Octicons from "@expo/vector-icons/Octicons";
-import { useGetEventsInfiniteQuery } from "@/redux/services/injectedEndpoints.ts/events";
-import { firestoreApi } from "@/redux/services/firestore";
+import { useGetEventsFeedInfiniteQuery } from "@/redux/query_services/injectedEndpoints.ts/events";
 import { QUERY_LIMIT } from "@/firebase_functions/firebaseFunctions";
+import { listEmptyComponent } from "@/components/posts/feed";
+import { databaseApi } from "@/redux/query_services/databaseApi";
+import { EventPost } from "@/definitions/posts";
 
 const Events = () => {
   const dispatch = useAppDispatch();
   const { colorScheme } = useColorScheme();
 
   // Post state
-  const { data, isFetching, fetchNextPage } =
-    useGetEventsInfiniteQuery(undefined);
+  const { data, isFetching, fetchNextPage } = useGetEventsFeedInfiniteQuery({
+    userId: auth.currentUser?.uid,
+  });
   const events = data?.pages.flatMap((data) => data) ?? [];
 
   // FlashList state
-  const flashListRef = useRef<FlashList<Event> | null>(null);
+  const flashListRef = useRef<FlashList<EventPost> | null>(null);
   const { showScrollToButton, onScrollToPressed, onScroll } =
     useListScrollController(flashListRef);
 
-  const renderListItem = ({ item }: ListRenderItemInfo<Event>) => {
-    return <Card post={item} />;
-  };
-
   // Flashlist components
-  const itemSeparatorComponent = useCallback(
-    () => <CustomSectionSeparator />,
-    [],
-  );
-
-  // Retrieves component to display when there are no posts to show
-  const showItemOnEmptyList = useCallback(() => {
-    return (
-      <View>
-        <Text className="text-center text-xl dark:text-gray-300">
-          Hmm... Looks like there are no items yet.
-        </Text>
-      </View>
-    );
-  }, []);
-
-  // Retrieves component to display when there was an error retrieving posts
-  const showItemOnError = useCallback(() => {
-    return (
-      <View>
-        <Text className="text-center text-xl dark:text-gray-300">
-          Hmm... Looks like an error occurred.
-        </Text>
-      </View>
-    );
-  }, []);
-
-  // Returns the component to display on an empty list based on loading and post data state.
-  const listEmptyComponent = () => {
-    if (isFetching) {
-      return null;
-    }
-
-    if (data == undefined) {
-      return showItemOnError();
-    }
-    return showItemOnEmptyList();
+  const renderListItem = ({ item }: ListRenderItemInfo<EventPost>) => {
+    return <Card post={item} />;
   };
 
   // FlashList callbacks
@@ -83,7 +46,7 @@ const Events = () => {
   };
 
   const onRefresh = useCallback(async () => {
-    dispatch(firestoreApi.util.invalidateTags([{ type: "Event", id: "LIST" }]));
+    dispatch(databaseApi.util.invalidateTags([{ type: "Events" }]));
   }, []);
 
   const onAddPostPressed = useCallback(() => {
@@ -135,7 +98,7 @@ const Events = () => {
           renderItem={renderListItem}
           ListEmptyComponent={listEmptyComponent}
           className="w-full bg-primary"
-          ItemSeparatorComponent={itemSeparatorComponent}
+          ItemSeparatorComponent={() => <CustomSectionSeparator />}
           onEndReached={onEndReached}
           onEndReachedThreshold={0.5}
           refreshing={isFetching}

@@ -7,22 +7,19 @@ import { useAppDispatch } from "@/redux/hooks";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { View, ScrollView } from "react-native";
-import { useUpdateCommentMutation } from "@/redux/services/injectedEndpoints.ts/comments";
+import { useUpdateCommentMutation } from "@/redux/query_services/injectedEndpoints.ts/comments";
 import { PostType } from "@/firebaseConfig";
 
 export type EditCommentSearchParams = {
-  postID: string;
-  documentId: string;
+  commentId: string;
   oldBody: string;
-  numOfreports: string;
-  postType: PostType;
 };
 
 type Status = "submitting" | "typing";
 
 const EditComment = () => {
   // Constant values
-  const { postID, documentId, oldBody, numOfreports, postType } =
+  const { commentId, oldBody } =
     useLocalSearchParams<EditCommentSearchParams>();
   const [updateComment, result] = useUpdateCommentMutation();
 
@@ -38,19 +35,12 @@ const EditComment = () => {
     if (hasValidBody) {
       setStatus("submitting");
       try {
-        const wasSuccessful = await updateComment({
-          postId: postID,
-          documentId,
-          updatedFields: { body },
-          reports: Number.parseInt(numOfreports),
-          postType,
+        await updateComment({
+          commentId,
+          body,
         }).unwrap();
 
-        if (wasSuccessful) {
-          router.back();
-        } else {
-          setStatus("typing");
-        }
+        router.back();
       } catch (error) {
         console.error("An error occurred on Post Update:", error);
         setStatus("typing");

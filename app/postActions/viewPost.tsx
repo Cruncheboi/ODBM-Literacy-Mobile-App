@@ -10,7 +10,6 @@ import CustomBackButton from "@/components/customBackButton";
 import CustomSectionSeparator from "@/components/customSectionSeparator";
 import CommentCard from "@/components/commentCard";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Comment, Content, ContentType, PostType } from "@/firebaseConfig";
 import { FlashList, ListRenderItemInfo } from "@shopify/flash-list";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { useColorScheme } from "nativewind";
@@ -25,15 +24,32 @@ import BottomSheet, {
 } from "@gorhom/bottom-sheet";
 import CustomBackground from "@/components/customBackground";
 import ContentOptionsBottomSheetView from "@/components/contentOptionsBottomSheetView";
-import { useGetCommentsInfiniteQuery } from "@/redux/services/injectedEndpoints.ts/comments";
-import { firestoreApi } from "@/redux/services/firestore";
-import { useGetTestimonyQuery } from "@/redux/services/injectedEndpoints.ts/testimonies";
-import { useGetEventQuery } from "@/redux/services/injectedEndpoints.ts/events";
+import {
+  CommentFeedQueryArgs,
+  useGetCommentsFeedInfiniteQuery,
+} from "@/redux/query_services/injectedEndpoints.ts/comments";
+import {
+  TestimonyFeedQueryArgs,
+  useGetTestimonyQuery,
+} from "@/redux/query_services/injectedEndpoints.ts/testimonies";
+import { useGetEventQuery } from "@/redux/query_services/injectedEndpoints.ts/events";
 import ErrorText from "@/components/errorText";
 import { QUERY_LIMIT } from "@/firebase_functions/firebaseFunctions";
+import { Post, PostType, TestimonyPost } from "@/definitions/posts";
+import StyledPostHeading, {
+  StyledPostBody,
+  StyledPostTitle,
+} from "@/components/posts/styledPostContent";
+import TestimonyPostDisplay from "@/components/posts/testimonyPost";
+import EventPostDisplay from "@/components/posts/eventPost";
+import { Content } from "@/definitions/api";
+import { CommentPost } from "@/definitions/comments";
+import { auth } from "@/firebaseConfig";
+import { skipToken } from "@reduxjs/toolkit/query";
+import { databaseApi } from "@/redux/query_services/databaseApi";
 
 export type ViewPostSearchParams = {
-  postID: string;
+  postId: string;
   postType: PostType;
 };
 
@@ -42,32 +58,40 @@ const ViewPost = () => {
   const { colorScheme } = useColorScheme();
   const navigation = useNavigation();
 
-  // Post data
-  const { postID, postType } = useLocalSearchParams<ViewPostSearchParams>();
-  const postQuery = useGetPostQuery(postType, postID);
+  // POST DATA
+  const { postId, postType } = useLocalSearchParams<ViewPostSearchParams>();
+  const postQuery = useGetPostQuery(postType, postId);
   const post = postQuery.data;
 
-  // Comment data
-  const commentsQuery = useGetCommentsInfiniteQuery({
-    fieldValues: { documentId: postID },
-    postType,
-  });
-  const comments: Comment[] =
-    commentsQuery.data?.pages.flatMap((data) => data) ?? [];
+  // COMMENT DATA
+  // const commentsArg = auth.currentUser?.uid
+  //   ? ({
+  //       postId,
+  //       userId: auth.currentUser.uid,
+  //     } satisfies CommentFeedQueryArgs)
+  //   : skipToken;
+  // const arg = validArgOrSkip<CommentFeedQueryArgs>(auth.currentUser?.uid, {postId, userId: auth.currentUser!.uid})
 
-  // Flashlist state
-  const flashListRef = useRef<FlashList<Comment> | null>(null);
+  const commentsQuery = useGetCommentsFeedInfiniteQuery({
+    postId,
+    userId: auth.currentUser?.uid,
+  });
+  const comments: CommentPost[] =
+    commentsQuery.data?.pages.flatMap((data) => data.data) ?? [];
+
+  // FLASHLIST STATE
+  const flashListRef = useRef<FlashList<CommentPost> | null>(null);
   const { onScrollToPressed, onScroll, showScrollToButton } =
     useListScrollController(flashListRef);
 
-  // Bottom Sheet refs
+  // BOTTOM SHEET REFS
   const bottomSheetRef = useRef<BottomSheet>(null);
   const sheetIndexRef = useRef<number>(-1);
   const [bottomSheetContent, setBottomSheetContent] = useState<
     Content | null | undefined
   >(post);
 
-  // Bottom sheet callbacks
+  // BOTTOM SHEET CALLBACKS
   useFocusEffect(
     useCallback(() => {
       // Close the bottom sheet when screen loses focus
@@ -105,7 +129,7 @@ const ViewPost = () => {
     [],
   );
 
-  // Post Callbacks
+  // POST CALLBACKS
   const onEndReached = async () => {
     console.log("last doc reached.");
     if (comments.length < QUERY_LIMIT || commentsQuery.isFetching) return;
@@ -115,32 +139,34 @@ const ViewPost = () => {
   const onRefresh = async () => {
     if (postType === "testimony") {
       dispatch(
-        firestoreApi.util.invalidateTags([
-          { type: "TestimonyComments", id: postID },
+        databaseApi.util.invalidateTags([
+          { type: "TestimonyComments", id: postId },
         ]),
       );
     } else {
       dispatch(
-        firestoreApi.util.invalidateTags([
-          { type: "EventComments", id: postID },
+        databaseApi.util.invalidateTags([
+          { type: "EventComments", id: postId },
         ]),
       );
     }
   };
 
-  const onAddPost = () => {
+  const onAddCommentPressed = () => {
     router.push({
       pathname: "/postActions/createComment",
       params: {
-        postID,
+        postId,
         postType,
       } as CommentSearchParams,
     });
   };
 
-  const postSection = () => {
+  // Header component
+  const renderPostSection = () => {
     if (!post) {
       if (!postQuery.isFetching) {
+        console.log(postQuery.error, postId, postType);
         return (
           <ErrorText>
             There was an error while trying to get data for this post.
@@ -150,26 +176,15 @@ const ViewPost = () => {
         return;
       }
     }
-
-    const { date, displayName, title, body } = post;
-    const postDate = new Date(date);
+    const postComponent =
+      post.postType === "testimony" ? (
+        <TestimonyPostDisplay post={post} />
+      ) : (
+        <EventPostDisplay post={post} />
+      );
     return (
       <>
-        <View className="flex">
-          <View className="flex-1">
-            <Text className="text-highlight">@{displayName}</Text>
-          </View>
-          <Text className="text-textColor-title">
-            {postDate.toLocaleDateString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
-          </Text>
-        </View>
-        <Text className="mt-4 text-xl font-bold text-odbm-blue-600 dark:text-gray-200">
-          {title}
-        </Text>
-        <Text className="mb-4 mt-2 text-lg text-textColor-body">{body}</Text>
+        {postComponent}
         <CustomSectionSeparator />
         <View className="mb-3 flex flex-row items-center">
           <View className="flex-1">
@@ -178,7 +193,7 @@ const ViewPost = () => {
             </Text>
           </View>
           {/* Button to add a post */}
-          <TouchableOpacity className="p-2" onPress={onAddPost}>
+          <TouchableOpacity className="p-2" onPress={onAddCommentPressed}>
             <FontAwesome6
               name="plus"
               size={24}
@@ -204,7 +219,7 @@ const ViewPost = () => {
   }, [commentsQuery.isFetching]);
 
   const renderComment = useCallback(
-    ({ item }: ListRenderItemInfo<Comment>) => {
+    ({ item }: ListRenderItemInfo<CommentPost>) => {
       return (
         <TouchableOpacity
           className="flex"
@@ -230,7 +245,7 @@ const ViewPost = () => {
       </View>
       <FlashList
         stickyHeaderHiddenOnScroll={true}
-        ListHeaderComponent={postSection}
+        ListHeaderComponent={renderPostSection}
         ItemSeparatorComponent={itemSeparatorComponent}
         ListEmptyComponent={ListEmptyComponent}
         data={comments}
@@ -258,7 +273,10 @@ const ViewPost = () => {
         backgroundComponent={CustomBackground}
       >
         {bottomSheetContent ? (
-          <ContentOptionsBottomSheetView content={bottomSheetContent} />
+          <ContentOptionsBottomSheetView
+            content={bottomSheetContent}
+            contentType={postType}
+          />
         ) : (
           <BottomSheetView className="flex items-center justify-center">
             <ActivityIndicator />
@@ -271,8 +289,17 @@ const ViewPost = () => {
 export default ViewPost;
 
 const useGetPostQuery = (postType: PostType, postId: string) => {
+  console.log(postType, postId);
   if (postType === "testimony") {
-    return useGetTestimonyQuery({ documentId: postId });
+    return useGetTestimonyQuery({ postId, userId: auth.currentUser?.uid });
   }
-  return useGetEventQuery({ documentId: postId });
+  return useGetEventQuery({ postId, userId: auth.currentUser?.uid });
 };
+
+// const validArgOrSkip = <T,>(condition: any, arg: T) => {
+//   return condition ? arg : skipToken;
+// };
+
+// const getUserId = () => auth.currentUser?.uid;
+
+// const

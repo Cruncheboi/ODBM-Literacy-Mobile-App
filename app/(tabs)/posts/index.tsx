@@ -1,6 +1,6 @@
 import Card from "@/components/postCard";
 import CustomSectionSeparator from "@/components/customSectionSeparator";
-import { Event, Testimony } from "@/firebaseConfig";
+import { auth } from "@/firebaseConfig";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { router } from "expo-router";
 import { useColorScheme } from "nativewind";
@@ -12,97 +12,59 @@ import { FlashList, ListRenderItemInfo } from "@shopify/flash-list";
 import ScrollToButton from "@/components/scrollToButton";
 import useListScrollController from "@/hooks/useListScrollController";
 import { CreatePostSearchParams } from "@/app/postActions/createPost";
-import { useGetTestimoniesInfiniteQuery } from "@/redux/services/injectedEndpoints.ts/testimonies";
-import { firestoreApi } from "@/redux/services/firestore";
-import { QUERY_LIMIT } from "@/firebase_functions/firebaseFunctions";
 import {
   getThemeFontColor,
   getThemeHighlightColor,
 } from "@/utility_functions/themeColor";
+import { useGetTestimoniesFeedInfiniteQuery } from "@/redux/query_services/injectedEndpoints.ts/testimonies";
+import { TestimonyPost } from "@/definitions/posts";
+import { databaseApi } from "@/redux/query_services/databaseApi";
+import { listEmptyComponent } from "@/components/posts/feed";
 
 const Index = () => {
   const dispatch = useAppDispatch();
   const { colorScheme } = useColorScheme();
 
   // Post state
+  console.log(`auth ${auth.currentUser?.uid}`);
   const { data, isFetching, fetchNextPage } =
-    useGetTestimoniesInfiniteQuery(undefined);
-  const testimonies = data?.pages.flatMap((data) => data) ?? [];
+    useGetTestimoniesFeedInfiniteQuery({ userId: auth.currentUser?.uid });
+  const testimonies = data?.pages.flatMap((data) => data.data) ?? [];
+  const hasMore = data?.pages[data?.pages.length - 1].hasMore;
 
   // FlashList state
-  const flashListRef = useRef<FlashList<Testimony | Event> | null>(null);
+  const flashListRef = useRef<FlashList<TestimonyPost> | null>(null);
   const { showScrollToButton, onScrollToPressed, onScroll } =
     useListScrollController(flashListRef);
 
-  const renderListItem = ({ item }: ListRenderItemInfo<Testimony | Event>) => {
+  const renderListItem = ({ item }: ListRenderItemInfo<TestimonyPost>) => {
+    console.log(item.postType);
     return <Card post={item} />;
   };
 
-  // Flashlist Components
-  const itemSeparatorComponent = useCallback(
-    () => <CustomSectionSeparator />,
-    [],
-  );
-
-  // Retrieves component to display when there are no posts to show
-  const showItemOnEmptyList = useCallback(() => {
-    return (
-      <View>
-        <Text className="text-center text-xl dark:text-gray-300">
-          Hmm... Looks like there are no items yet.
-        </Text>
-      </View>
-    );
-  }, []);
-
-  // Retrieves component to display when there was an error retrieving posts
-  const showItemOnError = useCallback(() => {
-    return (
-      <View>
-        <Text className="text-center text-xl dark:text-gray-300">
-          Hmm... Looks like an error occurred.
-        </Text>
-      </View>
-    );
-  }, []);
-
-  // Returns the component to display on an empty list based on loading and post data state.
-  const listEmptyComponent = () => {
-    if (isFetching) {
-      return null;
-    }
-
-    if (data == undefined) {
-      return showItemOnError();
-    }
-    return showItemOnEmptyList();
-  };
-
-  // FlashList callbacks
+  // FLASHLIST CALLBACKS
   const onEndReached = async () => {
     console.log("last doc reached.");
-    if (testimonies.length < QUERY_LIMIT || isFetching) return;
+    if (!hasMore || isFetching) return;
     fetchNextPage();
   };
 
-  const onRefresh = useCallback(async () => {
-    dispatch(
-      firestoreApi.util.invalidateTags([{ type: "Testimony", id: "List" }]),
-    );
-  }, []);
+  const onRefresh = async () => {
+    dispatch(databaseApi.util.invalidateTags([{ type: "Testimonies" }]));
+  };
 
-  const onAddPostPressed = useCallback(() => {
+  const onAddPostPressed = () => {
     router.push({
       pathname: "/postActions/createPost",
       params: {
         type: "testimony",
       } as CreatePostSearchParams,
     });
-  }, []);
+  };
 
-  const onSwitchPostPressed = useCallback(() => {
+  const onSwitchPostPressed = () => {
     router.navigate("/(tabs)/posts/events");
-  }, []);
+  };
 
   return (
     <View className="py-safe flex flex-1 bg-primary">
@@ -140,7 +102,7 @@ const Index = () => {
           data={testimonies}
           renderItem={renderListItem}
           ListEmptyComponent={listEmptyComponent}
-          ItemSeparatorComponent={itemSeparatorComponent}
+          ItemSeparatorComponent={() => <CustomSectionSeparator />}
           onEndReached={onEndReached}
           onEndReachedThreshold={0.5}
           refreshing={isFetching}

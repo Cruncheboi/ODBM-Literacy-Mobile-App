@@ -10,8 +10,6 @@ const getThemeMainColor = (colorScheme: ColorScheme) => {
   return colorScheme == "dark" ? "#0f0f0f" : "#f5f5f5";
 };
 
-export default getThemeMainColor;
-
 /**
  *
  * @param colorScheme Current color scheme in use.
@@ -40,3 +38,5 @@ export const getAccentColor = (colorScheme: ColorScheme) => {
 
 export const getThemeHighlightColor = (colorScheme: ColorScheme) =>
   colorScheme == "dark" ? "#FAB432" : "#6DACDE";
+
+export default getThemeMainColor;

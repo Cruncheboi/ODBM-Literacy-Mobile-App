@@ -6,31 +6,33 @@ import { useCallback } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { ViewPostSearchParams } from "@/app/postActions/viewPost";
 import { ViewReportSearchParams } from "@/app/postActions/viewReport";
+import { EventPost, Post, TestimonyPost } from "@/definitions/posts";
 
 interface Props {
-  post: Testimony | Event;
+  post: Post;
   isReported?: boolean;
 }
 
 const PostCard = ({ post, isReported }: Props) => {
   const { colorScheme } = useColorScheme();
-  const date = new Date(post.date);
+  const { postId, timestamp, postType, authorName, title, body, images } = post;
+  const date = new Date(timestamp);
 
   const onPressPost = () => {
     if (isReported) {
       router.push({
         pathname: "/postActions/viewReport",
         params: {
-          postId: post.documentId,
-          contentType: post.contentType,
+          postId,
+          contentType: postType,
         } as ViewReportSearchParams,
       });
     } else {
       router.push({
         pathname: "/postActions/viewPost",
         params: {
-          postID: post.documentId,
-          postType: post.contentType,
+          postId,
+          postType: postType,
         } as ViewPostSearchParams,
       });
     }
@@ -42,7 +44,7 @@ const PostCard = ({ post, isReported }: Props) => {
         <View className="flex flex-row justify-items-center">
           <Text className="text-highlight">@</Text>
           <View className="flex-1">
-            <Text className="text-highlight">{post.displayName}</Text>
+            <Text className="text-highlight">{authorName}</Text>
           </View>
           <Text className="text-textColor-body">
             {date.toLocaleDateString([], {
@@ -52,15 +54,15 @@ const PostCard = ({ post, isReported }: Props) => {
           </Text>
         </View>
         <Text className="mt-2 line-clamp-3 text-xl font-bold text-textColor-title">
-          {post.title}
+          {title}
         </Text>
         <View className="max-h-40 pb-4">
           <Text className="line-clamp-5 text-lg text-textColor-body">
-            {post.body}
+            {body}
           </Text>
         </View>
         <TouchableOpacity
-          className="border-borderColor-primary w-full items-center rounded-full border-2 py-2"
+          className="w-full items-center rounded-full border-2 border-borderColor-primary py-2"
           onPress={onPressPost}
         >
           <Ionicons

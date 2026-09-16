@@ -12,7 +12,7 @@ export interface BasicStartAfterFieldValues extends QueryFieldValues {
 export const firestoreApi = createApi({
   reducerPath: "firestoreApi",
   baseQuery: fakeBaseQuery(),
-  keepUnusedDataFor: 60,
+  keepUnusedDataFor: 900,
   tagTypes: [
     "Post",
     "Testimony",

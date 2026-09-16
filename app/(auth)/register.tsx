@@ -63,6 +63,10 @@ interface PasswordValidationStatusMutable {
   containsNonAlphanumericCharacter?: boolean;
 }
 
+interface ValidationStatus {
+  status: PasswordValidationStatusMutable | undefined;
+}
+
 const Register = () => {
   // Form values
   const [displayName, setDisplayName] = useState("");
@@ -336,10 +340,6 @@ const Register = () => {
   );
 };
 export default Register;
-
-interface ValidationStatus {
-  status: PasswordValidationStatusMutable | undefined;
-}
 
 /**
  *
