@@ -75,8 +75,8 @@ const commentsApi = databaseApi.injectEndpoints({
       Pick<CommentPost, "commentId">
     >({
       query: ({ commentId }) => ({
-        url: `comments/${commentId}`,
-        method: "DELETE",
+        url: `comments/${commentId}/delete`,
+        method: "PUT",
       }),
     }),
   }),

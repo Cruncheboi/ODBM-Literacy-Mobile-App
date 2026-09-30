@@ -1,6 +1,7 @@
 import { databaseApi } from "../databaseApi";
 import { KeysetCursor, ServerFeedResponse } from "@/definitions/api";
 import { EventPost } from "@/definitions/posts";
+import keysToCamel from "@/utility_functions/keysToCamel";
 
 export interface EventFeedQueryArgs {
   userId?: string; // The user's firebase auth id
@@ -38,6 +39,18 @@ const eventsApi = databaseApi.injectEndpoints({
         return url;
       },
       providesTags: ["Events"],
+      transformResponse: (res: ServerFeedResponse<EventPost>) => {
+        const { hasMore, data } = res;
+        const camelCasedData = keysToCamel(data) as EventPost[];
+
+        return {
+          hasMore,
+          data: camelCasedData.map((post) => ({
+            ...post,
+            postType: "event",
+          })),
+        };
+      },
       // onQueryStarted: async (queryArgument, { queryFulfilled, dispatch }) => {
       //   try {
       //     const { data } = await queryFulfilled;
@@ -67,6 +80,11 @@ const eventsApi = databaseApi.injectEndpoints({
       providesTags: (result, error, queryArg) => [
         { type: "Event", id: queryArg.postId },
       ],
+      transformResponse: (res: EventPost) => {
+        const camelCasedData = keysToCamel(res) as EventPost;
+        camelCasedData.postType = "event";
+        return camelCasedData;
+      },
     }),
     createEvent: builder.mutation<
       Pick<EventPost, "postId">,
@@ -79,6 +97,9 @@ const eventsApi = databaseApi.injectEndpoints({
         body: newPostData,
       }),
       invalidatesTags: ["Events"],
+      transformResponse: (res: any) => {
+        return keysToCamel(res) as Pick<EventPost, "postId">;
+      },
     }),
     updateEvent: builder.mutation<
       void,
@@ -91,7 +112,14 @@ const eventsApi = databaseApi.injectEndpoints({
         body: { postId, title, body, images },
       }),
     }),
+    deleteEvent: builder.mutation<void, Pick<EventPost, "postId">>({
+      query: ({ postId }) => ({
+        url: `/posts/event/${postId}/delete`,
+        method: "PUT",
+      }),
+    }),
   }),
+
   overrideExisting: true,
 });
 
@@ -100,4 +128,5 @@ export const {
   useGetEventQuery,
   useCreateEventMutation,
   useUpdateEventMutation,
+  useDeleteEventMutation,
 } = eventsApi;

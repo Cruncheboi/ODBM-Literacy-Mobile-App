@@ -5,8 +5,14 @@ import ErrorText from "@/components/errorText";
 import StyledButton from "@/components/styledButton";
 import StyledLabel from "@/components/styledLabel";
 import StyledTextInput from "@/components/styledTextInput";
+import {
+  DETAILS_CHAR_LIMIT,
+  REPORT_REASON_OPTIONS,
+  ReportReason,
+} from "@/definitions/moderation";
 import { createReport } from "@/firebase_functions/reportFunctions";
-import { ContentType, ReportReason } from "@/firebaseConfig";
+import { ContentType } from "@/firebaseConfig";
+import { useCreateReportMutation } from "@/redux/query_services/injectedEndpoints.ts/moderation";
 import cn from "@/utility_functions/cn";
 import {
   getAccentColor,
@@ -24,8 +30,8 @@ import { useCallback, useRef, useState } from "react";
 import { View, ScrollView, TouchableOpacity, Text } from "react-native";
 
 export type CreateReportSearchParams = {
-  contentType: ContentType;
-  documentId: string;
+  postId?: string;
+  commentId?: string;
 };
 
 type CreationStatus = "submitting" | "typing";
@@ -34,35 +40,31 @@ const CreateReport = () => {
   const { colorScheme } = useColorScheme();
   // Report state
   const [status, setStatus] = useState<CreationStatus>("typing");
-  const { contentType, documentId } =
+  const { postId, commentId } =
     useLocalSearchParams<CreateReportSearchParams>();
+  const [createReport] = useCreateReportMutation();
 
   // Input state
-  const [reason, setReason] = useState<ReportReason>("spam");
-  const [explanation, setExplanation] = useState("");
-  const explanationCharLimit = 300;
-  const reasons: ReportReason[] = ["spam", "harassment", "hate speech"];
+  const [reason, setReason] = useState<ReportReason>(ReportReason.Spam);
+  const [details, setDetails] = useState("");
 
   // Renders
   const reasonSelectorButtons = useCallback(
     () =>
-      reasons.map((currentReason) => (
+      REPORT_REASON_OPTIONS.map(({ label, value }) => (
         <StyledButton
-          className={cn(currentReason === reason && "bg-highlight")}
-          key={currentReason}
+          className={cn(value === reason && "bg-highlight")}
+          key={value}
           label={
-            <StyledLabel
-              label={currentReason}
-              className="font-semibold capitalize"
-            />
+            <StyledLabel label={label} className="font-semibold capitalize" />
           }
           onPress={() => {
-            setReason(currentReason);
+            setReason(value);
             bottomSheetRef.current?.close();
           }}
         />
       )),
-    [reasons, reason],
+    [reason],
   );
 
   const renderBackdrop = useCallback(
@@ -97,15 +99,11 @@ const CreateReport = () => {
   const onPostSubmit = async () => {
     if (status === "submitting") return;
     setStatus("submitting");
-    const wasSuccessful = await createReport(
-      documentId,
-      contentType,
-      reason,
-      explanation,
-    );
-    if (wasSuccessful) {
+    try {
+      await createReport({ reason });
+    } catch (error) {
       router.back();
-    } else {
+    } finally {
       setStatus("typing");
     }
   };
@@ -141,17 +139,17 @@ const CreateReport = () => {
           </View>
           <StyledTextInput
             placeholder="Enter your explanation here..."
-            onChangeText={setExplanation}
-            value={explanation}
-            maxLen={explanationCharLimit}
+            onChangeText={setDetails}
+            value={details}
+            maxLen={DETAILS_CHAR_LIMIT}
             multiline={true}
             editable={status !== "submitting"}
             autoCapitalize="sentences"
           />
         </View>
-        {explanation.length == explanationCharLimit && (
+        {details.length == DETAILS_CHAR_LIMIT && (
           <ErrorText>
-            Max length of {explanationCharLimit.toString()} characters reached.
+            Max length of {DETAILS_CHAR_LIMIT.toString()} characters reached.
           </ErrorText>
         )}
         <View>

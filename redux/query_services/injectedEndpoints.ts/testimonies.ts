@@ -98,10 +98,8 @@ const testimoniesApi = databaseApi.injectEndpoints({
         body: newPostData,
       }),
       invalidatesTags: ["Testimonies"],
-      transformResponse: (res: { post_id: string }, meta, arg) => {
-        return {
-          postId: res.post_id,
-        };
+      transformResponse: (res: any) => {
+        return keysToCamel(res) as Pick<TestimonyPost, "postId">;
       },
     }),
     updateTestimony: builder.mutation<
@@ -115,6 +113,12 @@ const testimoniesApi = databaseApi.injectEndpoints({
         body: { postId, title, body, images },
       }),
     }),
+    deleteTestimony: builder.mutation<void, Pick<TestimonyPost, "postId">>({
+      query: ({ postId }) => ({
+        url: `/posts/testimony/${postId}/delete`,
+        method: "PUT",
+      }),
+    }),
   }),
   overrideExisting: true,
 });
@@ -124,4 +128,5 @@ export const {
   useGetTestimonyQuery,
   useCreateTestimonyMutation,
   useUpdateTestimonyMutation,
+  useDeleteTestimonyMutation,
 } = testimoniesApi;

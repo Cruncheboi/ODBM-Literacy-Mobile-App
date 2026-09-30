@@ -124,13 +124,13 @@ const ViewReport = () => {
     );
   }, [isFetching]);
 
-  const renderItem = useCallback(({ item }: ListRenderItemInfo<Report>) => {
+  const renderItem = ({ item }: ListRenderItemInfo<Report>) => {
     return <ReportCard report={item} />;
-  }, []);
+  };
 
-  const itemSeparatorComponent = useCallback(() => {
+  const itemSeparatorComponent = () => {
     return <View className="p-2" />;
-  }, []);
+  };
 
   return (
     <View className="py-safe-offset-3 flex flex-1 bg-primary px-4">
