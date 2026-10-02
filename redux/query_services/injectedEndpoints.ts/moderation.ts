@@ -27,7 +27,7 @@ const moderationApi = databaseApi.injectEndpoints({
         initialPageParam: null,
         getNextPageParam: (lastPage) => {
           const { data, hasMore } = lastPage;
-          if (data && hasMore) {
+          if (data && data.length === 0 && hasMore) {
             const { latestId, latestTimestamp, reportCount } =
               data[data.length - 1];
             return {
@@ -75,7 +75,7 @@ const moderationApi = databaseApi.injectEndpoints({
         initialPageParam: null,
         getNextPageParam: (lastPage) => {
           const { data, hasMore } = lastPage;
-          if (data && hasMore) {
+          if (data && data.length === 0 && hasMore) {
             const { reportId, timestamp } = data[data.length - 1];
             return {
               lastId: reportId,

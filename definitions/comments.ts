@@ -1,8 +1,8 @@
 export interface MasterCommentRecord {
-  commentId: string;
-  postId: string;
+  commentId: number;
+  postId: number;
   timestamp: string;
-  authorId: string;
+  authorId: number;
   authorName: string;
   body: string;
 }

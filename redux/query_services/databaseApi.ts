@@ -29,6 +29,7 @@ export const databaseApi = createApi({
     "Reported",
     "TestimonyComments",
     "EventComments",
+    "Blocks",
   ],
   endpoints: (builder) => ({}),
 });

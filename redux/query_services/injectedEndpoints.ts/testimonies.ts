@@ -18,7 +18,7 @@ const testimoniesApi = databaseApi.injectEndpoints({
         initialPageParam: null,
         getNextPageParam: (lastPage) => {
           const { data, hasMore } = lastPage;
-          if (data && hasMore) {
+          if (data && data.length === 0 && hasMore) {
             const { postId, timestamp } = data[data.length - 1];
             return { lastId: postId, lastTimestamp: timestamp };
           }

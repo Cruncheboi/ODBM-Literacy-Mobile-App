@@ -18,7 +18,7 @@ const eventsApi = databaseApi.injectEndpoints({
         initialPageParam: null,
         getNextPageParam: (lastPage) => {
           const { data, hasMore } = lastPage;
-          if (data && hasMore) {
+          if (data && data.length === 0 && hasMore) {
             const { postId, timestamp } = data[data.length - 1];
             return { lastId: postId, lastTimestamp: timestamp };
           }
@@ -51,26 +51,6 @@ const eventsApi = databaseApi.injectEndpoints({
           })),
         };
       },
-      // onQueryStarted: async (queryArgument, { queryFulfilled, dispatch }) => {
-      //   try {
-      //     const { data } = await queryFulfilled;
-
-      //     // Set the cache entry for individual testimony posts
-      //     data.pages.forEach((testimonies) => {
-      //       return testimonies.forEach((testimony) => {
-      //         dispatch(
-      //           testimoniesApi.util.upsertQueryData(
-      //             "getTestimony",
-      //             { userId:  },
-      //             testimony,
-      //           ),
-      //         );
-      //       });
-      //     });
-      //   } catch (error) {
-      //     console.log(error);
-      //   }
-      // },
     }),
     getEvent: builder.query<
       EventPost,

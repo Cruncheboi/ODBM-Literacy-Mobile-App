@@ -7,7 +7,7 @@ export type StrictOmit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 
 export interface KeysetCursor {
   lastTimestamp: string;
-  lastId: string;
+  lastId: number;
 }
 
 export interface ServerFeedResponse<T> {

@@ -1,7 +1,7 @@
 export interface MasterPostRecord {
-  postId: string;
+  postId: number;
   timestamp: string;
-  authorId: string;
+  authorId: number;
   authorFirebaseUid: string;
   authorName: string;
   title: string;

@@ -1,15 +1,15 @@
 export interface GroupedModerationItem {
-  postId: string | null;
-  commentId: string | null;
+  postId: number | null;
+  commentId: number | null;
   reportCount: string;
   topReason: string;
   latestTimestamp: string;
-  latestId: string;
+  latestId: number;
   reportType: "testimony" | "event" | "comment";
 }
 
 export interface ReportHistoryItem {
-  reportId: string;
+  reportId: number;
   reason: ReportReason;
   details: string | null;
   timestamp: string;
@@ -17,10 +17,17 @@ export interface ReportHistoryItem {
   reporterName: string;
 }
 
+export interface BlockedUserRecord {
+  blockedId: number;
+  blockedAt: string;
+  blockedUsername: string;
+  blockedFirebaseAuthId: string;
+}
+
 export interface Report {
-  reportId: string;
-  postId?: string;
-  commentId?: string;
+  reportId: number;
+  postId?: number;
+  commentId?: number;
   reason: string;
   details: string;
   timestamp: string;
