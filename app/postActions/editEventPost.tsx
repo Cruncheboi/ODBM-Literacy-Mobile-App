@@ -1,7 +1,10 @@
 import CustomHeader from "@/components/customHeader";
 import CustomOpacityButton from "@/components/customOpacityButton";
 import ErrorText from "@/components/errorText";
-import StyledEditPostBackground from "@/components/posts/styledEditPostContent";
+import StyledEditPostBackground, {
+  StyledBodyInput,
+  StyledTitleInput,
+} from "@/components/posts/styledEditPostContent";
 import StyledLabel from "@/components/styledLabel";
 import StyledTextInput from "@/components/styledTextInput";
 import { PostType } from "@/definitions/posts";
@@ -24,13 +27,14 @@ const EditEventPost = () => {
   // Post state
   const [status, setStatus] = useState<Status>("typing");
   const { postId } = useLocalSearchParams<EditEventPostSearchParams>();
+  const numericPostId = parseInt(postId, 10);
   const [hasTouched, setHasTouched] = useState({
     title: false,
     body: false,
   });
   const eventResult = useGetEventQuery({
-    postId,
-    userId: auth.currentUser?.uid,
+    postId: numericPostId,
+    userAuthId: auth.currentUser?.uid,
   });
   const event = eventResult.data;
 
@@ -70,7 +74,7 @@ const EditEventPost = () => {
       setStatus("submitting");
       try {
         await updateEventPost({
-          postId,
+          postId: numericPostId,
           body,
           images,
           title,
@@ -96,6 +100,14 @@ const EditEventPost = () => {
     }
   };
 
+  const onSetTitle = (title: string) => {
+    setTitle(title);
+  };
+
+  const onSetBody = (body: string) => {
+    setBody(body);
+  };
+
   return (
     <CustomHeader title="Edit Your Post">
       <ScrollView
@@ -106,49 +118,24 @@ const EditEventPost = () => {
           <StyledLabel label="Make your edits down below!" />
         </View>
         {/** Title */}
-        <View className="h-32">
-          <StyledLabel label="Title" />
-          <StyledTextInput
-            placeholder="Enter a title"
-            onChangeText={setTitle}
-            value={title}
-            maxLen={titleCharLimit}
-            multiline={true}
-            editable={isEditable}
-            onBlur={onTitleInputBlur}
-            autoCapitalize="sentences"
-          />
-        </View>
-        {hasTouched.title && !hasValidTitle && (
-          <ErrorText>Your title cannot be empty.</ErrorText>
-        )}
-        {title.length == titleCharLimit && (
-          <ErrorText>
-            Max length of {titleCharLimit.toString()} characters reached.
-          </ErrorText>
-        )}
+        <StyledTitleInput
+          title={title}
+          setTitle={onSetTitle}
+          hasTouched={hasTouched}
+          hasValidTitle={hasValidTitle}
+          isEditable={isEditable}
+          onBlur={onTitleInputBlur}
+        />
         {/** Body */}
-        <View className="h-60">
-          <StyledLabel label="Story" />
-          <StyledTextInput
-            placeholder="Enter your story here..."
-            onChangeText={setBody}
-            value={body}
-            maxLen={bodyCharLimit}
-            multiline={true}
-            editable={isEditable}
-            onBlur={onBodyInputBlur}
-            autoCapitalize="sentences"
-          />
-        </View>
-        {body.length == bodyCharLimit && (
-          <ErrorText>
-            Max length of {bodyCharLimit.toString()} characters reached.
-          </ErrorText>
-        )}
-        {hasTouched.body && !hasValidBody && (
-          <ErrorText>Your story cannot be empty.</ErrorText>
-        )}
+        <StyledBodyInput
+          body={body}
+          setBody={onSetBody}
+          hasTouched={hasTouched}
+          hasValidBody={hasValidBody}
+          isEditable={isEditable}
+          onBlur={onBodyInputBlur}
+        />
+        {/** Submit Button */}
         <View>
           <CustomOpacityButton
             title="Update Post"

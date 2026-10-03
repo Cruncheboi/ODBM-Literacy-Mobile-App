@@ -10,14 +10,9 @@ import {
   REPORT_REASON_OPTIONS,
   ReportReason,
 } from "@/definitions/moderation";
-import { createReport } from "@/firebase_functions/reportFunctions";
-import { ContentType } from "@/firebaseConfig";
 import { useCreateReportMutation } from "@/redux/query_services/injectedEndpoints.ts/moderation";
 import cn from "@/utility_functions/cn";
-import {
-  getAccentColor,
-  getThemeHighlightColor,
-} from "@/utility_functions/themeColor";
+import { getThemeHighlightColor } from "@/utility_functions/themeColor";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import BottomSheet, {
   BottomSheetBackdrop,
@@ -42,6 +37,8 @@ const CreateReport = () => {
   const [status, setStatus] = useState<CreationStatus>("typing");
   const { postId, commentId } =
     useLocalSearchParams<CreateReportSearchParams>();
+  const numericPostId = postId ? parseInt(postId, 10) : null;
+  const numericCommentId = commentId ? parseInt(commentId, 10) : null;
   const [createReport] = useCreateReportMutation();
 
   // Input state
@@ -100,7 +97,12 @@ const CreateReport = () => {
     if (status === "submitting") return;
     setStatus("submitting");
     try {
-      await createReport({ reason });
+      await createReport({
+        reason,
+        details,
+        commentId: numericCommentId,
+        postId: numericPostId,
+      });
     } catch (error) {
       router.back();
     } finally {

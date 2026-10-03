@@ -4,8 +4,8 @@ import { KeysetCursor, ServerFeedResponse } from "@/definitions/api";
 import keysToCamel from "@/utility_functions/keysToCamel";
 
 export interface CommentFeedQueryArgs {
-  postId: string;
-  userId?: string; // The user's firebase auth id
+  postId: number;
+  userAuthId?: string; // The user's firebase auth id
 }
 
 const commentsApi = databaseApi.injectEndpoints({
@@ -26,8 +26,8 @@ const commentsApi = databaseApi.injectEndpoints({
         },
       },
       query: ({ pageParam, queryArg }) => {
-        const { userId, postId } = queryArg;
-        let url = `feeds/comments/${postId}?userId=${userId}`;
+        const { userAuthId, postId } = queryArg;
+        let url = `feeds/comments/${postId}?userAuthId=${userAuthId}`;
 
         if (pageParam) {
           const { lastId, lastTimestamp } = pageParam;
@@ -47,7 +47,16 @@ const commentsApi = databaseApi.injectEndpoints({
         },
       ],
       transformResponse: (res: ServerFeedResponse<CommentPost>) => {
-        return keysToCamel(res);
+        const { hasMore, data } = res;
+        const camelCasedData = keysToCamel(data) as CommentPost[];
+
+        return {
+          hasMore,
+          data: camelCasedData.map((comment) => ({
+            ...comment,
+            postType: "comment",
+          })),
+        };
       },
     }),
     createComment: builder.mutation<

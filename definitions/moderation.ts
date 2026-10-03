@@ -24,10 +24,10 @@ export interface BlockedUserRecord {
   blockedFirebaseAuthId: string;
 }
 
-export interface Report {
+export interface UserReport {
   reportId: number;
-  postId?: number;
-  commentId?: number;
+  postId: number | null;
+  commentId: number | null;
   reason: string;
   details: string;
   timestamp: string;

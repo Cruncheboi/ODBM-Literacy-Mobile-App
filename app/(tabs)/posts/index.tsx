@@ -4,7 +4,7 @@ import { auth } from "@/firebaseConfig";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { router } from "expo-router";
 import { useColorScheme } from "nativewind";
-import { useCallback, useRef } from "react";
+import { useRef } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import Octicons from "@expo/vector-icons/Octicons";
 import { useAppDispatch } from "@/redux/hooks";
@@ -12,10 +12,7 @@ import { FlashList, ListRenderItemInfo } from "@shopify/flash-list";
 import ScrollToButton from "@/components/scrollToButton";
 import useListScrollController from "@/hooks/useListScrollController";
 import { CreatePostSearchParams } from "@/app/postActions/createPost";
-import {
-  getThemeFontColor,
-  getThemeHighlightColor,
-} from "@/utility_functions/themeColor";
+import { getThemeFontColor } from "@/utility_functions/themeColor";
 import { useGetTestimoniesFeedInfiniteQuery } from "@/redux/query_services/injectedEndpoints.ts/testimonies";
 import { TestimonyPost } from "@/definitions/posts";
 import { databaseApi } from "@/redux/query_services/databaseApi";
@@ -28,7 +25,7 @@ const Index = () => {
   // Post state
   console.log(`auth ${auth.currentUser?.uid}`);
   const { data, isFetching, fetchNextPage } =
-    useGetTestimoniesFeedInfiniteQuery({ userId: auth.currentUser?.uid });
+    useGetTestimoniesFeedInfiniteQuery({ userAuthId: auth.currentUser?.uid });
   const testimonies = data?.pages.flatMap((data) => data.data) ?? [];
   const hasMore = data?.pages[data?.pages.length - 1].hasMore;
 

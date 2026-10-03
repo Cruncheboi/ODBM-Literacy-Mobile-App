@@ -24,28 +24,17 @@ import BottomSheet, {
 } from "@gorhom/bottom-sheet";
 import CustomBackground from "@/components/customBackground";
 import ContentOptionsBottomSheetView from "@/components/contentOptionsBottomSheetView";
-import {
-  CommentFeedQueryArgs,
-  useGetCommentsFeedInfiniteQuery,
-} from "@/redux/query_services/injectedEndpoints.ts/comments";
-import {
-  TestimonyFeedQueryArgs,
-  useGetTestimonyQuery,
-} from "@/redux/query_services/injectedEndpoints.ts/testimonies";
+import { useGetCommentsFeedInfiniteQuery } from "@/redux/query_services/injectedEndpoints.ts/comments";
+import { useGetTestimonyQuery } from "@/redux/query_services/injectedEndpoints.ts/testimonies";
 import { useGetEventQuery } from "@/redux/query_services/injectedEndpoints.ts/events";
 import ErrorText from "@/components/errorText";
 import { QUERY_LIMIT } from "@/firebase_functions/firebaseFunctions";
-import { Post, PostType, TestimonyPost } from "@/definitions/posts";
-import StyledPostHeading, {
-  StyledPostBody,
-  StyledPostTitle,
-} from "@/components/posts/styledPostContent";
+import { PostType } from "@/definitions/posts";
 import TestimonyPostDisplay from "@/components/posts/testimonyPost";
 import EventPostDisplay from "@/components/posts/eventPost";
 import { Content } from "@/definitions/api";
 import { CommentPost } from "@/definitions/comments";
 import { auth } from "@/firebaseConfig";
-import { skipToken } from "@reduxjs/toolkit/query";
 import { databaseApi } from "@/redux/query_services/databaseApi";
 
 export type ViewPostSearchParams = {
@@ -60,21 +49,22 @@ const ViewPost = () => {
 
   // POST DATA
   const { postId, postType } = useLocalSearchParams<ViewPostSearchParams>();
-  const postQuery = useGetPostQuery(postType, postId);
+  const numericPostId = parseInt(postId, 10);
+  const postQuery = useGetPostQuery(postType, numericPostId);
   const post = postQuery.data;
 
   // COMMENT DATA
   // const commentsArg = auth.currentUser?.uid
   //   ? ({
   //       postId,
-  //       userId: auth.currentUser.uid,
+  //       userAuthId: auth.currentUser.uid,
   //     } satisfies CommentFeedQueryArgs)
   //   : skipToken;
-  // const arg = validArgOrSkip<CommentFeedQueryArgs>(auth.currentUser?.uid, {postId, userId: auth.currentUser!.uid})
+  // const arg = validArgOrSkip<CommentFeedQueryArgs>(auth.currentUser?.uid, {postId, userAuthId: auth.currentUser!.uid})
 
   const commentsQuery = useGetCommentsFeedInfiniteQuery({
-    postId,
-    userId: auth.currentUser?.uid,
+    postId: numericPostId,
+    userAuthId: auth.currentUser?.uid,
   });
   const comments: CommentPost[] =
     commentsQuery.data?.pages.flatMap((data) => data.data) ?? [];
@@ -140,13 +130,13 @@ const ViewPost = () => {
     if (postType === "testimony") {
       dispatch(
         databaseApi.util.invalidateTags([
-          { type: "TestimonyComments", id: postId },
+          { type: "TestimonyComments", id: numericPostId },
         ]),
       );
     } else {
       dispatch(
         databaseApi.util.invalidateTags([
-          { type: "EventComments", id: postId },
+          { type: "EventComments", id: numericPostId },
         ]),
       );
     }
@@ -166,7 +156,7 @@ const ViewPost = () => {
   const renderPostSection = () => {
     if (!post) {
       if (!postQuery.isFetching) {
-        console.log(postQuery.error, postId, postType);
+        console.log(postQuery.error, numericPostId, postType);
         return (
           <ErrorText>
             There was an error while trying to get data for this post.
@@ -288,12 +278,12 @@ const ViewPost = () => {
 };
 export default ViewPost;
 
-const useGetPostQuery = (postType: PostType, postId: string) => {
+const useGetPostQuery = (postType: PostType, postId: number) => {
   console.log(postType, postId);
   if (postType === "testimony") {
-    return useGetTestimonyQuery({ postId, userId: auth.currentUser?.uid });
+    return useGetTestimonyQuery({ postId, userAuthId: auth.currentUser?.uid });
   }
-  return useGetEventQuery({ postId, userId: auth.currentUser?.uid });
+  return useGetEventQuery({ postId, userAuthId: auth.currentUser?.uid });
 };
 
 // const validArgOrSkip = <T,>(condition: any, arg: T) => {

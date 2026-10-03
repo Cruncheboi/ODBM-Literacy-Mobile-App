@@ -7,6 +7,7 @@ import {
   ReportReason,
   SortType,
   ReportStatus,
+  UserReport,
 } from "@/definitions/moderation";
 import keysToCamel from "@/utility_functions/keysToCamel";
 
@@ -107,8 +108,8 @@ const moderationApi = databaseApi.injectEndpoints({
       },
     }),
     createReport: builder.mutation<
-      Pick<ReportHistoryItem, "reportId">,
-      Pick<ReportHistoryItem, "reason" | "details">
+      Pick<UserReport, "reportId">,
+      Pick<UserReport, "reason" | "details" | "commentId" | "postId">
     >({
       query: (newReportData) => ({
         url: "moderation/reports",

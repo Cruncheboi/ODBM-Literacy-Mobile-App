@@ -4,7 +4,7 @@ import { TestimonyPost } from "@/definitions/posts";
 import keysToCamel from "@/utility_functions/keysToCamel";
 
 export interface TestimonyFeedQueryArgs {
-  userId?: string; // The user's firebase auth id
+  userAuthId?: string; // The user's firebase auth id
 }
 
 const testimoniesApi = databaseApi.injectEndpoints({
@@ -25,7 +25,7 @@ const testimoniesApi = databaseApi.injectEndpoints({
         },
       },
       query: ({ queryArg, pageParam }) => {
-        let url = `feeds/testimonies?userId=${queryArg.userId}`;
+        let url = `feeds/testimonies?userAuthId=${queryArg.userAuthId}`;
 
         if (pageParam) {
           const { lastId, lastTimestamp } = pageParam;
@@ -61,7 +61,7 @@ const testimoniesApi = databaseApi.injectEndpoints({
       //         dispatch(
       //           testimoniesApi.util.upsertQueryData(
       //             "getTestimony",
-      //             { userId:  },
+      //             { userAuthId:  },
       //             testimony,
       //           ),
       //         );
@@ -76,8 +76,8 @@ const testimoniesApi = databaseApi.injectEndpoints({
       TestimonyPost,
       Pick<TestimonyPost, "postId"> & TestimonyFeedQueryArgs
     >({
-      query: ({ postId, userId }) =>
-        `posts/testimony/${postId}?userId=${userId}`,
+      query: ({ postId, userAuthId }) =>
+        `posts/testimony/${postId}?userAuthId=${userAuthId}`,
       providesTags: (result, error, queryArg) => [
         { type: "Testimony", id: queryArg.postId },
       ],

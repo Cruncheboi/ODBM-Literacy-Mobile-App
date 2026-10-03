@@ -4,7 +4,7 @@ import { EventPost } from "@/definitions/posts";
 import keysToCamel from "@/utility_functions/keysToCamel";
 
 export interface EventFeedQueryArgs {
-  userId?: string; // The user's firebase auth id
+  userAuthId?: string; // The user's firebase auth id
 }
 
 const eventsApi = databaseApi.injectEndpoints({
@@ -25,7 +25,7 @@ const eventsApi = databaseApi.injectEndpoints({
         },
       },
       query: ({ queryArg, pageParam }) => {
-        let url = `feeds/events?userId=${queryArg.userId}`;
+        let url = `feeds/events?userAuthId=${queryArg.userAuthId}`;
 
         if (pageParam) {
           const { lastId, lastTimestamp } = pageParam;
@@ -56,7 +56,8 @@ const eventsApi = databaseApi.injectEndpoints({
       EventPost,
       Pick<EventPost, "postId"> & EventFeedQueryArgs
     >({
-      query: ({ postId, userId }) => `posts/event/${postId}?userId=${userId}`,
+      query: ({ postId, userAuthId }) =>
+        `posts/event/${postId}?userAuthId=${userAuthId}`,
       providesTags: (result, error, queryArg) => [
         { type: "Event", id: queryArg.postId },
       ],

@@ -3,13 +3,16 @@ import CustomOpacityButton from "@/components/customOpacityButton";
 import ErrorText from "@/components/errorText";
 import StyledLabel from "@/components/styledLabel";
 import StyledTextInput from "@/components/styledTextInput";
-import { PostType } from "@/firebaseConfig";
 import { useCreateTestimonyMutation } from "@/redux/query_services/injectedEndpoints.ts/testimonies";
 import { useCreateEventMutation } from "@/redux/query_services/injectedEndpoints.ts/events";
-
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { View, ScrollView } from "react-native";
+import { PostType } from "@/definitions/posts";
+import {
+  StyledBodyInput,
+  StyledTitleInput,
+} from "@/components/posts/styledEditPostContent";
 
 export type CreatePostSearchParams = {
   type: PostType;
@@ -35,10 +38,7 @@ const CreatePost = () => {
   });
   const [createTestimony] = useCreateTestimonyMutation();
   const [createEvent] = useCreateEventMutation();
-
-  // Constant post values
-  const titleCharLimit = 150;
-  const bodyCharLimit = 3000;
+  const isEditable = status !== "submitting";
 
   const onPostSubmit = async () => {
     if (status === "submitting") return;
@@ -78,10 +78,18 @@ const CreatePost = () => {
         contentContainerClassName="gap-3"
       >
         <View className="mt-3 flex w-full items-center">
-          <StyledLabel label="Share your testimony with others!" />
+          <StyledLabel label="Share your story with others!" />
         </View>
         {/** Title */}
-        <View className="h-32">
+        <StyledTitleInput
+          title={title}
+          setTitle={setTitle}
+          hasTouched={hasTouched}
+          hasValidTitle={hasValidTitle}
+          isEditable={isEditable}
+          onBlur={onTitleInputBlur}
+        />
+        {/* <View className="h-32">
           <StyledLabel label="Title" />
           <StyledTextInput
             placeholder="Enter a title"
@@ -101,9 +109,17 @@ const CreatePost = () => {
           <ErrorText>
             Max length of {titleCharLimit.toString()} characters reached.
           </ErrorText>
-        )}
+        )} */}
         {/** Body */}
-        <View className="h-60">
+        <StyledBodyInput
+          body={body}
+          setBody={setBody}
+          hasTouched={hasTouched}
+          hasValidBody={hasValidBody}
+          isEditable={isEditable}
+          onBlur={onBodyInputBlur}
+        />
+        {/* <View className="h-60">
           <StyledLabel label="Story" />
           <StyledTextInput
             placeholder="Enter your story here..."
@@ -123,7 +139,7 @@ const CreatePost = () => {
         )}
         {hasTouched.body && !hasValidBody && (
           <ErrorText>Your story cannot be empty.</ErrorText>
-        )}
+        )} */}
         <View>
           <CustomOpacityButton
             title="Create Post"

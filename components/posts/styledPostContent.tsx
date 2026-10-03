@@ -15,7 +15,10 @@ interface PostBodyProps {
 /**
  * Displays the author name, along with the post date
  */
-const StyledPostHeading = ({ authorName, postDate }: PostHeadingProps) => {
+export const StyledPostHeading = ({
+  authorName,
+  postDate,
+}: PostHeadingProps) => {
   return (
     <View className="flex">
       <View className="flex-1">
@@ -30,7 +33,6 @@ const StyledPostHeading = ({ authorName, postDate }: PostHeadingProps) => {
     </View>
   );
 };
-export default StyledPostHeading;
 
 export const StyledPostTitle = ({ title }: PostTitleProps) => {
   return (

@@ -9,6 +9,7 @@ import { View, ScrollView } from "react-native";
 import { ViewPostSearchParams } from "@/app/postActions/viewPost";
 import { PostType } from "@/firebaseConfig";
 import { useCreateCommentMutation } from "@/redux/query_services/injectedEndpoints.ts/comments";
+import { COMMENT_CHAR_LIMIT } from "@/definitions/comments";
 
 export type CommentSearchParams = {
   postId: string;
@@ -20,7 +21,7 @@ type Status = "submitting" | "typing";
 const CreateComment = () => {
   // Constant values
   const { postId, postType } = useLocalSearchParams<CommentSearchParams>();
-  const bodyCharLimit = 1000;
+  const numericPostId = parseInt(postId, 10);
 
   // Comment state
   const [body, setBody] = useState("");
@@ -36,7 +37,7 @@ const CreateComment = () => {
       console.log("postType in CreateComment:", postType);
       try {
         await createComment({
-          postId,
+          postId: numericPostId,
           body,
         }).unwrap();
         router.dismissTo({
@@ -76,16 +77,16 @@ const CreateComment = () => {
             placeholder="Enter your thoughts here..."
             onChangeText={setBody}
             value={body}
-            maxLen={bodyCharLimit}
+            maxLen={COMMENT_CHAR_LIMIT}
             multiline={true}
             editable={status !== "submitting"}
             onBlur={onBlur}
             autoCapitalize="sentences"
           />
         </View>
-        {body.length == bodyCharLimit && (
+        {body.length == COMMENT_CHAR_LIMIT && (
           <ErrorText>
-            Max length of {bodyCharLimit.toString()} characters reached.
+            Max length of {COMMENT_CHAR_LIMIT.toString()} characters reached.
           </ErrorText>
         )}
         {hasTouched && !hasValidBody && (

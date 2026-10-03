@@ -1,5 +1,6 @@
 import { EventPost } from "@/definitions/posts";
-import StyledPostHeading, {
+import {
+  StyledPostHeading,
   StyledPostBody,
   StyledPostTitle,
 } from "./styledPostContent";

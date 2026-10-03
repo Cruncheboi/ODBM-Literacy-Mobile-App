@@ -24,7 +24,7 @@ const Events = () => {
 
   // Post state
   const { data, isFetching, fetchNextPage } = useGetEventsFeedInfiniteQuery({
-    userId: auth.currentUser?.uid,
+    userAuthId: auth.currentUser?.uid,
   });
   const events = data?.pages.flatMap((data) => data) ?? [];
 

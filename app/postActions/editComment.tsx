@@ -3,12 +3,10 @@ import CustomOpacityButton from "@/components/customOpacityButton";
 import ErrorText from "@/components/errorText";
 import StyledLabel from "@/components/styledLabel";
 import StyledTextInput from "@/components/styledTextInput";
-import { useAppDispatch } from "@/redux/hooks";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { View, ScrollView } from "react-native";
 import { useUpdateCommentMutation } from "@/redux/query_services/injectedEndpoints.ts/comments";
-import { PostType } from "@/firebaseConfig";
 
 export type EditCommentSearchParams = {
   commentId: string;
@@ -21,6 +19,7 @@ const EditComment = () => {
   // Constant values
   const { commentId, oldBody } =
     useLocalSearchParams<EditCommentSearchParams>();
+  const numericCommentId = parseInt(commentId, 10);
   const [updateComment, result] = useUpdateCommentMutation();
 
   // Comment state
@@ -36,7 +35,7 @@ const EditComment = () => {
       setStatus("submitting");
       try {
         await updateComment({
-          commentId,
+          commentId: numericCommentId,
           body,
         }).unwrap();
 
