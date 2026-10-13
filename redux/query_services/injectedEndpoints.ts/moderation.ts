@@ -1,3 +1,4 @@
+import { CommentPost } from "@/definitions/comments";
 import { databaseApi } from "../databaseApi";
 import { KeysetCursor, ServerFeedResponse } from "@/definitions/api";
 import {
@@ -8,13 +9,21 @@ import {
   SortType,
   ReportStatus,
   UserReport,
+  AdminCommentPost,
 } from "@/definitions/moderation";
+import { EventPost, TestimonyPost } from "@/definitions/posts";
 import keysToCamel from "@/utility_functions/keysToCamel";
 
 interface ReportedContentFeedQueryArgs {
   status?: ReportStatus;
   filterType?: Filter;
   sortBy?: SortType;
+}
+
+interface ReportsFromContentFeedQueryArgs {
+  postId?: number;
+  commentId?: number;
+  reasonFilter?: ReportReason;
 }
 
 const moderationApi = databaseApi.injectEndpoints({
@@ -56,7 +65,7 @@ const moderationApi = databaseApi.injectEndpoints({
 
         return url;
       },
-      providesTags: ["Reported"],
+      providesTags: [{ type: "Reported", id: "LIST" }],
       transformResponse: (res: ServerFeedResponse<GroupedModerationItem>) => {
         const { hasMore, data } = res;
         const camelCasedData = keysToCamel(data) as GroupedModerationItem[];
@@ -69,7 +78,7 @@ const moderationApi = databaseApi.injectEndpoints({
     }),
     getReportsFromContentFeed: builder.infiniteQuery<
       ServerFeedResponse<ReportHistoryItem>,
-      { reasonFilter: ReportReason },
+      ReportsFromContentFeedQueryArgs,
       KeysetCursor | null
     >({
       infiniteQueryOptions: {
@@ -86,8 +95,14 @@ const moderationApi = databaseApi.injectEndpoints({
         },
       },
       query: ({ queryArg, pageParam }) => {
-        const { reasonFilter } = queryArg;
+        const { reasonFilter, postId, commentId } = queryArg;
         let url = `moderation/report-history?reasonFilter=${reasonFilter}`;
+        if (postId) {
+          url += `&postId${postId}`;
+        }
+        if (commentId) {
+          url += `&commentId${commentId}`;
+        }
 
         if (pageParam) {
           const { lastId, lastTimestamp } = pageParam;
@@ -96,7 +111,7 @@ const moderationApi = databaseApi.injectEndpoints({
 
         return url;
       },
-      providesTags: ["Report"],
+      providesTags: [{ type: "Report", id: "LIST" }],
       transformResponse: (res: ServerFeedResponse<ReportHistoryItem>) => {
         const { hasMore, data } = res;
         const camelCasedData = keysToCamel(data) as ReportHistoryItem[];
@@ -117,6 +132,45 @@ const moderationApi = databaseApi.injectEndpoints({
         body: newReportData,
       }),
     }),
+    getAdminSingleTestimony: builder.query<
+      TestimonyPost,
+      Pick<TestimonyPost, "postId">
+    >({
+      query: ({ postId }) => `moderation/posts/testimony/${postId}`,
+      providesTags: (result, error, queryArg) => [
+        { type: "ReportedPost", id: queryArg.postId },
+      ],
+      transformResponse: (res: TestimonyPost) => {
+        const camelCasedData = keysToCamel(res) as TestimonyPost;
+        camelCasedData.postType = "testimony";
+        return camelCasedData;
+      },
+    }),
+    getAdminSingleEvent: builder.query<EventPost, Pick<EventPost, "postId">>({
+      query: ({ postId }) => `moderation/posts/event/${postId}`,
+      providesTags: (result, error, queryArg) => [
+        { type: "ReportedPost", id: queryArg.postId },
+      ],
+      transformResponse: (res: EventPost) => {
+        const camelCasedData = keysToCamel(res) as EventPost;
+        camelCasedData.postType = "event";
+        return camelCasedData;
+      },
+    }),
+    getAdminSingleComment: builder.query<
+      AdminCommentPost,
+      Pick<AdminCommentPost, "commentId">
+    >({
+      query: ({ commentId }) => `moderation/comments/${commentId}`,
+      providesTags: (result, error, queryArg) => [
+        { type: "ReportedComment", id: queryArg.commentId },
+      ],
+      transformResponse: (res: AdminCommentPost) => {
+        const camelCasedData = keysToCamel(res) as AdminCommentPost;
+        camelCasedData.postType = "comment";
+        return camelCasedData;
+      },
+    }),
   }),
   overrideExisting: true,
 });
@@ -125,4 +179,7 @@ export const {
   useGetReportedContentFeedInfiniteQuery,
   useGetReportsFromContentFeedInfiniteQuery,
   useCreateReportMutation,
+  useGetAdminSingleCommentQuery,
+  useGetAdminSingleEventQuery,
+  useGetAdminSingleTestimonyQuery,
 } = moderationApi;

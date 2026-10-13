@@ -1,5 +1,6 @@
 import { databaseApi } from "../databaseApi";
 import { KeysetCursor, ServerFeedResponse } from "@/definitions/api";
+import { ImageUpdate } from "@/definitions/media";
 import { EventPost } from "@/definitions/posts";
 import keysToCamel from "@/utility_functions/keysToCamel";
 
@@ -59,7 +60,7 @@ const eventsApi = databaseApi.injectEndpoints({
       query: ({ postId, userAuthId }) =>
         `posts/event/${postId}?userAuthId=${userAuthId}`,
       providesTags: (result, error, queryArg) => [
-        { type: "Event", id: queryArg.postId },
+        { type: "Post", id: queryArg.postId },
       ],
       transformResponse: (res: EventPost) => {
         const camelCasedData = keysToCamel(res) as EventPost;
@@ -70,7 +71,7 @@ const eventsApi = databaseApi.injectEndpoints({
     createEvent: builder.mutation<
       Pick<EventPost, "postId">,
       Pick<EventPost, "title" | "body"> &
-        Partial<Pick<EventPost, "images" | "youtubeId">>
+        Partial<Pick<EventPost, "images"> & { youtubeUrl: string }>
     >({
       query: (newPostData) => ({
         url: "posts/event",
@@ -84,20 +85,36 @@ const eventsApi = databaseApi.injectEndpoints({
     }),
     updateEvent: builder.mutation<
       void,
-      Partial<Pick<EventPost, "title" | "body" | "images" | "youtubeId">> &
-        Pick<EventPost, "postId">
+      Pick<EventPost, "postId"> &
+        Partial<Pick<EventPost, "title" | "body">> &
+        ImageUpdate & {
+          youtubeUrl?: string;
+        }
     >({
-      query: ({ postId, title, body, images }) => ({
+      query: ({
+        postId,
+        title,
+        body,
+        imagesToDelete,
+        imagesToInsert,
+        youtubeUrl,
+      }) => ({
         url: `/posts/event/${postId}`,
-        method: "PATCH",
-        body: { postId, title, body, images },
+        method: "PUT",
+        body: { title, body, imagesToDelete, imagesToInsert, youtubeUrl },
       }),
+      invalidatesTags: (result, error, arg) => [
+        { type: "Post", id: arg.postId },
+      ],
     }),
     deleteEvent: builder.mutation<void, Pick<EventPost, "postId">>({
       query: ({ postId }) => ({
         url: `/posts/event/${postId}/delete`,
         method: "PUT",
       }),
+      invalidatesTags: (result, error, arg) => [
+        { type: "Post", id: arg.postId },
+      ],
     }),
   }),
 

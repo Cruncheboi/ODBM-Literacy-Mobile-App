@@ -1,4 +1,4 @@
-import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import { useAppDispatch } from "@/redux/hooks";
 import {
   router,
   useFocusEffect,
@@ -9,7 +9,7 @@ import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
 import CustomBackButton from "@/components/customBackButton";
 import CustomSectionSeparator from "@/components/customSectionSeparator";
 import CommentCard from "@/components/commentCard";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { FlashList, ListRenderItemInfo } from "@shopify/flash-list";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { useColorScheme } from "nativewind";
@@ -54,14 +54,6 @@ const ViewPost = () => {
   const post = postQuery.data;
 
   // COMMENT DATA
-  // const commentsArg = auth.currentUser?.uid
-  //   ? ({
-  //       postId,
-  //       userAuthId: auth.currentUser.uid,
-  //     } satisfies CommentFeedQueryArgs)
-  //   : skipToken;
-  // const arg = validArgOrSkip<CommentFeedQueryArgs>(auth.currentUser?.uid, {postId, userAuthId: auth.currentUser!.uid})
-
   const commentsQuery = useGetCommentsFeedInfiniteQuery({
     postId: numericPostId,
     userAuthId: auth.currentUser?.uid,
@@ -93,19 +85,19 @@ const ViewPost = () => {
     }, [navigation, bottomSheetRef]),
   );
 
-  const handleSheetChanges = useCallback((index: number) => {
+  const handleSheetChanges = (index: number) => {
     console.log("handleSheetChanges", index);
     sheetIndexRef.current = index;
-  }, []);
+  };
 
-  const onMoreOptionsPress = useCallback((post?: Content | null) => {
+  const onMoreOptionsPress = (post?: Content | null) => {
     setBottomSheetContent(post);
     if (sheetIndexRef.current < 0) {
       bottomSheetRef.current?.expand();
     } else {
       bottomSheetRef.current?.close();
     }
-  }, []);
+  };
 
   const renderBackdrop = useCallback(
     (props: BottomSheetBackdropProps) => (
@@ -127,19 +119,8 @@ const ViewPost = () => {
   };
 
   const onRefresh = async () => {
-    if (postType === "testimony") {
-      dispatch(
-        databaseApi.util.invalidateTags([
-          { type: "TestimonyComments", id: numericPostId },
-        ]),
-      );
-    } else {
-      dispatch(
-        databaseApi.util.invalidateTags([
-          { type: "EventComments", id: numericPostId },
-        ]),
-      );
-    }
+    postQuery.refetch();
+    commentsQuery.refetch();
   };
 
   const onAddCommentPressed = () => {
@@ -154,7 +135,7 @@ const ViewPost = () => {
 
   // Header component
   const renderPostSection = () => {
-    if (!post) {
+    if (!post || isNaN(numericPostId)) {
       if (!postQuery.isFetching) {
         console.log(postQuery.error, numericPostId, postType);
         return (
@@ -265,7 +246,7 @@ const ViewPost = () => {
         {bottomSheetContent ? (
           <ContentOptionsBottomSheetView
             content={bottomSheetContent}
-            contentType={postType}
+            contentType={bottomSheetContent.postType}
           />
         ) : (
           <BottomSheetView className="flex items-center justify-center">
@@ -279,17 +260,8 @@ const ViewPost = () => {
 export default ViewPost;
 
 const useGetPostQuery = (postType: PostType, postId: number) => {
-  console.log(postType, postId);
   if (postType === "testimony") {
     return useGetTestimonyQuery({ postId, userAuthId: auth.currentUser?.uid });
   }
   return useGetEventQuery({ postId, userAuthId: auth.currentUser?.uid });
 };
-
-// const validArgOrSkip = <T,>(condition: any, arg: T) => {
-//   return condition ? arg : skipToken;
-// };
-
-// const getUserId = () => auth.currentUser?.uid;
-
-// const

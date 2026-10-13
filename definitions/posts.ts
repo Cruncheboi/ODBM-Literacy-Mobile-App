@@ -1,3 +1,5 @@
+import { ImageInfo, ImageUpdate } from "./media";
+
 export interface MasterPostRecord {
   postId: number;
   timestamp: string;

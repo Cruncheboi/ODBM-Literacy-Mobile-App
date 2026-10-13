@@ -11,13 +11,14 @@ import { useUpdateCommentMutation } from "@/redux/query_services/injectedEndpoin
 export type EditCommentSearchParams = {
   commentId: string;
   oldBody: string;
+  postId: string;
 };
 
 type Status = "submitting" | "typing";
 
 const EditComment = () => {
   // Constant values
-  const { commentId, oldBody } =
+  const { commentId, oldBody, postId } =
     useLocalSearchParams<EditCommentSearchParams>();
   const numericCommentId = parseInt(commentId, 10);
   const [updateComment, result] = useUpdateCommentMutation();
@@ -37,6 +38,7 @@ const EditComment = () => {
         await updateComment({
           commentId: numericCommentId,
           body,
+          postId: parseInt(postId),
         }).unwrap();
 
         router.back();

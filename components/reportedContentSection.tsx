@@ -1,90 +1,43 @@
-import { Comment, Content, Event, Testimony } from "@/firebaseConfig";
-import { Text, View } from "react-native";
+import { ActivityIndicator, Text, View } from "react-native";
 import CustomSectionSeparator from "./customSectionSeparator";
 import StyledButton from "./styledButton";
 import StyledLabel from "./styledLabel";
 import { useCallback } from "react";
 import { router } from "expo-router";
 import { ViewPostSearchParams } from "@/app/postActions/viewPost";
+import TestimonyPostDisplay from "./posts/testimonyPost";
+import EventPostDisplay from "./posts/eventPost";
+import {
+  CommentPostDisplay,
+  LinkToParentPostButton,
+} from "./comments/commentPost";
+import { Post } from "@/definitions/posts";
+import { AdminCommentPost } from "@/definitions/moderation";
 
 interface Props {
-  content?: Content | null;
+  content?: Post | AdminCommentPost | null;
 }
 
 const ReportedContentSection = ({ content }: Props) => {
-  let contentSection: React.JSX.Element | undefined;
-  if (content) {
-    const { contentType, body } = content;
-    const postDate = new Date(content.date);
-    // Display a testimony or event report
-    if (contentType === "testimony" || contentType === "event") {
-      const { displayName, title } = content as Testimony | Event;
-      contentSection = (
-        <>
-          <View className="flex">
-            <View className="flex-1">
-              <Text className="text-highlight">@{displayName}</Text>
-            </View>
-            <Text className="text-textColor-title">
-              {postDate.toLocaleDateString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </Text>
-          </View>
-          <Text className="mt-4 text-xl font-bold text-odbm-blue-600 dark:text-gray-200">
-            {title}
-          </Text>
-          <Text className="mb-4 mt-2 text-lg text-textColor-body">{body}</Text>
-        </>
-      );
-      // Display a comment report
-    } else {
-      const { displayName, postID, contentType, postType } = content as Comment;
-      const postDate = new Date(content.date);
-
-      const linkToParentPost = useCallback(
-        () => (
-          <StyledButton
-            className="border-borderColor-primary bg-bgColor-primary"
-            label={<StyledLabel label="View parent post" />}
-            onPress={() => {
-              router.push({
-                pathname: "/postActions/viewPost",
-                params: {
-                  postID,
-                  postType,
-                } as ViewPostSearchParams,
-              });
-            }}
-          />
-        ),
-        [content],
-      );
-
-      contentSection = (
-        <>
-          <View className="flex">
-            <View className="flex-1">
-              <Text className="text-highlight">@{displayName}</Text>
-            </View>
-            <Text className="text-textColor-title">
-              {postDate.toLocaleDateString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </Text>
-          </View>
-          <Text className="mb-4 mt-2 text-lg text-textColor-body">{body}</Text>
-          {linkToParentPost()}
-        </>
-      );
-    }
+  if (!content) {
+    return <ActivityIndicator />;
   }
+
+  const { postType } = content;
 
   return (
     <>
-      {contentSection}
+      {postType === "testimony" && <TestimonyPostDisplay post={content} />}
+      {postType === "event" && <EventPostDisplay post={content} />}
+      {postType === "comment" && (
+        <>
+          <CommentPostDisplay post={content} />
+          <LinkToParentPostButton
+            postId={String(content.postId)}
+            parentPostType={content.parentPostType}
+          />
+        </>
+      )}
       <CustomSectionSeparator />
       <View className="mb-2 flex flex-row">
         <View className="flex-1">

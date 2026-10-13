@@ -170,7 +170,8 @@ const Register = () => {
         console.log(errorMessage);
         Toast.show({
           type: "error",
-          text1: "An error occurred while creating an account",
+          text1: `Error (${error.code})`,
+          text2: "An error occurred while creating an account",
         });
       }
     }

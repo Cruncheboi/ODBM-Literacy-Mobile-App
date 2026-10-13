@@ -1,15 +1,15 @@
-import { View, Text } from "react-native";
+import { View } from "react-native";
 import StyledButton from "../styledButton";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { getThemeFontColor } from "@/utility_functions/themeColor";
 import { useColorScheme } from "nativewind";
 import StyledLabel from "../styledLabel";
 
-interface EditOptionParams {
-  onPress: () => void;
+export interface EditOptionProps {
+  onEditPress: () => void;
 }
 
-const EditOptionButton = ({ onPress }: EditOptionParams) => {
+const EditOptionButton = ({ onEditPress }: EditOptionProps) => {
   const { colorScheme } = useColorScheme();
 
   return (
@@ -24,7 +24,7 @@ const EditOptionButton = ({ onPress }: EditOptionParams) => {
         </View>
       }
       label={<StyledLabel label="Edit" />}
-      onPress={onPress}
+      onPress={onEditPress}
     />
   );
 };

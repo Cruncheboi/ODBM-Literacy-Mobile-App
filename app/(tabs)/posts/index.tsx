@@ -24,7 +24,7 @@ const Index = () => {
 
   // Post state
   console.log(`auth ${auth.currentUser?.uid}`);
-  const { data, isFetching, fetchNextPage } =
+  const { data, isFetching, fetchNextPage, refetch } =
     useGetTestimoniesFeedInfiniteQuery({ userAuthId: auth.currentUser?.uid });
   const testimonies = data?.pages.flatMap((data) => data.data) ?? [];
   const hasMore = data?.pages[data?.pages.length - 1].hasMore;
@@ -35,7 +35,6 @@ const Index = () => {
     useListScrollController(flashListRef);
 
   const renderListItem = ({ item }: ListRenderItemInfo<TestimonyPost>) => {
-    console.log(item.postType);
     return <Card post={item} />;
   };
 
@@ -47,7 +46,8 @@ const Index = () => {
   };
 
   const onRefresh = async () => {
-    dispatch(databaseApi.util.invalidateTags([{ type: "Testimonies" }]));
+    refetch();
+    // dispatch(databaseApi.util.invalidateTags([{ type: "Testimonies" }]));
   };
 
   const onAddPostPressed = () => {

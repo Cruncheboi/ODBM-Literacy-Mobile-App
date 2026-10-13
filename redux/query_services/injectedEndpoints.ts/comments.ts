@@ -8,6 +8,10 @@ export interface CommentFeedQueryArgs {
   userAuthId?: string; // The user's firebase auth id
 }
 
+// interface CommentParentArg {
+//   parentPostType: PostType;
+// }
+
 const commentsApi = databaseApi.injectEndpoints({
   endpoints: (builder) => ({
     getCommentsFeed: builder.infiniteQuery<
@@ -68,25 +72,34 @@ const commentsApi = databaseApi.injectEndpoints({
         method: "POST",
         body: commentParams,
       }),
+      invalidatesTags: (result, error, arg) => [
+        { type: "Comments", id: arg.postId },
+      ],
     }),
     updateComment: builder.mutation<
       void,
-      Pick<CommentPost, "commentId" | "body">
+      Pick<CommentPost, "commentId" | "body" | "postId">
     >({
       query: ({ commentId, body }) => ({
         url: `comments/${commentId}`,
         method: "PUT",
         body: { body },
       }),
+      invalidatesTags: (result, error, arg) => [
+        { type: "Comments", id: arg.postId },
+      ],
     }),
     deleteComment: builder.mutation<
       Pick<CommentPost, "commentId" | "postId">,
-      Pick<CommentPost, "commentId">
+      Pick<CommentPost, "commentId" | "postId">
     >({
       query: ({ commentId }) => ({
         url: `comments/${commentId}/delete`,
         method: "PUT",
       }),
+      invalidatesTags: (result, error, arg) => [
+        { type: "Comments", id: arg.postId },
+      ],
     }),
   }),
   overrideExisting: true,
@@ -98,3 +111,10 @@ export const {
   useUpdateCommentMutation,
   useDeleteCommentMutation,
 } = commentsApi;
+
+// const getCommentCacheType = (postType: PostType) => {
+//   if (postType === "testimony") {
+//     return "TestimonyComments" as const;
+//   }
+//   return "EventComments" as const;
+// };

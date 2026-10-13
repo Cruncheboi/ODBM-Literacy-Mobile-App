@@ -3,6 +3,7 @@ export interface MasterCommentRecord {
   postId: number;
   timestamp: string;
   authorId: number;
+  authorFirebaseUid: string;
   authorName: string;
   body: string;
 }

@@ -1,12 +1,10 @@
 import { View, Text, TouchableOpacity } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useColorScheme } from "nativewind";
-import { Event, Testimony } from "@/firebaseConfig";
-import { useCallback } from "react";
-import { router, useLocalSearchParams } from "expo-router";
+import { router } from "expo-router";
 import { ViewPostSearchParams } from "@/app/postActions/viewPost";
 import { ViewReportSearchParams } from "@/app/postActions/viewReport";
-import { EventPost, Post, TestimonyPost } from "@/definitions/posts";
+import { Post } from "@/definitions/posts";
 
 interface Props {
   post: Post;
@@ -16,6 +14,7 @@ interface Props {
 const PostCard = ({ post, isReported }: Props) => {
   const { colorScheme } = useColorScheme();
   const { postId, timestamp, postType, authorName, title, body, images } = post;
+  const strPostId = String(postId);
   const date = new Date(timestamp);
 
   const onPressPost = () => {
@@ -23,7 +22,7 @@ const PostCard = ({ post, isReported }: Props) => {
       router.push({
         pathname: "/postActions/viewReport",
         params: {
-          postId,
+          postId: strPostId,
           contentType: postType,
         } as ViewReportSearchParams,
       });
@@ -31,7 +30,7 @@ const PostCard = ({ post, isReported }: Props) => {
       router.push({
         pathname: "/postActions/viewPost",
         params: {
-          postId,
+          postId: strPostId,
           postType: postType,
         } as ViewPostSearchParams,
       });

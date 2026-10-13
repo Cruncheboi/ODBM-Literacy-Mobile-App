@@ -17,6 +17,7 @@ import { QUERY_LIMIT } from "@/firebase_functions/firebaseFunctions";
 import { listEmptyComponent } from "@/components/posts/feed";
 import { databaseApi } from "@/redux/query_services/databaseApi";
 import { EventPost } from "@/definitions/posts";
+import { getThemeFontColor } from "@/utility_functions/themeColor";
 
 const Events = () => {
   const dispatch = useAppDispatch();
@@ -26,7 +27,8 @@ const Events = () => {
   const { data, isFetching, fetchNextPage } = useGetEventsFeedInfiniteQuery({
     userAuthId: auth.currentUser?.uid,
   });
-  const events = data?.pages.flatMap((data) => data) ?? [];
+  const events = data?.pages.flatMap((data) => data.data) ?? [];
+  const hasMore = data?.pages[data?.pages.length - 1].hasMore;
 
   // FlashList state
   const flashListRef = useRef<FlashList<EventPost> | null>(null);
@@ -41,26 +43,26 @@ const Events = () => {
   // FlashList callbacks
   const onEndReached = async () => {
     console.log("last doc reached.");
-    if (events.length < QUERY_LIMIT || isFetching) return;
+    if (!hasMore || isFetching) return;
     fetchNextPage();
   };
 
-  const onRefresh = useCallback(async () => {
+  const onRefresh = async () => {
     dispatch(databaseApi.util.invalidateTags([{ type: "Events" }]));
-  }, []);
+  };
 
-  const onAddPostPressed = useCallback(() => {
+  const onAddPostPressed = () => {
     router.push({
       pathname: "/postActions/createPost",
       params: {
         type: "event",
       } as CreatePostSearchParams,
     });
-  }, []);
+  };
 
-  const onSwitchPostPressed = useCallback(() => {
+  const onSwitchPostPressed = () => {
     router.navigate("/(tabs)/posts");
-  }, []);
+  };
 
   return (
     <View className="py-safe flex flex-1 bg-primary">
@@ -78,7 +80,7 @@ const Events = () => {
             <Octicons
               name="arrow-switch"
               size={28}
-              color={colorScheme == "light" ? "#173A64" : "white"}
+              color={getThemeFontColor(colorScheme)}
             />
           </TouchableOpacity>
           {/* Button to add a post */}
@@ -86,7 +88,7 @@ const Events = () => {
             <FontAwesome6
               name="plus"
               size={24}
-              color={colorScheme == "light" ? "#173A64" : "white"}
+              color={getThemeFontColor(colorScheme)}
             />
           </TouchableOpacity>
         </View>

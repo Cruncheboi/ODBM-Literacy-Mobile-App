@@ -67,6 +67,7 @@ export default function RootLayout() {
             backgroundColor: getThemeSecondaryColor(colorScheme),
           }}
           text1Style={{ color: getThemeFontColor(colorScheme) }}
+          activeOpacity={8000}
         />
       );
     },

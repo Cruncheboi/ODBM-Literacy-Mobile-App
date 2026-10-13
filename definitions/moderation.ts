@@ -1,3 +1,6 @@
+import { CommentPost } from "./comments";
+import { PostType } from "./posts";
+
 export interface GroupedModerationItem {
   postId: number | null;
   commentId: number | null;
@@ -32,6 +35,10 @@ export interface UserReport {
   details: string;
   timestamp: string;
   status: ReportStatus;
+}
+
+export interface AdminCommentPost extends CommentPost {
+  parentPostType: PostType;
 }
 
 export type ReportStatus = "pending" | "resolved";

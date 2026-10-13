@@ -1,8 +1,6 @@
 import CustomHeader from "@/components/customHeader";
 import CustomOpacityButton from "@/components/customOpacityButton";
-import ErrorText from "@/components/errorText";
 import StyledLabel from "@/components/styledLabel";
-import StyledTextInput from "@/components/styledTextInput";
 import { useCreateTestimonyMutation } from "@/redux/query_services/injectedEndpoints.ts/testimonies";
 import { useCreateEventMutation } from "@/redux/query_services/injectedEndpoints.ts/events";
 import { router, useLocalSearchParams } from "expo-router";
@@ -89,27 +87,6 @@ const CreatePost = () => {
           isEditable={isEditable}
           onBlur={onTitleInputBlur}
         />
-        {/* <View className="h-32">
-          <StyledLabel label="Title" />
-          <StyledTextInput
-            placeholder="Enter a title"
-            onChangeText={setTitle}
-            value={title}
-            maxLen={titleCharLimit}
-            multiline={true}
-            editable={status !== "submitting"}
-            onBlur={onTitleInputBlur}
-            autoCapitalize="sentences"
-          />
-        </View>
-        {hasTouched.title && !hasValidTitle && (
-          <ErrorText>Your title cannot be empty.</ErrorText>
-        )}
-        {title.length == titleCharLimit && (
-          <ErrorText>
-            Max length of {titleCharLimit.toString()} characters reached.
-          </ErrorText>
-        )} */}
         {/** Body */}
         <StyledBodyInput
           body={body}
@@ -119,27 +96,6 @@ const CreatePost = () => {
           isEditable={isEditable}
           onBlur={onBodyInputBlur}
         />
-        {/* <View className="h-60">
-          <StyledLabel label="Story" />
-          <StyledTextInput
-            placeholder="Enter your story here..."
-            onChangeText={setBody}
-            value={body}
-            maxLen={bodyCharLimit}
-            multiline={true}
-            editable={status !== "submitting"}
-            onBlur={onBodyInputBlur}
-            autoCapitalize="sentences"
-          />
-        </View>
-        {body.length == bodyCharLimit && (
-          <ErrorText>
-            Max length of {bodyCharLimit.toString()} characters reached.
-          </ErrorText>
-        )}
-        {hasTouched.body && !hasValidBody && (
-          <ErrorText>Your story cannot be empty.</ErrorText>
-        )} */}
         <View>
           <CustomOpacityButton
             title="Create Post"

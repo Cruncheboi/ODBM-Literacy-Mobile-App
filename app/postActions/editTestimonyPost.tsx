@@ -42,7 +42,7 @@ const EditTestimonyPost = () => {
     userAuthId: auth.currentUser?.uid,
   });
   const testimony = testimonyResult.data;
-  const isEditable = status !== "submitting" && testimonyResult.isFetching;
+  const isEditable = status !== "submitting" && !testimonyResult.isFetching;
   // Handle when there is no post to display
   if (!testimony) {
     if (testimonyResult.isFetching) {
@@ -101,13 +101,13 @@ const EditTestimonyPost = () => {
     }
   };
 
-  const onSetTitle = (title: string) => {
-    setTitle(title);
-  };
+  // const onSetTitle = (title: string) => {
+  //   setTitle(title);
+  // };
 
-  const onSetBody = (body: string) => {
-    setBody(body);
-  };
+  // const onSetBody = (body: string) => {
+  //   setBody(body);
+  // };
 
   return (
     <CustomHeader title="Edit Your Post">
@@ -121,7 +121,7 @@ const EditTestimonyPost = () => {
         {/** Title */}
         <StyledTitleInput
           title={title}
-          setTitle={onSetTitle}
+          setTitle={setTitle}
           hasTouched={hasTouched}
           hasValidTitle={hasValidTitle}
           isEditable={isEditable}
@@ -130,7 +130,7 @@ const EditTestimonyPost = () => {
         {/** Body */}
         <StyledBodyInput
           body={body}
-          setBody={onSetBody}
+          setBody={setBody}
           hasTouched={hasTouched}
           hasValidBody={hasValidBody}
           isEditable={isEditable}

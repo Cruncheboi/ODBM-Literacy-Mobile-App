@@ -100,14 +100,6 @@ const EditEventPost = () => {
     }
   };
 
-  const onSetTitle = (title: string) => {
-    setTitle(title);
-  };
-
-  const onSetBody = (body: string) => {
-    setBody(body);
-  };
-
   return (
     <CustomHeader title="Edit Your Post">
       <ScrollView
@@ -120,7 +112,7 @@ const EditEventPost = () => {
         {/** Title */}
         <StyledTitleInput
           title={title}
-          setTitle={onSetTitle}
+          setTitle={setTitle}
           hasTouched={hasTouched}
           hasValidTitle={hasValidTitle}
           isEditable={isEditable}
@@ -129,7 +121,7 @@ const EditEventPost = () => {
         {/** Body */}
         <StyledBodyInput
           body={body}
-          setBody={onSetBody}
+          setBody={setBody}
           hasTouched={hasTouched}
           hasValidBody={hasValidBody}
           isEditable={isEditable}

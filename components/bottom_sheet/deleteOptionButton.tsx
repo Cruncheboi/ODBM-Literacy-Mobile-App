@@ -5,7 +5,7 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { getThemeFontColor } from "@/utility_functions/themeColor";
 import { useColorScheme } from "nativewind";
 
-interface DeleteOptionsParams {
+export interface DeleteOptionsProps {
   showDeleteConfirmation: boolean;
   setShowDeleteConfirmation: (isShown: boolean) => void;
   onDelete: () => Promise<void>;
@@ -15,7 +15,7 @@ const DeleteOptionButton = ({
   showDeleteConfirmation,
   setShowDeleteConfirmation,
   onDelete,
-}: DeleteOptionsParams) => {
+}: DeleteOptionsProps) => {
   const { colorScheme } = useColorScheme();
   if (showDeleteConfirmation) {
     return (
@@ -51,7 +51,6 @@ const DeleteOptionButton = ({
         label={<StyledLabel label="Delete" />}
         onPress={() => setShowDeleteConfirmation(true)}
       />
-      <View className="py-2" />
     </>
   );
 };

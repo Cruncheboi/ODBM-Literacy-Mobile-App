@@ -14,6 +14,7 @@ import quizReducer from "./features/quizSlice";
 import { firestoreApi } from "./services/firestore";
 import { setupListeners } from "@reduxjs/toolkit/query";
 import { databaseApi } from "./query_services/databaseApi";
+import { rtkQueryNotificationMiddleware } from "./middleware/errorLogger";
 
 const reducers = combineReducers({
   users: usersReducer,
@@ -36,9 +37,11 @@ const store = configureStore({
       serializableCheck: {
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
-    })
-      .concat(firestoreApi.middleware)
-      .concat(databaseApi.middleware),
+    }).concat(
+      firestoreApi.middleware,
+      databaseApi.middleware,
+      rtkQueryNotificationMiddleware,
+    ),
 });
 
 setupListeners(store.dispatch);

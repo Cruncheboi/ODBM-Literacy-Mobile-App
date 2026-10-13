@@ -5,11 +5,11 @@ import { getThemeFontColor } from "@/utility_functions/themeColor";
 import StyledLabel from "../styledLabel";
 import { useColorScheme } from "nativewind";
 
-interface ReportOptionParams {
-  onPress: () => void;
+export interface ReportOptionProps {
+  onReportPress: () => void;
 }
 
-const ReportOptionButton = ({ onPress }: ReportOptionParams) => {
+const ReportOptionButton = ({ onReportPress }: ReportOptionProps) => {
   const { colorScheme } = useColorScheme();
   return (
     <StyledButton
@@ -23,7 +23,7 @@ const ReportOptionButton = ({ onPress }: ReportOptionParams) => {
         </View>
       }
       label={<StyledLabel label="Report Content" />}
-      onPress={onPress}
+      onPress={onReportPress}
     />
   );
 };

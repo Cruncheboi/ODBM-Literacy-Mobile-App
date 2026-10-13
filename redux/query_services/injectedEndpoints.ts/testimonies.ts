@@ -1,9 +1,10 @@
 import { databaseApi } from "../databaseApi";
 import { KeysetCursor, ServerFeedResponse } from "@/definitions/api";
+import { ImageUpdate } from "@/definitions/media";
 import { TestimonyPost } from "@/definitions/posts";
 import keysToCamel from "@/utility_functions/keysToCamel";
 
-export interface TestimonyFeedQueryArgs {
+export interface BaseUserQueryArgs {
   userAuthId?: string; // The user's firebase auth id
 }
 
@@ -11,7 +12,7 @@ const testimoniesApi = databaseApi.injectEndpoints({
   endpoints: (builder) => ({
     getTestimoniesFeed: builder.infiniteQuery<
       ServerFeedResponse<TestimonyPost>,
-      TestimonyFeedQueryArgs,
+      BaseUserQueryArgs,
       KeysetCursor | null
     >({
       infiniteQueryOptions: {
@@ -51,35 +52,15 @@ const testimoniesApi = databaseApi.injectEndpoints({
           })),
         };
       },
-      // onQueryStarted: async (queryArgument, { queryFulfilled, dispatch }) => {
-      //   try {
-      //     const { data } = await queryFulfilled;
-
-      //     // Set the cache entry for individual testimony posts
-      //     data.pages.forEach((testimonies) => {
-      //       return testimonies.forEach((testimony) => {
-      //         dispatch(
-      //           testimoniesApi.util.upsertQueryData(
-      //             "getTestimony",
-      //             { userAuthId:  },
-      //             testimony,
-      //           ),
-      //         );
-      //       });
-      //     });
-      //   } catch (error) {
-      //     console.log(error);
-      //   }
-      // },
     }),
     getTestimony: builder.query<
       TestimonyPost,
-      Pick<TestimonyPost, "postId"> & TestimonyFeedQueryArgs
+      Pick<TestimonyPost, "postId"> & BaseUserQueryArgs
     >({
       query: ({ postId, userAuthId }) =>
         `posts/testimony/${postId}?userAuthId=${userAuthId}`,
       providesTags: (result, error, queryArg) => [
-        { type: "Testimony", id: queryArg.postId },
+        { type: "Post", id: queryArg.postId },
       ],
       transformResponse: (res: TestimonyPost) => {
         const camelCasedData = keysToCamel(res) as TestimonyPost;
@@ -104,20 +85,36 @@ const testimoniesApi = databaseApi.injectEndpoints({
     }),
     updateTestimony: builder.mutation<
       void,
-      Partial<Pick<TestimonyPost, "title" | "body" | "images">> &
-        Pick<TestimonyPost, "postId">
+      Pick<TestimonyPost, "postId"> &
+        Partial<Pick<TestimonyPost, "title" | "body">> &
+        ImageUpdate & {
+          youtubeUrl?: string;
+        }
     >({
-      query: ({ postId, title, body, images }) => ({
+      query: ({
+        postId,
+        title,
+        body,
+        imagesToDelete,
+        imagesToInsert,
+        youtubeUrl,
+      }) => ({
         url: `/posts/testimony/${postId}`,
-        method: "PATCH",
-        body: { postId, title, body, images },
+        method: "PUT",
+        body: { title, body, imagesToDelete, imagesToInsert, youtubeUrl },
       }),
+      invalidatesTags: (result, error, arg) => [
+        { type: "Post", id: arg.postId },
+      ],
     }),
     deleteTestimony: builder.mutation<void, Pick<TestimonyPost, "postId">>({
       query: ({ postId }) => ({
         url: `/posts/testimony/${postId}/delete`,
         method: "PUT",
       }),
+      invalidatesTags: (result, error, arg) => [
+        { type: "Post", id: arg.postId },
+      ],
     }),
   }),
   overrideExisting: true,

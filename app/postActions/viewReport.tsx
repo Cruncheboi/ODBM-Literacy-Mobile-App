@@ -1,4 +1,3 @@
-import { useAppDispatch } from "@/redux/hooks";
 import {
   useFocusEffect,
   useLocalSearchParams,
@@ -7,17 +6,11 @@ import {
 import { View, Text, ActivityIndicator } from "react-native";
 import CustomBackButton from "@/components/customBackButton";
 import React, { useCallback, useRef } from "react";
-import { ContentType, Report } from "@/firebaseConfig";
 import { FlashList, ListRenderItemInfo } from "@shopify/flash-list";
 import ScrollToButton from "@/components/scrollToButton";
 import useListScrollController from "@/hooks/useListScrollController";
-import { useGetReportsFromUserContentInfiniteQuery } from "@/redux/services/injectedEndpoints.ts/reports";
-import { firestoreApi } from "@/redux/services/firestore";
 import ReportCard from "@/components/reportCard";
-import { useGetTestimonyQuery } from "@/redux/services/injectedEndpoints.ts/testimonies";
 import ReportedContentSection from "@/components/reportedContentSection";
-import { useGetEventQuery } from "@/redux/services/injectedEndpoints.ts/events";
-import { useGetCommentQuery } from "@/redux/services/injectedEndpoints.ts/comments";
 import KebabIcon from "@/components/kebabIcon";
 import BottomSheet, {
   BottomSheetBackdrop,
@@ -26,32 +19,45 @@ import BottomSheet, {
 } from "@gorhom/bottom-sheet";
 import CustomBackground from "@/components/customBackground";
 import ContentOptionsBottomSheetView from "@/components/contentOptionsBottomSheetView";
-import { QUERY_LIMIT } from "@/firebase_functions/firebaseFunctions";
+import {
+  useGetAdminSingleCommentQuery,
+  useGetAdminSingleEventQuery,
+  useGetAdminSingleTestimonyQuery,
+  useGetReportsFromContentFeedInfiniteQuery,
+} from "@/redux/query_services/injectedEndpoints.ts/moderation";
+import { ReportHistoryItem } from "@/definitions/moderation";
+import { ContentType } from "@/definitions/api";
 
 export type ViewReportSearchParams = {
   postId: string;
+  commentId: string;
   contentType: ContentType;
 };
 
 const ViewReport = () => {
-  const dispatch = useAppDispatch();
   const navigation = useNavigation();
-  const { postId, contentType } =
+  const { postId, commentId, contentType } =
     useLocalSearchParams<ViewReportSearchParams>();
 
   // Reported Post data
-  const reportedPost = useGetReportedPostData(contentType, postId);
+  const numericPostId = parseInt(postId, 10);
+  const numericCommentId = parseInt(commentId, 10);
+  const reportedPost = useGetReportedPostData(
+    contentType,
+    numericPostId,
+    numericCommentId,
+  );
 
   // Report data
-  const { data, isFetching, fetchNextPage } =
-    useGetReportsFromUserContentInfiniteQuery({
-      contentType: contentType,
-      reportedPostId: postId,
-    });
-  const reports: Report[] = data?.pages.flatMap((data) => data) ?? [];
+  const { data, isFetching, fetchNextPage, refetch } =
+    useGetReportsFromContentFeedInfiniteQuery({});
+
+  const reports: ReportHistoryItem[] =
+    data?.pages.flatMap((data) => data.data) ?? [];
+  const hasMore = data?.pages[data?.pages.length - 1].hasMore;
 
   // Flashlist state
-  const flashListRef = useRef<FlashList<Report> | null>(null);
+  const flashListRef = useRef<FlashList<ReportHistoryItem> | null>(null);
   const { onScrollToPressed, onScroll, showScrollToButton } =
     useListScrollController(flashListRef);
 
@@ -99,16 +105,13 @@ const ViewReport = () => {
   // FlashList callbacks
   const onEndReached = async () => {
     console.log("last doc reached.");
-    if (reports.length < QUERY_LIMIT || isFetching) return;
+    if (!hasMore || isFetching) return;
     fetchNextPage();
   };
 
   const onRefresh = async () => {
-    dispatch(
-      firestoreApi.util.invalidateTags([
-        { type: "Report", id: contentType satisfies ContentType },
-      ]),
-    );
+    reportedPost.refetch();
+    refetch();
   };
 
   const ListEmptyComponent = useCallback(() => {
@@ -124,7 +127,7 @@ const ViewReport = () => {
     );
   }, [isFetching]);
 
-  const renderItem = ({ item }: ListRenderItemInfo<Report>) => {
+  const renderItem = ({ item }: ListRenderItemInfo<ReportHistoryItem>) => {
     return <ReportCard report={item} />;
   };
 
@@ -171,7 +174,10 @@ const ViewReport = () => {
         backgroundComponent={CustomBackground}
       >
         {reportedPost.data ? (
-          <ContentOptionsBottomSheetView content={reportedPost.data} />
+          <ContentOptionsBottomSheetView
+            content={reportedPost.data}
+            contentType={reportedPost.data.postType}
+          />
         ) : (
           <BottomSheetView className="flex items-center justify-center">
             <ActivityIndicator />
@@ -181,18 +187,20 @@ const ViewReport = () => {
     </View>
   );
 };
-export default ViewReport;
 
 // Helper function to get the RTK Query hook in use
 const useGetReportedPostData = (
   contentType: ContentType,
-  documentId: string,
+  postId: number,
+  commentId: number,
 ) => {
   if (contentType === "testimony") {
-    return useGetTestimonyQuery({ documentId: documentId });
+    return useGetAdminSingleTestimonyQuery({ postId });
   } else if (contentType === "event") {
-    return useGetEventQuery({ documentId: documentId });
+    return useGetAdminSingleEventQuery({ postId });
   } else {
-    return useGetCommentQuery({ documentId: documentId });
+    return useGetAdminSingleCommentQuery({ commentId });
   }
 };
+
+export default ViewReport;
