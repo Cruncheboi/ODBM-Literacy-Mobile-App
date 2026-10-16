@@ -59,6 +59,15 @@ const usersApi = databaseApi.injectEndpoints({
         return url;
       },
       providesTags: ["Blocks"],
+      transformResponse: (res: ServerFeedResponse<BlockedUserRecord>) => {
+        const { hasMore, data } = res;
+        const camelCasedData = keysToCamel(data) as BlockedUserRecord[];
+
+        return {
+          hasMore,
+          data: camelCasedData,
+        };
+      },
     }),
   }),
   overrideExisting: true,

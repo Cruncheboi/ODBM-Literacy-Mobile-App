@@ -1,9 +1,9 @@
 import { View } from "react-native";
-import StyledButton from "../styledButton";
+import StyledButton from "../../styledButton";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { getThemeFontColor } from "@/utility_functions/themeColor";
 import { useColorScheme } from "nativewind";
-import StyledLabel from "../styledLabel";
+import StyledLabel from "../../styledLabel";
 
 export interface EditOptionProps {
   onEditPress: () => void;

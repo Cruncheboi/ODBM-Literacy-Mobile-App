@@ -1,7 +1,7 @@
 import { EventPost } from "@/definitions/posts";
-import EditOptionButton from "../bottom_sheet/editOptionButton";
-import DeleteOptionButton from "../bottom_sheet/deleteOptionButton";
-import ReportOptionButton from "../bottom_sheet/reportOptionButton";
+import EditOptionButton from "../bottom_sheet/buttons/editOptionButton";
+import DeleteOptionButton from "../bottom_sheet/buttons/deleteOptionButton";
+import ReportOptionButton from "../bottom_sheet/buttons/reportOptionButton";
 import { router } from "expo-router";
 import { CreateReportSearchParams } from "@/app/postActions/createReport";
 import { useDeleteEventMutation } from "@/redux/query_services/injectedEndpoints.ts/events";
@@ -55,7 +55,7 @@ const EventOptions = ({
           showDeleteConfirmation={showDeleteConfirmation}
         />
       )}
-      {!showDeleteConfirmation && (
+      {!showDeleteConfirmation && !isOwner && (
         <ReportOptionButton onReportPress={onReport} />
       )}
     </>

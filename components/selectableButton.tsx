@@ -1,12 +1,17 @@
 import { getThemeFontColor } from "@/utility_functions/themeColor";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColorScheme } from "nativewind";
-import { PropsWithChildren, useMemo } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { PropsWithChildren } from "react";
+import { View, TouchableOpacity } from "react-native";
 
 export interface SelectableButtonProps extends PropsWithChildren {
   isSelected: boolean;
   handleSelectAction: () => void;
+}
+
+export interface RadioProps<T> {
+  value: T;
+  setValue: (value: T) => void;
 }
 
 const SelectableButton = ({

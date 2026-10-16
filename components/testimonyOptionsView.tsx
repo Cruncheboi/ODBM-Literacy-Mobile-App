@@ -11,10 +11,10 @@ import { CreateReportSearchParams } from "@/app/postActions/createReport";
 import { useCallback, useEffect, useState } from "react";
 import { checkIfIsAdmin } from "@/firebase_functions/firebaseFunctions";
 import { TestimonyPost } from "@/definitions/posts";
-import EditOptionButton from "./bottom_sheet/editOptionButton";
+import EditOptionButton from "./bottom_sheet/buttons/editOptionButton";
 import { EditTestimonyPostSearchParams } from "@/app/postActions/editTestimonyPost";
-import DeleteOptionButton from "./bottom_sheet/deleteOptionButton";
-import ReportOptionButton from "./bottom_sheet/reportOptionButton";
+import DeleteOptionButton from "./bottom_sheet/buttons/deleteOptionButton";
+import ReportOptionButton from "./bottom_sheet/buttons/reportOptionButton";
 
 interface TestimonyOptionsProps {
   testimony?: TestimonyPost | null;

@@ -1,6 +1,6 @@
 import { View } from "react-native";
-import StyledButton from "../styledButton";
-import StyledLabel from "../styledLabel";
+import StyledButton from "../../styledButton";
+import StyledLabel from "../../styledLabel";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { getThemeFontColor } from "@/utility_functions/themeColor";
 import { useColorScheme } from "nativewind";

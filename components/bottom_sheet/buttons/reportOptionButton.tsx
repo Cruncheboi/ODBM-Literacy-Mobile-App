@@ -1,8 +1,8 @@
 import { View } from "react-native";
-import StyledButton from "../styledButton";
+import StyledButton from "../../styledButton";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { getThemeFontColor } from "@/utility_functions/themeColor";
-import StyledLabel from "../styledLabel";
+import StyledLabel from "../../styledLabel";
 import { useColorScheme } from "nativewind";
 
 export interface ReportOptionProps {

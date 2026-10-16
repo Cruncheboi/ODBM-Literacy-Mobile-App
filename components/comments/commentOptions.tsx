@@ -1,6 +1,6 @@
-import EditOptionButton from "../bottom_sheet/editOptionButton";
-import DeleteOptionButton from "../bottom_sheet/deleteOptionButton";
-import ReportOptionButton from "../bottom_sheet/reportOptionButton";
+import EditOptionButton from "../bottom_sheet/buttons/editOptionButton";
+import DeleteOptionButton from "../bottom_sheet/buttons/deleteOptionButton";
+import ReportOptionButton from "../bottom_sheet/buttons/reportOptionButton";
 import { router } from "expo-router";
 import { CreateReportSearchParams } from "@/app/postActions/createReport";
 import { ContentOptionsProps } from "../posts/testimonyOptions";
@@ -60,7 +60,7 @@ const CommentOptions = ({
           showDeleteConfirmation={showDeleteConfirmation}
         />
       )}
-      {!showDeleteConfirmation && (
+      {!showDeleteConfirmation && !isOwner && (
         <ReportOptionButton onReportPress={onReport} />
       )}
     </>

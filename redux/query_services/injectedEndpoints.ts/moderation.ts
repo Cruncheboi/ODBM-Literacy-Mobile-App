@@ -14,7 +14,7 @@ import {
 import { EventPost, TestimonyPost } from "@/definitions/posts";
 import keysToCamel from "@/utility_functions/keysToCamel";
 
-interface ReportedContentFeedQueryArgs {
+export interface ReportedContentFeedQueryArgs {
   status?: ReportStatus;
   filterType?: Filter;
   sortBy?: SortType;
@@ -50,7 +50,10 @@ const moderationApi = databaseApi.injectEndpoints({
       },
       query: ({ queryArg, pageParam }) => {
         const { status, filterType, sortBy } = queryArg;
-        let url = `moderation/grouped-feed?status=${status}&filterType=${filterType}&sortBy=${sortBy}`;
+        const targetStatus = status || "pending";
+        const targetFilter = filterType || "all";
+        const targetSort = sortBy || "recency";
+        let url = `moderation/grouped-feed?status=${targetStatus}&filterType=${targetFilter}&sortBy=${targetSort}`;
 
         if (pageParam) {
           const { lastId, lastTimestamp, lastCount } = pageParam;
@@ -96,12 +99,13 @@ const moderationApi = databaseApi.injectEndpoints({
       },
       query: ({ queryArg, pageParam }) => {
         const { reasonFilter, postId, commentId } = queryArg;
-        let url = `moderation/report-history?reasonFilter=${reasonFilter}`;
+        const targetReason = reasonFilter || "all";
+        let url = `moderation/report-history?reasonFilter=${targetReason}`;
         if (postId) {
-          url += `&postId${postId}`;
+          url += `&postId=${postId}`;
         }
         if (commentId) {
-          url += `&commentId${commentId}`;
+          url += `&commentId=${commentId}`;
         }
 
         if (pageParam) {

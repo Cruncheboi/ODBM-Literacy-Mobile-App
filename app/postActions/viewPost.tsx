@@ -1,4 +1,3 @@
-import { useAppDispatch } from "@/redux/hooks";
 import {
   router,
   useFocusEffect,
@@ -28,14 +27,12 @@ import { useGetCommentsFeedInfiniteQuery } from "@/redux/query_services/injected
 import { useGetTestimonyQuery } from "@/redux/query_services/injectedEndpoints.ts/testimonies";
 import { useGetEventQuery } from "@/redux/query_services/injectedEndpoints.ts/events";
 import ErrorText from "@/components/errorText";
-import { QUERY_LIMIT } from "@/firebase_functions/firebaseFunctions";
 import { PostType } from "@/definitions/posts";
 import TestimonyPostDisplay from "@/components/posts/testimonyPost";
 import EventPostDisplay from "@/components/posts/eventPost";
 import { Content } from "@/definitions/api";
 import { CommentPost } from "@/definitions/comments";
 import { auth } from "@/firebaseConfig";
-import { databaseApi } from "@/redux/query_services/databaseApi";
 
 export type ViewPostSearchParams = {
   postId: string;
@@ -43,7 +40,6 @@ export type ViewPostSearchParams = {
 };
 
 const ViewPost = () => {
-  const dispatch = useAppDispatch();
   const { colorScheme } = useColorScheme();
   const navigation = useNavigation();
 
@@ -60,6 +56,9 @@ const ViewPost = () => {
   });
   const comments: CommentPost[] =
     commentsQuery.data?.pages.flatMap((data) => data.data) ?? [];
+  const hasMore =
+    commentsQuery.data?.pages[commentsQuery.data?.pages.length - 1].hasMore ??
+    false;
 
   // FLASHLIST STATE
   const flashListRef = useRef<FlashList<CommentPost> | null>(null);
@@ -114,7 +113,7 @@ const ViewPost = () => {
   // POST CALLBACKS
   const onEndReached = async () => {
     console.log("last doc reached.");
-    if (comments.length < QUERY_LIMIT || commentsQuery.isFetching) return;
+    if (commentsQuery.isFetching || !hasMore) return;
     commentsQuery.fetchNextPage();
   };
 

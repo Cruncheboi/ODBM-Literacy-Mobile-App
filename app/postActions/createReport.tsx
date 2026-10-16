@@ -104,9 +104,9 @@ const CreateReport = () => {
         postId: numericPostId,
       });
     } catch (error) {
-      router.back();
-    } finally {
       setStatus("typing");
+    } finally {
+      router.back();
     }
   };
 
