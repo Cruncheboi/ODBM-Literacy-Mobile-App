@@ -26,6 +26,7 @@ yarn-debug.*
 yarn-error.*
 
 #android
+/android
 android/app/credentials.json
 android/app/debug.keystore
 
