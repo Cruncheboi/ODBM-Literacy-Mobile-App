@@ -84,27 +84,27 @@ const Index = () => {
           }}
           renderItem={({ item }) => {
             return (
-              <FloatingIndicator
-                floatingTitle="Recommended"
-                showFloatingTitle={item.title == recommendedStart}
-              >
-                <CustomSectionItem
-                  title={item.title}
-                  onPress={() => {
-                    // Displays PDF item
-                    if (item.pdfSource != undefined) {
-                      router.push({
-                        pathname: "/(pdfs)/pdfViewer",
-                        params: item.pdfSource,
-                      });
-                    }
-                    // Redirects to route
-                    else if (item.route != undefined) {
-                      router.push(item.route);
-                    }
-                  }}
-                />
-              </FloatingIndicator>
+              // <FloatingIndicator
+              //   floatingTitle="Recommended"
+              //   showFloatingTitle={item.title == recommendedStart}
+              // >
+              <CustomSectionItem
+                title={item.title}
+                onPress={() => {
+                  // Displays PDF item
+                  if (item.pdfSource != undefined) {
+                    router.push({
+                      pathname: "/(pdfs)/pdfViewer",
+                      params: item.pdfSource,
+                    });
+                  }
+                  // Redirects to route
+                  else if (item.route != undefined) {
+                    router.push(item.route);
+                  }
+                }}
+              />
+              // </FloatingIndicator>
             );
           }}
         />

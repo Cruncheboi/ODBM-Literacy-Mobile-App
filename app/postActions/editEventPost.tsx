@@ -6,7 +6,6 @@ import StyledEditPostBackground, {
   StyledTitleInput,
 } from "@/components/posts/styledEditPostContent";
 import StyledLabel from "@/components/styledLabel";
-import StyledTextInput from "@/components/styledTextInput";
 import { PostType } from "@/definitions/posts";
 import { auth } from "@/firebaseConfig";
 import {

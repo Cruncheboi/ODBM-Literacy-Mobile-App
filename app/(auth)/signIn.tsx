@@ -69,8 +69,8 @@ const SignIn = () => {
         </View>
         {/* Form Section*/}
         <View className="mx-3">
-          <View className="bg-pop rounded-md border border-odbm-gray p-6">
-            <Text className="text-textColor-primary py-3 text-center text-3xl font-bold tracking-widest">
+          <View className="rounded-md border border-odbm-gray bg-pop p-6">
+            <Text className="py-3 text-center text-3xl font-bold tracking-widest text-textColor-primary">
               Sign In
             </Text>
             <View className="gap-3">
@@ -84,6 +84,8 @@ const SignIn = () => {
                   onChangeText={handleEmail}
                   keyboardType="email-address"
                   placeholder="example@email.com"
+                  autoComplete="email"
+                  autoCapitalize="none"
                 />
                 {!emailValid && <ErrorText>Email is invalid.</ErrorText>}
               </View>

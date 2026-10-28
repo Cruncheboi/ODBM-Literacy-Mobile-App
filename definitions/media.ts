@@ -14,3 +14,9 @@ export interface ImageCreation {
   publicDownloadUrl: string;
   b2FileId: string;
 }
+
+export interface CompressedImagePayload {
+  uri: string;
+  name: string;
+  type: string;
+}

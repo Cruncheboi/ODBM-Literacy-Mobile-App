@@ -50,7 +50,10 @@ const ViewReport = () => {
 
   // Report data
   const { data, isFetching, fetchNextPage, refetch } =
-    useGetReportsFromContentFeedInfiniteQuery({});
+    useGetReportsFromContentFeedInfiniteQuery({
+      commentId: numericCommentId,
+      postId: numericPostId,
+    });
 
   const reports: ReportHistoryItem[] =
     data?.pages.flatMap((data) => data.data) ?? [];
@@ -188,7 +191,7 @@ const ViewReport = () => {
   );
 };
 
-// Helper function to get the RTK Query hook in use
+// Helper function to get the needed RTK Query hook
 const useGetReportedPostData = (
   contentType: ContentType,
   postId: number,

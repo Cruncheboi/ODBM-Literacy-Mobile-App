@@ -46,6 +46,7 @@ const Profile = () => {
         <StyledTextInput
           onChangeText={setDisplayNameInput}
           value={displayNameInput}
+          autoCapitalize="none"
         >
           <InputFieldButton
             disabled={

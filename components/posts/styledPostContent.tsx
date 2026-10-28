@@ -19,8 +19,9 @@ export const StyledPostHeading = ({
   authorName,
   postDate,
 }: PostHeadingProps) => {
+  console.log("post author name:", authorName);
   return (
-    <View className="flex">
+    <View className="flex flex-row">
       <View className="flex-1">
         <Text className="text-highlight">@{authorName}</Text>
       </View>

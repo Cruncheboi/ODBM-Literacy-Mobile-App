@@ -1,5 +1,3 @@
-import { ImageInfo, ImageUpdate } from "./media";
-
 export interface MasterPostRecord {
   postId: number;
   timestamp: string;
@@ -8,6 +6,7 @@ export interface MasterPostRecord {
   authorName: string;
   title: string;
   body: string;
+  postType: PostType;
   images?: Array<{ id: number; url: string; order: number }> | null;
   // Event specific fields
   youtubeId?: string | null;

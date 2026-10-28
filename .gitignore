@@ -29,6 +29,8 @@ yarn-error.*
 /android
 android/app/credentials.json
 android/app/debug.keystore
+.idea/
+*.iml
 
 # macOS
 .DS_Store

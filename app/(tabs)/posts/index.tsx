@@ -15,11 +15,9 @@ import { CreatePostSearchParams } from "@/app/postActions/createPost";
 import { getThemeFontColor } from "@/utility_functions/themeColor";
 import { useGetTestimoniesFeedInfiniteQuery } from "@/redux/query_services/injectedEndpoints.ts/testimonies";
 import { TestimonyPost } from "@/definitions/posts";
-import { databaseApi } from "@/redux/query_services/databaseApi";
 import { listEmptyComponent } from "@/components/posts/feed";
 
 const Index = () => {
-  const dispatch = useAppDispatch();
   const { colorScheme } = useColorScheme();
 
   // Post state
@@ -47,7 +45,6 @@ const Index = () => {
 
   const onRefresh = async () => {
     refetch();
-    // dispatch(databaseApi.util.invalidateTags([{ type: "Testimonies" }]));
   };
 
   const onAddPostPressed = () => {

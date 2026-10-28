@@ -3,7 +3,7 @@ import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { useState } from "react";
 import StyledTextInput from "./styledTextInput";
 import { getThemeHighlightColor } from "@/utility_functions/themeColor";
-import { colorScheme, useColorScheme } from "nativewind";
+import { useColorScheme } from "nativewind";
 
 interface Props {
   /**
@@ -32,6 +32,9 @@ const SecureTextInput = ({
         onChangeText={onChangeText}
         value={value}
         editable={editable}
+        containerClassName="h-14"
+        autoComplete="password"
+        autoCapitalize="none"
       />
       <TouchableOpacity
         onPress={() => setHideText((state) => !state)}

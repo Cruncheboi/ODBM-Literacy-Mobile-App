@@ -4,7 +4,11 @@ import StyledLabel from "../styledLabel";
 import StyledTextInput from "../styledTextInput";
 import { TouchedFields } from "@/app/postActions/editTestimonyPost";
 import ErrorText from "../errorText";
-import { BODY_CHAR_LIMIT, TITLE_CHAR_LIMIT } from "@/definitions/posts";
+import {
+  BODY_CHAR_LIMIT,
+  TITLE_CHAR_LIMIT,
+  YT_URL_CHAR_LIMIT,
+} from "@/definitions/posts";
 
 interface EditPostProps {
   children: React.ReactNode;
@@ -26,6 +30,11 @@ interface BodyInputProps {
   hasTouched: TouchedFields;
   onBlur: () => void; // sets fields that have been touched
   hasValidBody: boolean;
+}
+interface YoutubeUrlInputProps {
+  youtubeUrl: string;
+  setYoutubeUrl: (youtubeUrl: string) => void;
+  isEditable: boolean;
 }
 
 interface CharsRemainingDisplayProps {
@@ -131,4 +140,28 @@ export const CharsRemainingDisplay = ({
   }
 
   return <StyledLabel label={`${remainingChars} characters remaining.`} />;
+};
+
+export const StyledYoutubeUrlInput = ({
+  youtubeUrl,
+  setYoutubeUrl,
+  isEditable,
+}: YoutubeUrlInputProps) => {
+  return (
+    <>
+      <StyledLabel label="Related Youtube Video (Optional)" />
+      <StyledTextInput
+        placeholder="Enter Youtube Url or Video Id"
+        onChangeText={setYoutubeUrl}
+        value={youtubeUrl}
+        maxLen={YT_URL_CHAR_LIMIT}
+        editable={isEditable}
+        autoCapitalize="none"
+      />
+      <CharsRemainingDisplay
+        curLen={youtubeUrl.trim().length}
+        maxLen={YT_URL_CHAR_LIMIT}
+      />
+    </>
+  );
 };

@@ -51,8 +51,8 @@ const StyledTextInput = ({
   return (
     <View
       className={cn(
-        "min-h-14 flex-1 rounded-md bg-secondary p-2",
-        "flex-row",
+        "flex-1 flex-row rounded-md bg-secondary p-2",
+        multiline ? "min-h-14" : "h-14",
         containerClassName,
       )}
     >

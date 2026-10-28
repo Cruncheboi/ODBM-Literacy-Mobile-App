@@ -12,7 +12,6 @@ interface Props {
 }
 
 const ReportedContentCard = ({ reportedContent }: Props) => {
-  const { colorScheme } = useColorScheme();
   const {
     postId,
     commentId,
