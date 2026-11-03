@@ -18,6 +18,7 @@ import { persistStore } from "redux-persist";
 import { auth, isSignedIn } from "@/firebaseConfig";
 import { useAppDispatch } from "@/redux/hooks";
 import Toast, { BaseToast, ToastProps } from "react-native-toast-message";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 // import * as SystemUI from "expo-system-ui";
 
 const persistor = persistStore(store);
@@ -39,6 +40,24 @@ export default function RootLayout() {
         <BaseToast
           {...props}
           style={{ borderLeftColor: "green" }}
+          contentContainerStyle={{
+            borderTopWidth: 1,
+            borderBottomWidth: 1,
+            borderRightWidth: 1,
+            borderTopRightRadius: 6,
+            borderBottomRightRadius: 6,
+            borderColor: "#58595B",
+            backgroundColor: getThemeSecondaryColor(colorScheme),
+          }}
+          text1Style={{ color: getThemeFontColor(colorScheme) }}
+        />
+      );
+    },
+    info: (props: ToastProps) => {
+      return (
+        <BaseToast
+          {...props}
+          style={{ borderLeftColor: "yellow" }}
           contentContainerStyle={{
             borderTopWidth: 1,
             borderBottomWidth: 1,
@@ -100,35 +119,37 @@ export default function RootLayout() {
       <Provider store={store}>
         <PersistGate loading={null} persistor={persistor}>
           <GestureHandlerRootView>
-            <SafeAreaProvider
-            // className="color-black"
-            // style={{
-            //   backgroundColor: ,
-            // }}
-            >
-              <StatusBar
-                style="auto"
-                backgroundColor={getThemeMainColor(colorScheme)}
-              />
-              <Stack
-                screenOptions={{
-                  // animation: "slide_from_right",
-                  // presentation
-                  // animationTypeForReplace: "pop",
-                  navigationBarColor: getThemeMainColor(colorScheme),
-                  statusBarBackgroundColor: "transparent",
-                  statusBarStyle: colorScheme == "light" ? "dark" : "light",
-                  headerShown: false,
-                }}
-                initialRouteName="index"
+            <BottomSheetModalProvider>
+              <SafeAreaProvider
+              // className="color-black"
+              // style={{
+              //   backgroundColor: ,
+              // }}
               >
-                <Stack.Screen name="index" />
-                <Stack.Screen name="(tabs)" />
-                <Stack.Screen name="(pdfs)" />
-                <Stack.Screen name="(auth)" />
-                <Stack.Screen name="postActions" />
-              </Stack>
-            </SafeAreaProvider>
+                <StatusBar
+                  style="auto"
+                  backgroundColor={getThemeMainColor(colorScheme)}
+                />
+                <Stack
+                  screenOptions={{
+                    // animation: "slide_from_right",
+                    // presentation
+                    // animationTypeForReplace: "pop",
+                    navigationBarColor: getThemeMainColor(colorScheme),
+                    statusBarBackgroundColor: "transparent",
+                    statusBarStyle: colorScheme == "light" ? "dark" : "light",
+                    headerShown: false,
+                  }}
+                  initialRouteName="index"
+                >
+                  <Stack.Screen name="index" />
+                  <Stack.Screen name="(tabs)" />
+                  <Stack.Screen name="(pdfs)" />
+                  <Stack.Screen name="(auth)" />
+                  <Stack.Screen name="postActions" />
+                </Stack>
+              </SafeAreaProvider>
+            </BottomSheetModalProvider>
           </GestureHandlerRootView>
         </PersistGate>
       </Provider>

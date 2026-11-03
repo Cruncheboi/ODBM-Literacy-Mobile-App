@@ -16,7 +16,18 @@ export interface ImageCreation {
 }
 
 export interface CompressedImagePayload {
+  localAssetId: string;
   uri: string;
   name: string;
   type: string;
+  isCompressing: boolean;
 }
+
+export interface PickedImagePayload {
+  uri: string;
+  width: number;
+  height: number;
+}
+
+export const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB upload limit
+export const MAX_PHOTOS_LIMIT = 5;

@@ -6,6 +6,7 @@ interface StyledButtonProps {
   label: React.JSX.Element;
   icon?: React.JSX.Element;
   className?: string;
+  disabled?: boolean;
 }
 
 const StyledButton = ({
@@ -13,14 +14,17 @@ const StyledButton = ({
   icon,
   label,
   className,
+  disabled = false,
 }: StyledButtonProps) => {
   return (
     <TouchableOpacity
       className={cn(
         "flex w-full flex-row items-center justify-center rounded-md border border-gray-400 bg-bgColor-primary",
+        disabled && "disabled:opacity-60",
         className,
       )}
       onPress={onPress}
+      disabled={disabled}
     >
       {icon}
       {label}

@@ -1,21 +1,35 @@
 import CustomHeader from "@/components/customHeader";
 import CustomOpacityButton from "@/components/customOpacityButton";
 import StyledLabel from "@/components/styledLabel";
-import { router, useLocalSearchParams } from "expo-router";
-import { useState } from "react";
-import { View, ScrollView } from "react-native";
+import {
+  router,
+  useFocusEffect,
+  useLocalSearchParams,
+  useNavigation,
+} from "expo-router";
+import { useCallback, useRef, useState } from "react";
+import { View, ScrollView, Alert } from "react-native";
 import { PostType } from "@/definitions/posts";
 import {
   StyledBodyInput,
   StyledTitleInput,
   StyledYoutubeUrlInput,
 } from "@/components/posts/styledEditPostContent";
-import ImageSelector from "@/components/images/imageSelector";
-import { CompressedImagePayload } from "@/definitions/media";
+import {
+  CompressedImagePayload,
+  MAX_FILE_SIZE_BYTES,
+  MAX_PHOTOS_LIMIT,
+} from "@/definitions/media";
 import {
   useActivatePostMutation,
   useInitializePostMutation,
 } from "@/redux/query_services/injectedEndpoints.ts/posts";
+import { BottomSheetModal } from "@gorhom/bottom-sheet";
+import { ImagePicker } from "@/components/bottom_sheet/media/imagePicker";
+import { LocalAssetRecord } from "@/utility_functions/images/mediaLoader";
+import Toast from "react-native-toast-message";
+import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
+import * as FileSystem from "expo-file-system";
 
 export type CreatePostSearchParams = {
   type: PostType;
@@ -28,7 +42,12 @@ const CreatePost = () => {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [youtubeUrl, setYoutubeUrl] = useState("");
-  const [images, setImages] = useState<CompressedImagePayload[]>([]);
+  const [selectedImages, setSelectedImages] = useState<
+    CompressedImagePayload[]
+  >([]);
+  // find if an image is currently compressing
+  const allImagesCompressed =
+    selectedImages.findIndex((image) => image.isCompressing === true) === -1;
 
   //Input validation
   const hasValidTitle = title.length > 0 && title.trim() !== "";
@@ -42,43 +61,63 @@ const CreatePost = () => {
     body: false,
   });
 
+  const onTitleInputBlur = () => {
+    if (!hasTouched.title) {
+      setHasTouched((prev) => ({ ...prev, title: true }));
+    }
+  };
+
+  const onBodyInputBlur = () => {
+    if (!hasTouched.body) {
+      setHasTouched((prev) => ({ ...prev, body: true }));
+    }
+  };
+
   // RTK Query mutations
   const [initializePost] = useInitializePostMutation();
   const [activatePost] = useActivatePostMutation();
 
   const isEditable = status !== "submitting";
 
+  // Handles post creation flow
   const onPostSubmit = async () => {
-    if (status === "submitting" || !hasValidTitle || !hasValidBody) return;
+    if (
+      status === "submitting" ||
+      !hasValidTitle ||
+      !hasValidBody ||
+      !allImagesCompressed
+    )
+      return;
 
     setStatus("submitting");
     try {
       /**
        * Initialize Post and get presigned assets
        */
-      // Extract mimetypes list from your compressed assets array
-      const mimeTypes = images.map((img) => img.type);
+      const imageMimeTypes = selectedImages.map((img) => img.type);
 
       const initResponse = await initializePost({
         postType,
         title,
         body,
         youtubeUrl: postType === "event" ? youtubeUrl : null,
-        imageMimeTypes: mimeTypes,
+        imageMimeTypes,
       }).unwrap();
 
-      // Explicit camelCase keys are captured directly with ZERO mapping work
       const { postId, presignedAssets } = initResponse;
       const successfulUploadIds: number[] = [];
 
       /**
-       * Upload images directly to cloud
+       * Upload selectedImages directly to cloud
        */
-      if (images.length > 0 && presignedAssets && presignedAssets.length > 0) {
-        // Execute uploads sequentially or in parallel.
-        // A standard for...of loop ensures stable tracking across mobile threads.
-        for (let i = 0; i < images.length; i++) {
-          const localImage = images[i];
+      if (
+        selectedImages.length > 0 &&
+        presignedAssets &&
+        presignedAssets.length > 0
+      ) {
+        // Upload selectedImages sequentially
+        for (let i = 0; i < selectedImages.length; i++) {
+          const localImage = selectedImages[i];
           const cloudTicket = presignedAssets[i];
 
           try {
@@ -127,7 +166,6 @@ const CreatePost = () => {
         workflowException,
       );
 
-      // Captures your clean backend error text parameters seamlessly
       const errorMessage =
         workflowException?.data?.error ||
         "A secure network connection could not be established.";
@@ -138,15 +176,109 @@ const CreatePost = () => {
     }
   };
 
-  const onTitleInputBlur = () => {
-    if (!hasTouched.title) {
-      setHasTouched((prev) => ({ ...prev, title: true }));
-    }
-  };
+  //
+  const handleToggleAsset = async (tappedAsset: LocalAssetRecord) => {
+    const existingIndex = selectedImages.findIndex(
+      (item) => item.localAssetId === tappedAsset.localAssetId,
+    );
 
-  const onBodyInputBlur = () => {
-    if (!hasTouched.body) {
-      setHasTouched((prev) => ({ ...prev, body: true }));
+    if (existingIndex !== -1) {
+      // Deselection logic
+      setSelectedImages((prev) =>
+        prev.filter((item) => item.localAssetId !== tappedAsset.localAssetId),
+      );
+    } else {
+      // Apply Selection limit
+      if (selectedImages.length >= MAX_PHOTOS_LIMIT) {
+        Toast.show({
+          text1: "Limit Reached",
+          text2: `You can attach a maximum of ${MAX_PHOTOS_LIMIT} images.`,
+          type: "error",
+        });
+        return;
+      }
+
+      const placeholderId = tappedAsset.localAssetId;
+      setSelectedImages((prev) => [
+        ...prev,
+        {
+          localAssetId: placeholderId,
+          uri: "",
+          name: "",
+          type: "image/jpeg",
+          isCompressing: true,
+        },
+      ]);
+
+      // Start compression process
+      try {
+        const targetWidth = tappedAsset.width > 1200 ? 1200 : tappedAsset.width;
+
+        // Create the Object-Oriented context tracker handle
+        const manipulatorContext = ImageManipulator.manipulate(tappedAsset.uri);
+
+        // Invoke the async hardware renderer
+        const imageRef = await manipulatorContext
+          .resize({ width: targetWidth })
+          .renderAsync();
+
+        const finalCompressedResult = await imageRef.saveAsync({
+          compress: 0.7, // Target 70% quality compression
+          format: SaveFormat.JPEG,
+        });
+
+        // Enforce production file size boundaries on the compressed file
+        const fileInfo = await FileSystem.getInfoAsync(
+          finalCompressedResult.uri,
+        );
+        if (fileInfo.exists && fileInfo.size > MAX_FILE_SIZE_BYTES) {
+          // Toast.show({
+          //   text1: "File Too Large",
+          //   text2: `An image exceeds our ${MAX_FILE_SIZE_BYTES / (1024 * 1024)}MB limit even after compression.`,
+          //   type: "error",
+          // });
+          Alert.alert(
+            "File Too Large",
+            `An image exceeds our ${MAX_FILE_SIZE_BYTES / (1024 * 1024)}MB limit even after compression.`,
+          );
+          setSelectedImages((prev) =>
+            prev.filter((item) => item.localAssetId !== placeholderId),
+          );
+          return;
+        }
+
+        if (fileInfo.exists) {
+          console.log(fileInfo.size / (1024 * 1024), fileInfo.size);
+        }
+
+        const fileUri = finalCompressedResult.uri;
+        const fileName = fileUri.split("/").pop() || `upload_${Date.now()}.jpg`;
+
+        // Append asset directly to the structural order array queue
+        setSelectedImages((prev) =>
+          prev.map((item) =>
+            item.localAssetId === placeholderId
+              ? {
+                  localAssetId: placeholderId,
+                  uri: fileUri,
+                  name: fileName,
+                  type: "image/jpeg",
+                  isCompressing: false,
+                }
+              : item,
+          ),
+        );
+      } catch (e) {
+        console.error("Modern image manipulation processing broke down:", e);
+        setSelectedImages((prev) =>
+          prev.filter((item) => item.localAssetId !== placeholderId),
+        );
+        Toast.show({
+          text1: "Error",
+          text2: "Failed to compress selected images.",
+          type: "error",
+        });
+      }
     }
   };
 
@@ -185,13 +317,19 @@ const CreatePost = () => {
             isEditable={isEditable}
           />
         )}
-        <ImageSelector images={images} setImages={setImages} />
+        <ImagePicker
+          selectedImages={selectedImages}
+          onToggleAsset={handleToggleAsset}
+        />
         <View>
           <CustomOpacityButton
             title="Create Post"
             onPress={onPostSubmit}
             disabled={
-              status === "submitting" || !hasValidBody || !hasValidTitle
+              status === "submitting" ||
+              !hasValidBody ||
+              !hasValidTitle ||
+              !allImagesCompressed
             }
           />
         </View>
