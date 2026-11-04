@@ -7,7 +7,6 @@ import { useColorScheme } from "nativewind";
 import { useRef } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import Octicons from "@expo/vector-icons/Octicons";
-import { useAppDispatch } from "@/redux/hooks";
 import { FlashList, ListRenderItemInfo } from "@shopify/flash-list";
 import ScrollToButton from "@/components/scrollToButton";
 import useListScrollController from "@/hooks/useListScrollController";
@@ -19,13 +18,19 @@ import { listEmptyComponent } from "@/components/posts/feed";
 
 const Index = () => {
   const { colorScheme } = useColorScheme();
+  const currentAuthId = auth.currentUser?.uid;
 
   // Post state
-  console.log(`auth ${auth.currentUser?.uid}`);
-  const { data, isFetching, fetchNextPage, refetch } =
-    useGetTestimoniesFeedInfiniteQuery({ userAuthId: auth.currentUser?.uid });
-  const testimonies = data?.pages.flatMap((data) => data.data) ?? [];
-  const hasMore = data?.pages[data?.pages.length - 1].hasMore;
+  const { data, isFetching, isError, fetchNextPage, refetch } =
+    useGetTestimoniesFeedInfiniteQuery(
+      { userAuthId: currentAuthId },
+      { skip: !currentAuthId },
+    );
+  const testimonies = data?.pages?.flatMap((page) => page?.data ?? []) ?? [];
+  const hasMore =
+    data?.pages && data.pages.length > 0
+      ? (data.pages[data.pages.length - 1]?.hasMore ?? false)
+      : false;
 
   // FlashList state
   const flashListRef = useRef<FlashList<TestimonyPost> | null>(null);
@@ -95,7 +100,7 @@ const Index = () => {
           className="w-full bg-primary"
           data={testimonies}
           renderItem={renderListItem}
-          ListEmptyComponent={listEmptyComponent}
+          ListEmptyComponent={() => listEmptyComponent(isFetching, isError)}
           ItemSeparatorComponent={() => <CustomSectionSeparator />}
           onEndReached={onEndReached}
           onEndReachedThreshold={0.5}

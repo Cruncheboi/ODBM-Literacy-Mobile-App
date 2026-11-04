@@ -11,7 +11,6 @@ import {
 import storage from "@react-native-async-storage/async-storage";
 import usersReducer from "./features/usersSlice";
 import quizReducer from "./features/quizSlice";
-import { firestoreApi } from "./services/firestore";
 import { setupListeners } from "@reduxjs/toolkit/query";
 import { databaseApi } from "./query_services/databaseApi";
 import { rtkQueryNotificationMiddleware } from "./middleware/errorLogger";
@@ -19,7 +18,6 @@ import { rtkQueryNotificationMiddleware } from "./middleware/errorLogger";
 const reducers = combineReducers({
   users: usersReducer,
   quiz: quizReducer,
-  [firestoreApi.reducerPath]: firestoreApi.reducer,
   [databaseApi.reducerPath]: databaseApi.reducer,
 });
 
@@ -37,11 +35,7 @@ const store = configureStore({
       serializableCheck: {
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
-    }).concat(
-      firestoreApi.middleware,
-      databaseApi.middleware,
-      rtkQueryNotificationMiddleware,
-    ),
+    }).concat(databaseApi.middleware, rtkQueryNotificationMiddleware),
 });
 
 setupListeners(store.dispatch);

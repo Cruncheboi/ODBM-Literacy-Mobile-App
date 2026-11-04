@@ -4,31 +4,33 @@ import { auth } from "@/firebaseConfig";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { router } from "expo-router";
 import { useColorScheme } from "nativewind";
-import { useCallback, useRef } from "react";
+import { useRef } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
-import { useAppDispatch } from "@/redux/hooks";
 import { FlashList, ListRenderItemInfo } from "@shopify/flash-list";
 import ScrollToButton from "@/components/scrollToButton";
 import useListScrollController from "@/hooks/useListScrollController";
 import { CreatePostSearchParams } from "../../postActions/createPost";
 import Octicons from "@expo/vector-icons/Octicons";
 import { useGetEventsFeedInfiniteQuery } from "@/redux/query_services/injectedEndpoints.ts/events";
-import { QUERY_LIMIT } from "@/firebase_functions/firebaseFunctions";
 import { listEmptyComponent } from "@/components/posts/feed";
-import { databaseApi } from "@/redux/query_services/databaseApi";
 import { EventPost } from "@/definitions/posts";
 import { getThemeFontColor } from "@/utility_functions/themeColor";
 
 const Events = () => {
-  const dispatch = useAppDispatch();
   const { colorScheme } = useColorScheme();
+  const currentAuthId = auth.currentUser?.uid;
 
   // Post state
-  const { data, isFetching, fetchNextPage } = useGetEventsFeedInfiniteQuery({
-    userAuthId: auth.currentUser?.uid,
-  });
-  const events = data?.pages.flatMap((data) => data.data) ?? [];
-  const hasMore = data?.pages[data?.pages.length - 1].hasMore;
+  const { data, isFetching, isError, fetchNextPage, refetch } =
+    useGetEventsFeedInfiniteQuery(
+      { userAuthId: currentAuthId },
+      { skip: !currentAuthId },
+    );
+  const events = data?.pages?.flatMap((page) => page?.data ?? []) ?? [];
+  const hasMore =
+    data?.pages && data.pages.length > 0
+      ? (data.pages[data.pages.length - 1]?.hasMore ?? false)
+      : false;
 
   // FlashList state
   const flashListRef = useRef<FlashList<EventPost> | null>(null);
@@ -48,7 +50,7 @@ const Events = () => {
   };
 
   const onRefresh = async () => {
-    dispatch(databaseApi.util.invalidateTags([{ type: "Events" }]));
+    refetch();
   };
 
   const onAddPostPressed = () => {
@@ -98,7 +100,7 @@ const Events = () => {
           contentContainerClassName="w-full flex py-3"
           data={events}
           renderItem={renderListItem}
-          ListEmptyComponent={listEmptyComponent}
+          ListEmptyComponent={() => listEmptyComponent(isFetching, isError)}
           className="w-full bg-primary"
           ItemSeparatorComponent={() => <CustomSectionSeparator />}
           onEndReached={onEndReached}

@@ -1,5 +1,4 @@
 // FLASHLIST COMPONENTS
-
 import { Text, View } from "react-native";
 
 // Retrieves component to display when there are no posts to show
@@ -25,12 +24,12 @@ export const showItemOnError = () => {
 };
 
 // Returns the component to display on an empty list based on loading and post data state.
-export const listEmptyComponent = (isFetching: boolean, data: any) => {
+export const listEmptyComponent = (isFetching: boolean, isError: boolean) => {
   if (isFetching) {
     return null;
   }
 
-  if (data == undefined) {
+  if (isError) {
     return showItemOnError();
   }
   return showItemOnEmptyList();
