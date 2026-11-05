@@ -1,6 +1,6 @@
 export interface ImageInfo {
-  imageUrl: string;
-  b2FileId: string;
+  id: number;
+  url: string;
   order: number;
 }
 

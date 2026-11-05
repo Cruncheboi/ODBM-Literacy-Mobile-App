@@ -124,13 +124,15 @@ const CreatePost = () => {
             // Fetch the physical raw file blob out of the phone's local cache URI
             const fileBlobResponse = await fetch(localImage.uri);
             const rawFileBlob = await fileBlobResponse.blob();
-
+            console.log(cloudTicket.uploadUrl);
             // Stream the binary chunk straight to Backblaze B2
             const cloudUploadResponse = await fetch(cloudTicket.uploadUrl, {
               method: "PUT",
               body: rawFileBlob,
               headers: { "Content-Type": localImage.type },
             });
+
+            console.log(cloudUploadResponse);
 
             if (cloudUploadResponse.ok) {
               // If Backblaze responds 200 OK, track the successful image record primary key ID

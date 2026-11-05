@@ -14,6 +14,7 @@
   --text-body: #25538a;
   --bg-primary: #D5E2E9;
   --bg-secondary: #D5E2E9;
+  --bg-spotlight: #dddddd;
   --border-primary: #173A64;
 }
 
@@ -30,6 +31,7 @@
     --text-body: #dde2e9;
     --bg-primary: #2d2e31;
     --bg-secondary: #58595B;
+    --bg-spotlight: #3f3f3f;
     --border-primary: #9ca3af;
   }
 }

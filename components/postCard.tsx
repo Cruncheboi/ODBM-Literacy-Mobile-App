@@ -5,6 +5,8 @@ import { router } from "expo-router";
 import { ViewPostSearchParams } from "@/app/postActions/viewPost";
 import { ViewReportSearchParams } from "@/app/postActions/viewReport";
 import { Post } from "@/definitions/posts";
+import StyledLabel from "./styledLabel";
+import { getThemeHighlightColor } from "@/utility_functions/themeColor";
 
 interface Props {
   post: Post;
@@ -38,7 +40,7 @@ const PostCard = ({ post, isReported }: Props) => {
   };
 
   return (
-    <View className="max-h-[340px] w-11/12 self-center rounded-xl p-3">
+    <View className="flex w-11/12 self-center rounded-xl p-3">
       <TouchableOpacity className="w-full" onPress={onPressPost}>
         <View className="flex flex-row justify-items-center">
           <Text className="text-highlight">@</Text>
@@ -55,6 +57,26 @@ const PostCard = ({ post, isReported }: Props) => {
         <Text className="mt-2 line-clamp-3 text-xl font-bold text-textColor-title">
           {title}
         </Text>
+        {images && images.length > 0 && (
+          <View className="bg-bgColor-spotlight my-3 flex aspect-square h-16 flex-row items-center justify-center rounded-lg border-2 border-borderColor-primary">
+            <Text className="pr-1 text-xl text-textColor-primary">
+              {images?.length}
+            </Text>
+            {images?.length === 1 ? (
+              <Ionicons
+                name="image"
+                size={24}
+                color={getThemeHighlightColor(colorScheme)}
+              />
+            ) : (
+              <Ionicons
+                name="images"
+                size={24}
+                color={getThemeHighlightColor(colorScheme)}
+              />
+            )}
+          </View>
+        )}
         <View className="max-h-40 pb-4">
           <Text className="line-clamp-5 text-lg text-textColor-body">
             {body}

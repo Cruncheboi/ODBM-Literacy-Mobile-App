@@ -67,7 +67,8 @@ export const ImagePicker = ({
   }, [createScrollableComponent]);
 
   async function loadInitialGallery() {
-    if (gallery.length !== 0) return;
+    if (gallery.length !== 0 || loading) return;
+    console.log("Getting initial images", gallery);
     setLoading(true);
     const initialImages = await fetchCameraRollImagesInfo();
     lastAssetId.current = initialImages.endCursor;
@@ -119,6 +120,7 @@ export const ImagePicker = ({
   };
 
   const handleEndReached = async () => {
+    if (loading) return;
     setLoading(true);
     const newImages = await fetchCameraRollImagesInfo(40, lastAssetId.current);
     lastAssetId.current = newImages.endCursor;

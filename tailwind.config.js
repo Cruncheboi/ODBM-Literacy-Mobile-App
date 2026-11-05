@@ -39,6 +39,7 @@ module.exports = {
         bgColor: {
           primary: "var(--bg-primary)",
           secondary: "var(--bg-secondary)",
+          spotlight: "var(--bg-spotlight)",
         },
         borderColor: {
           primary: "var(--border-primary)",
