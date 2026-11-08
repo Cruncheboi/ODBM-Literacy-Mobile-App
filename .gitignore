@@ -25,12 +25,15 @@ npm-debug.*
 yarn-debug.*
 yarn-error.*
 
-#android
+# android
 /android
 android/app/credentials.json
 android/app/debug.keystore
 .idea/
 *.iml
+
+# firebase
+google-services.json
 
 # macOS
 .DS_Store

@@ -13,7 +13,8 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.crunche.odbmlit"
+      "package": "com.crunche.odbmlit",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "bundler": "metro",
@@ -33,7 +34,10 @@
       ],
       "expo-build-properties",
       "expo-font",
-      "expo-web-browser"
+      "expo-web-browser",
+      // "@react-native-firebase/app",
+      "@react-native-firebase/auth",
+      "expo-asset"
     ],
     "experiments": {
       "typedRoutes": true

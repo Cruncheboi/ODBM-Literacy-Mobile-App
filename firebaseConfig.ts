@@ -1,9 +1,5 @@
-import { FirebaseError, initializeApp } from "firebase/app";
-import {
-  initializeAuth,
-  onAuthStateChanged,
-  getReactNativePersistence,
-} from "firebase/auth";
+import { FirebaseError, getApp, getApps, initializeApp } from "firebase/app";
+import { initializeAuth, onAuthStateChanged } from "firebase/auth";
 import {
   collection,
   FieldValue,
@@ -11,6 +7,8 @@ import {
   getFirestore,
   Timestamp,
 } from "firebase/firestore";
+// @ts-expect-error - function exists at runtime
+import { getReactNativePersistence } from "firebase/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Toast from "react-native-toast-message";
 
@@ -25,7 +23,8 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-export const app = initializeApp(firebaseConfig);
+export const app =
+  getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 export const auth = initializeAuth(app, {
   persistence: getReactNativePersistence(AsyncStorage),
 });

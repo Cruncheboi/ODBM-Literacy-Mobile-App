@@ -126,18 +126,19 @@ export default function RootLayout() {
               //   backgroundColor: ,
               // }}
               >
-                <StatusBar
+                {/* <StatusBar
                   style="auto"
-                  backgroundColor={getThemeMainColor(colorScheme)}
-                />
+                  // backgroundColor={getThemeMainColor(colorScheme)}
+                /> */}
                 <Stack
                   screenOptions={{
                     // animation: "slide_from_right",
                     // presentation
                     // animationTypeForReplace: "pop",
-                    navigationBarColor: getThemeMainColor(colorScheme),
-                    statusBarBackgroundColor: "transparent",
-                    statusBarStyle: colorScheme == "light" ? "dark" : "light",
+                    // navigationBarColor: getThemeMainColor(colorScheme),
+                    // statusBarBackgroundColor: "transparent",
+                    // statusBarStyle: colorScheme == "light" ? "dark" : "light",
+                    // statusBarStyle: "auto",
                     headerShown: false,
                   }}
                   initialRouteName="index"
@@ -153,7 +154,7 @@ export default function RootLayout() {
           </GestureHandlerRootView>
         </PersistGate>
       </Provider>
-      <Toast position="bottom" config={toastConfig} />
+      <Toast position="bottom" autoHide={true} config={toastConfig} />
     </>
   );
 }

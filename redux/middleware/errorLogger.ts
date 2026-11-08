@@ -61,6 +61,7 @@ export const rtkQueryNotificationMiddleware: Middleware =
         type: "error",
         text1: `API Error (Status: ${status})`,
         text2: errorMessage,
+        autoHide: true,
       });
     }
     return next(action);
