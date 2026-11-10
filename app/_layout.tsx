@@ -17,14 +17,20 @@ import { PersistGate } from "redux-persist/integration/react";
 import { persistStore } from "redux-persist";
 import { auth, isSignedIn } from "@/firebaseConfig";
 import { useAppDispatch } from "@/redux/hooks";
-import Toast, { BaseToast, ToastProps } from "react-native-toast-message";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
+import { ToastContainer } from "@ncrft/native-toast";
+import {
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider,
+} from "@react-navigation/native";
 // import * as SystemUI from "expo-system-ui";
 
 const persistor = persistStore(store);
 
 export default function RootLayout() {
   const { colorScheme } = useColorScheme();
+
   const [loaded, error] = useFonts({
     "Bounded Black": require("@/assets/fonts/Bounded Black.ttf"),
   });
@@ -34,63 +40,82 @@ export default function RootLayout() {
     }
   }, [loaded, error]);
 
-  const toastConfig = {
-    success: (props: ToastProps) => {
-      return (
-        <BaseToast
-          {...props}
-          style={{ borderLeftColor: "green" }}
-          contentContainerStyle={{
-            borderTopWidth: 1,
-            borderBottomWidth: 1,
-            borderRightWidth: 1,
-            borderTopRightRadius: 6,
-            borderBottomRightRadius: 6,
-            borderColor: "#58595B",
-            backgroundColor: getThemeSecondaryColor(colorScheme),
-          }}
-          text1Style={{ color: getThemeFontColor(colorScheme) }}
-        />
-      );
-    },
-    info: (props: ToastProps) => {
-      return (
-        <BaseToast
-          {...props}
-          style={{ borderLeftColor: "yellow" }}
-          contentContainerStyle={{
-            borderTopWidth: 1,
-            borderBottomWidth: 1,
-            borderRightWidth: 1,
-            borderTopRightRadius: 6,
-            borderBottomRightRadius: 6,
-            borderColor: "#58595B",
-            backgroundColor: getThemeSecondaryColor(colorScheme),
-          }}
-          text1Style={{ color: getThemeFontColor(colorScheme) }}
-        />
-      );
-    },
-    error: (props: ToastProps) => {
-      return (
-        <BaseToast
-          {...props}
-          style={{ borderLeftColor: "red" }}
-          contentContainerStyle={{
-            borderTopWidth: 1,
-            borderBottomWidth: 1,
-            borderRightWidth: 1,
-            borderTopRightRadius: 6,
-            borderBottomRightRadius: 6,
-            borderColor: "#58595B",
-            backgroundColor: getThemeSecondaryColor(colorScheme),
-          }}
-          text1Style={{ color: getThemeFontColor(colorScheme) }}
-          activeOpacity={8000}
-        />
-      );
+  // THEMES
+  const darkTheme = {
+    ...DarkTheme,
+    colors: {
+      ...DarkTheme.colors,
+      background: "#222222", // Match your dark grey background
+      card: "#0f0f0f", // Match your tab bar background
     },
   };
+  const lightTheme = {
+    ...DefaultTheme,
+    colors: {
+      ...DefaultTheme.colors,
+      background: "##f5f5f5", // Match your dark grey background
+      card: "#f5f5f5", // Match your tab bar background
+    },
+  };
+  const currentTheme = colorScheme === "dark" ? darkTheme : lightTheme;
+
+  // const toastConfig = {
+  //   success: (props: ToastProps) => {
+  //     return (
+  //       <BaseToast
+  //         {...props}
+  //         style={{ borderLeftColor: "green" }}
+  //         contentContainerStyle={{
+  //           borderTopWidth: 1,
+  //           borderBottomWidth: 1,
+  //           borderRightWidth: 1,
+  //           borderTopRightRadius: 6,
+  //           borderBottomRightRadius: 6,
+  //           borderColor: "#58595B",
+  //           backgroundColor: getThemeSecondaryColor(colorScheme),
+  //         }}
+  //         text1Style={{ color: getThemeFontColor(colorScheme) }}
+  //       />
+  //     );
+  //   },
+  //   info: (props: ToastProps) => {
+  //     return (
+  //       <BaseToast
+  //         {...props}
+  //         style={{ borderLeftColor: "yellow" }}
+  //         contentContainerStyle={{
+  //           borderTopWidth: 1,
+  //           borderBottomWidth: 1,
+  //           borderRightWidth: 1,
+  //           borderTopRightRadius: 6,
+  //           borderBottomRightRadius: 6,
+  //           borderColor: "#58595B",
+  //           backgroundColor: getThemeSecondaryColor(colorScheme),
+  //         }}
+  //         text1Style={{ color: getThemeFontColor(colorScheme) }}
+  //       />
+  //     );
+  //   },
+  //   error: (props: ToastProps) => {
+  //     return (
+  //       <BaseToast
+  //         {...props}
+  //         style={{ borderLeftColor: "red" }}
+  //         contentContainerStyle={{
+  //           borderTopWidth: 1,
+  //           borderBottomWidth: 1,
+  //           borderRightWidth: 1,
+  //           borderTopRightRadius: 6,
+  //           borderBottomRightRadius: 6,
+  //           borderColor: "#58595B",
+  //           backgroundColor: getThemeSecondaryColor(colorScheme),
+  //         }}
+  //         text1Style={{ color: getThemeFontColor(colorScheme) }}
+  //         activeOpacity={8000}
+  //       />
+  //     );
+  //   },
+  // };
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -126,35 +151,31 @@ export default function RootLayout() {
               //   backgroundColor: ,
               // }}
               >
-                {/* <StatusBar
-                  style="auto"
-                  // backgroundColor={getThemeMainColor(colorScheme)}
-                /> */}
-                <Stack
-                  screenOptions={{
-                    // animation: "slide_from_right",
-                    // presentation
-                    // animationTypeForReplace: "pop",
-                    // navigationBarColor: getThemeMainColor(colorScheme),
-                    // statusBarBackgroundColor: "transparent",
-                    // statusBarStyle: colorScheme == "light" ? "dark" : "light",
-                    // statusBarStyle: "auto",
-                    headerShown: false,
-                  }}
-                  initialRouteName="index"
-                >
-                  <Stack.Screen name="index" />
-                  <Stack.Screen name="(tabs)" />
-                  <Stack.Screen name="(pdfs)" />
-                  <Stack.Screen name="(auth)" />
-                  <Stack.Screen name="postActions" />
-                </Stack>
+                <StatusBar style="auto" />
+                <ThemeProvider value={currentTheme}>
+                  <Stack
+                    screenOptions={{
+                      animation: "fade",
+                      // presentation: "fullScreenModal",
+                      // animationTypeForReplace: "pop",
+                      // navigationBarColor: getThemeMainColor(colorScheme),
+                      headerShown: false,
+                    }}
+                    initialRouteName="index"
+                  >
+                    <Stack.Screen name="index" />
+                    <Stack.Screen name="(tabs)" />
+                    <Stack.Screen name="(pdfs)" />
+                    <Stack.Screen name="(auth)" />
+                    <Stack.Screen name="postActions" />
+                  </Stack>
+                </ThemeProvider>
+                <ToastContainer theme={colorScheme ?? "dark"} />
               </SafeAreaProvider>
             </BottomSheetModalProvider>
           </GestureHandlerRootView>
         </PersistGate>
       </Provider>
-      <Toast position="bottom" autoHide={true} config={toastConfig} />
     </>
   );
 }

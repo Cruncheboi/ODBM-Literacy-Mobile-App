@@ -5,7 +5,6 @@ const Layout = () => {
       initialRouteName="createPost"
       screenOptions={{
         headerShown: false,
-        statusBarBackgroundColor: "transparent",
       }}
     >
       <Stack.Screen name="createPost" />

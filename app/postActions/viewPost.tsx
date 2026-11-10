@@ -8,8 +8,12 @@ import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
 import CustomBackButton from "@/components/customBackButton";
 import CustomSectionSeparator from "@/components/customSectionSeparator";
 import CommentCard from "@/components/commentCard";
-import { useCallback, useRef, useState } from "react";
-import { FlashList, ListRenderItemInfo } from "@shopify/flash-list";
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  FlashList,
+  FlashListRef,
+  ListRenderItemInfo,
+} from "@shopify/flash-list";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { useColorScheme } from "nativewind";
 import { CommentSearchParams } from "@/app/postActions/createComment";
@@ -61,7 +65,7 @@ const ViewPost = () => {
     false;
 
   // FLASHLIST STATE
-  const flashListRef = useRef<FlashList<CommentPost> | null>(null);
+  const flashListRef = useRef<FlashListRef<CommentPost> | null>(null);
   const { onScrollToPressed, onScroll, showScrollToButton } =
     useListScrollController(flashListRef);
 
@@ -201,7 +205,11 @@ const ViewPost = () => {
     },
     [comments],
   );
+  console.log("postType:", bottomSheetContent?.postType);
 
+  useEffect(() => {
+    console.log("postType changed to:", bottomSheetContent?.postType);
+  }, [bottomSheetContent]);
   const itemSeparatorComponent = useCallback(() => {
     return <View className="p-2" />;
   }, []);
@@ -224,7 +232,6 @@ const ViewPost = () => {
         onRefresh={onRefresh}
         onEndReached={onEndReached}
         onEndReachedThreshold={0.3}
-        estimatedItemSize={68}
         ref={flashListRef}
         onScroll={onScroll}
       />

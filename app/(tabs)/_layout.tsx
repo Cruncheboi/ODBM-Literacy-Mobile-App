@@ -12,6 +12,7 @@ export default function TabLayout() {
 
   return (
     <Tabs
+      key={colorScheme}
       initialRouteName="home"
       screenOptions={{
         tabBarActiveTintColor: getThemeHighlightColor(colorScheme),

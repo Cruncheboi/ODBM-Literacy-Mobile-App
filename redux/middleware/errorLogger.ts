@@ -1,6 +1,6 @@
+import { toast } from "@ncrft/native-toast";
 import { isFulfilled, isRejectedWithValue } from "@reduxjs/toolkit";
 import type { Middleware } from "@reduxjs/toolkit";
-import Toast from "react-native-toast-message";
 
 export const rtkQueryNotificationMiddleware: Middleware =
   (api) => (next) => (action) => {
@@ -16,12 +16,7 @@ export const rtkQueryNotificationMiddleware: Middleware =
           "message" in payload &&
           typeof payload.message === "string"
         ) {
-          Toast.show({
-            type: "success",
-            text1: "Success",
-            text2: payload.message,
-            visibilityTime: 3000,
-          });
+          toast.success(`Success: ${payload.message}`);
         }
       }
     }
@@ -56,13 +51,11 @@ export const rtkQueryNotificationMiddleware: Middleware =
           errorMessage = payload.error;
         }
       }
-
-      Toast.show({
-        type: "error",
-        text1: `API Error (Status: ${status})`,
-        text2: errorMessage,
-        autoHide: true,
-      });
+      toast.error(`Action unsuccessful. (Error status: ${status})`);
+      console.warn(
+        `Action unsuccessful. (Error status: ${status})`,
+        errorMessage,
+      );
     }
     return next(action);
   };

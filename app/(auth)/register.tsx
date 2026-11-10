@@ -19,8 +19,8 @@ import { router } from "expo-router";
 import { checkIfDisplayNameIsAvailable } from "@/firebase_functions/firebaseFunctions";
 import { debounce } from "lodash";
 import InfoText from "@/components/infoText";
-import Toast from "react-native-toast-message";
 import cn from "@/utility_functions/cn";
+import { toast } from "@ncrft/native-toast";
 
 // Constants
 const PASSWORD_MIN_LEN = 8;
@@ -159,20 +159,20 @@ const Register = () => {
           blockedUserIds: [],
         };
         createUserAccountInfo(dispatch, userInfo);
-        Toast.show({
-          type: "success",
-          text1: "Account successfully created",
-        });
+        toast.success("Account successfully created!");
         dispatch(updateIsSignedIn(true));
       } catch (error: any) {
         const errorCode = error.code;
         const errorMessage = error.message;
         console.log(errorMessage);
-        Toast.show({
-          type: "error",
-          text1: `Error (${error.code})`,
-          text2: "An error occurred while creating an account",
-        });
+        toast.error(
+          `An error occurred while creating an account. \nError code: ${error.code}`,
+        );
+        // Toast.show({
+        //   type: "error",
+        //   text1: `Error (${error.code})`,
+        //   text2: "An error occurred while creating an account",
+        // });
       }
     }
   };

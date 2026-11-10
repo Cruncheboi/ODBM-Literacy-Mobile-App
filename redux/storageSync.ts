@@ -14,7 +14,6 @@ import {
   updateLastName,
 } from "./features/usersSlice";
 import { updateProfile } from "firebase/auth";
-import Toast from "react-native-toast-message";
 
 /**
  * Updates the first name of the user in the database and locally.

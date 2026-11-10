@@ -1,10 +1,6 @@
-import { FlashList } from "@shopify/flash-list";
-import { MutableRefObject, useEffect, useRef, useState } from "react";
-import {
-  NativeSyntheticEvent,
-  NativeScrollEvent,
-  InteractionManager,
-} from "react-native";
+import { FlashListRef } from "@shopify/flash-list";
+import { RefObject, useRef, useState } from "react";
+import { NativeSyntheticEvent, NativeScrollEvent } from "react-native";
 
 interface ReturnListScrollController {
   showScrollToButton: boolean;
@@ -15,7 +11,7 @@ interface ReturnListScrollController {
 }
 
 const useListScrollController = (
-  flashListRef: MutableRefObject<FlashList<any> | null>,
+  flashListRef: RefObject<FlashListRef<any> | null>,
 ): ReturnListScrollController => {
   // State
   const [showScrollToButton, setShowScrollToButton] = useState(false);
@@ -49,7 +45,7 @@ const useListScrollController = (
   const getScrollPosition = () => lastScrollPositionRef.current;
 
   const setScrollPosition = (YPosition: number) => {
-    // InteractionManager.runAfterInteractions(() => {
+    // timeout needed to run after interactions
     setTimeout(() => {
       if (flashListRef.current) {
         console.log(`Setting position to ${YPosition}`);
@@ -59,10 +55,7 @@ const useListScrollController = (
         });
       }
     }, 0);
-    // });
   };
-
-  // useEffect(() => {}, [scr]);
 
   return {
     showScrollToButton,

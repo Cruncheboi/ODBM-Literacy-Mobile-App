@@ -6,7 +6,11 @@ import {
 import { View, Text, ActivityIndicator } from "react-native";
 import CustomBackButton from "@/components/customBackButton";
 import React, { useCallback, useRef } from "react";
-import { FlashList, ListRenderItemInfo } from "@shopify/flash-list";
+import {
+  FlashList,
+  FlashListRef,
+  ListRenderItemInfo,
+} from "@shopify/flash-list";
 import ScrollToButton from "@/components/scrollToButton";
 import useListScrollController from "@/hooks/useListScrollController";
 import ReportCard from "@/components/reportCard";
@@ -60,7 +64,7 @@ const ViewReport = () => {
   const hasMore = data?.pages[data?.pages.length - 1].hasMore;
 
   // Flashlist state
-  const flashListRef = useRef<FlashList<ReportHistoryItem> | null>(null);
+  const flashListRef = useRef<FlashListRef<ReportHistoryItem> | null>(null);
   const { onScrollToPressed, onScroll, showScrollToButton } =
     useListScrollController(flashListRef);
 
@@ -158,7 +162,6 @@ const ViewReport = () => {
         onRefresh={onRefresh}
         onEndReached={onEndReached}
         onEndReachedThreshold={0.3}
-        estimatedItemSize={68}
         ref={flashListRef}
         onScroll={onScroll}
       />

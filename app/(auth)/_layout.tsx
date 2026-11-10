@@ -5,7 +5,6 @@ const Layout = () => {
       initialRouteName="register"
       screenOptions={{
         headerShown: false,
-        statusBarBackgroundColor: "transparent",
         animation: "ios_from_right",
       }}
     >

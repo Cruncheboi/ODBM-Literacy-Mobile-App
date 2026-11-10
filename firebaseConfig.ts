@@ -10,7 +10,6 @@ import {
 // @ts-expect-error - function exists at runtime
 import { getReactNativePersistence } from "firebase/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import Toast from "react-native-toast-message";
 
 // Web app's Firebase configuration
 const firebaseConfig = {
@@ -187,37 +186,5 @@ export const getCollection = (contentType: ContentType) => {
     return eventsCollection;
   } else {
     return commentsCollection;
-  }
-};
-
-export const genericFirestoreErrorLog = (error: any) => {
-  if (error instanceof FirebaseError) {
-    console.error("Firebase Error:", error.code, error.message);
-    if (error.code === ("permission-denied" satisfies FirestoreErrorCode)) {
-      console.error("User does not have permission to access this collection.");
-      Toast.show({
-        type: "error",
-        text1: "You do not have the permissions to complete this action.",
-      });
-    } else if (error.code === ("unavailable" satisfies FirestoreErrorCode)) {
-      console.error("Firestore service is currently unavailable.");
-      Toast.show({
-        type: "error",
-        text1: "Database is currently unavailable. Please try again later.",
-      });
-    }
-  } else if (error.code === ("unauthenticated" satisfies FirestoreErrorCode)) {
-    console.error("Firestore service is currently unavailable.");
-    Toast.show({
-      type: "error",
-      text1: "You are currently not authenticaed.",
-      text2: "Please log in.",
-    });
-  } else {
-    console.error("Unexpected Error:", error);
-    Toast.show({
-      type: "error",
-      text1: "An unexpected error occurred.",
-    });
   }
 };

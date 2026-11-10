@@ -44,6 +44,7 @@ const Index = () => {
       return {
         title: sectionName,
         onTap: () => {
+          console.log(index, sectionName);
           if (sectionListRef.current != null) {
             sectionListRef.current.scrollToLocation({
               sectionIndex: index,

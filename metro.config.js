@@ -6,7 +6,7 @@ const { withNativeWind } = require("nativewind/metro");
 
 const config = getDefaultConfig(__dirname);
 config.resolver.sourceExts.push("cjs");
-config.resolver.unstable_enablePackageExports = false;
+// config.resolver.unstable_enablePackageExports = false;
 
 module.exports = withNativeWind(wrapWithReanimatedMetroConfig(config), {
   input: "./global.css",

@@ -41,7 +41,7 @@ export const ImagePicker = ({
   const [loading, setLoading] = useState(false);
   const createScrollableComponent = useBottomSheetScrollableCreator();
   const snapPoints = useMemo(() => ["70%"], []);
-  const lastAssetId = useRef<string>();
+  const lastAssetId = useRef<string>(undefined);
   const { colorScheme } = useColorScheme();
 
   // Bottom sheet refs
@@ -165,7 +165,6 @@ export const ImagePicker = ({
           numColumns={3}
           data={gallery}
           renderItem={renderItem}
-          estimatedItemSize={COLUMN_SIZE}
           renderScrollComponent={CustomScrollComponent}
           extraData={selectedImages}
           onEndReached={handleEndReached}

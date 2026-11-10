@@ -1,13 +1,8 @@
 import CustomHeader from "@/components/customHeader";
 import CustomOpacityButton from "@/components/customOpacityButton";
 import StyledLabel from "@/components/styledLabel";
-import {
-  router,
-  useFocusEffect,
-  useLocalSearchParams,
-  useNavigation,
-} from "expo-router";
-import { useCallback, useRef, useState } from "react";
+import { router, useLocalSearchParams } from "expo-router";
+import { useState } from "react";
 import { View, ScrollView, Alert } from "react-native";
 import { PostType } from "@/definitions/posts";
 import {
@@ -24,12 +19,11 @@ import {
   useActivatePostMutation,
   useInitializePostMutation,
 } from "@/redux/query_services/injectedEndpoints.ts/posts";
-import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { ImagePicker } from "@/components/bottom_sheet/media/imagePicker";
 import { LocalAssetRecord } from "@/utility_functions/images/mediaLoader";
-import Toast from "react-native-toast-message";
 import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
-import * as FileSystem from "expo-file-system";
+import { File } from "expo-file-system";
+import { toast } from "@ncrft/native-toast";
 
 export type CreatePostSearchParams = {
   type: PostType;
@@ -192,11 +186,7 @@ const CreatePost = () => {
     } else {
       // Apply Selection limit
       if (selectedImages.length >= MAX_PHOTOS_LIMIT) {
-        Toast.show({
-          text1: "Limit Reached",
-          text2: `You can attach a maximum of ${MAX_PHOTOS_LIMIT} images.`,
-          type: "error",
-        });
+        toast.error(`You can attach a maximum of ${MAX_PHOTOS_LIMIT} images.`);
         return;
       }
 
@@ -230,10 +220,12 @@ const CreatePost = () => {
         });
 
         // Enforce production file size boundaries on the compressed file
-        const fileInfo = await FileSystem.getInfoAsync(
-          finalCompressedResult.uri,
-        );
-        if (fileInfo.exists && fileInfo.size > MAX_FILE_SIZE_BYTES) {
+        const fileInfo = new File(finalCompressedResult.uri).info();
+        if (
+          fileInfo.exists &&
+          fileInfo.size &&
+          fileInfo.size > MAX_FILE_SIZE_BYTES
+        ) {
           // Toast.show({
           //   text1: "File Too Large",
           //   text2: `An image exceeds our ${MAX_FILE_SIZE_BYTES / (1024 * 1024)}MB limit even after compression.`,
@@ -250,7 +242,10 @@ const CreatePost = () => {
         }
 
         if (fileInfo.exists) {
-          console.log(fileInfo.size / (1024 * 1024), fileInfo.size);
+          console.log(
+            fileInfo.size ? fileInfo.size / (1024 * 1024) : fileInfo.exists,
+            fileInfo.size,
+          );
         }
 
         const fileUri = finalCompressedResult.uri;
@@ -275,11 +270,7 @@ const CreatePost = () => {
         setSelectedImages((prev) =>
           prev.filter((item) => item.localAssetId !== placeholderId),
         );
-        Toast.show({
-          text1: "Error",
-          text2: "Failed to compress selected images.",
-          type: "error",
-        });
+        toast.error("Failed to compress selected image.");
       }
     }
   };

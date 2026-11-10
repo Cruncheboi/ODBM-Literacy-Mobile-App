@@ -18,13 +18,12 @@ const TestimonyPostDisplay = ({ post }: TestimonyPostProps) => {
   return (
     <>
       <StyledPostHeading authorName={authorName} postDate={postDate} />
-
+      <StyledPostTitle title={title} />
       {images && images.length > 0 && (
         <View className="mt-4">
           <ImageDisplay images={images} />
         </View>
       )}
-      <StyledPostTitle title={title} />
       <StyledPostBody body={body} />
     </>
   );

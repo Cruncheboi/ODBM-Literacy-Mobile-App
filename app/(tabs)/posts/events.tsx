@@ -6,7 +6,11 @@ import { router } from "expo-router";
 import { useColorScheme } from "nativewind";
 import { useRef } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
-import { FlashList, ListRenderItemInfo } from "@shopify/flash-list";
+import {
+  FlashList,
+  FlashListRef,
+  ListRenderItemInfo,
+} from "@shopify/flash-list";
 import ScrollToButton from "@/components/scrollToButton";
 import useListScrollController from "@/hooks/useListScrollController";
 import { CreatePostSearchParams } from "../../postActions/createPost";
@@ -33,7 +37,7 @@ const Events = () => {
       : false;
 
   // FlashList state
-  const flashListRef = useRef<FlashList<EventPost> | null>(null);
+  const flashListRef = useRef<FlashListRef<EventPost> | null>(null);
   const { showScrollToButton, onScrollToPressed, onScroll } =
     useListScrollController(flashListRef);
 
@@ -107,7 +111,6 @@ const Events = () => {
           onEndReachedThreshold={0.5}
           refreshing={isFetching}
           onRefresh={onRefresh}
-          estimatedItemSize={230}
           ref={flashListRef}
           onScroll={onScroll}
         />
