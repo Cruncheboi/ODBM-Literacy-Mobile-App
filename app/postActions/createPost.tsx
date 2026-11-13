@@ -246,6 +246,7 @@ const CreatePost = () => {
             fileInfo.size ? fileInfo.size / (1024 * 1024) : fileInfo.exists,
             fileInfo.size,
           );
+          console.log("Dimensions:", imageRef.height, imageRef.width);
         }
 
         const fileUri = finalCompressedResult.uri;

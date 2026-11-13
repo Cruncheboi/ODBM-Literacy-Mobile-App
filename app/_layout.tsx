@@ -25,6 +25,12 @@ import {
   ThemeProvider,
 } from "@react-navigation/native";
 // import * as SystemUI from "expo-system-ui";
+import { cssInterop } from "nativewind";
+import { Image } from "expo-image";
+
+cssInterop(Image, {
+  className: "style",
+});
 
 const persistor = persistStore(store);
 

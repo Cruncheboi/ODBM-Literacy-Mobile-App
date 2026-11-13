@@ -5,7 +5,6 @@ import { router } from "expo-router";
 import { ViewPostSearchParams } from "@/app/postActions/viewPost";
 import { ViewReportSearchParams } from "@/app/postActions/viewReport";
 import { Post } from "@/definitions/posts";
-import StyledLabel from "./styledLabel";
 import { getThemeHighlightColor } from "@/utility_functions/themeColor";
 
 interface Props {
@@ -21,7 +20,7 @@ const PostCard = ({ post, isReported }: Props) => {
 
   const onPressPost = () => {
     if (isReported) {
-      router.push({
+      router.navigate({
         pathname: "/postActions/viewReport",
         params: {
           postId: strPostId,
@@ -29,7 +28,7 @@ const PostCard = ({ post, isReported }: Props) => {
         } as ViewReportSearchParams,
       });
     } else {
-      router.push({
+      router.navigate({
         pathname: "/postActions/viewPost",
         params: {
           postId: strPostId,
@@ -58,7 +57,7 @@ const PostCard = ({ post, isReported }: Props) => {
           {title}
         </Text>
         {images && images.length > 0 && (
-          <View className="bg-bgColor-spotlight my-3 flex aspect-square h-16 flex-row items-center justify-center rounded-lg border-2 border-borderColor-primary">
+          <View className="my-3 flex aspect-square h-16 flex-row items-center justify-center rounded-lg border-2 border-borderColor-primary bg-bgColor-spotlight">
             <Text className="pr-1 text-xl text-textColor-primary">
               {images?.length}
             </Text>

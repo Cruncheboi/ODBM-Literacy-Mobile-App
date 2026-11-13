@@ -20,7 +20,7 @@ const TestimonyPostDisplay = ({ post }: TestimonyPostProps) => {
       <StyledPostHeading authorName={authorName} postDate={postDate} />
       <StyledPostTitle title={title} />
       {images && images.length > 0 && (
-        <View className="mt-4">
+        <View className="mt-4 ">
           <ImageDisplay images={images} />
         </View>
       )}

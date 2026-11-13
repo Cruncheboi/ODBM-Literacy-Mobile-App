@@ -8,4 +8,10 @@ import { View } from "react-native";
 const CustomBackground = ({ style }: BottomSheetBackgroundProps) => {
   return <View className="bg-primary" style={style} />;
 };
+
+export const CustomTransparentBackground = ({
+  style,
+}: BottomSheetBackgroundProps) => {
+  return <View className="bg-transparent" style={style} />;
+};
 export default CustomBackground;

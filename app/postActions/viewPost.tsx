@@ -215,13 +215,14 @@ const ViewPost = () => {
   }, []);
 
   return (
-    <View className="py-safe-offset-3 flex flex-1 bg-primary px-4">
+    <View className="pt-safe-offset-3 pb-safe flex flex-1 bg-primary">
       {/* Header */}
-      <View className="flex h-14 flex-row items-center justify-between">
+      <View className="mx-4 flex h-14 flex-row items-center justify-between">
         <CustomBackButton />
         <KebabIcon className="p-2" onPress={() => onMoreOptionsPress(post)} />
       </View>
       <FlashList
+        contentContainerClassName="px-4"
         stickyHeaderHiddenOnScroll={true}
         ListHeaderComponent={renderPostSection}
         ItemSeparatorComponent={itemSeparatorComponent}
@@ -233,7 +234,7 @@ const ViewPost = () => {
         onEndReached={onEndReached}
         onEndReachedThreshold={0.3}
         ref={flashListRef}
-        onScroll={onScroll}
+        // onScroll={onScroll}
       />
       <View className="relative flex">
         <ScrollToButton

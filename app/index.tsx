@@ -20,10 +20,8 @@ export default function Index() {
 
   return (
     <View className="flex-1 items-center justify-around bg-primary">
-      {/* <StatusBar style="light"></StatusBar> */}
       <Image
         source={require("@/assets/images/our-daily-bread-logo.png")}
-        // style={{ width: 150, height: 150 }}
         className="size-48"
         resizeMode="contain"
       />

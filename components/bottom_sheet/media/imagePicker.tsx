@@ -39,12 +39,12 @@ export const ImagePicker = ({
 }: ImagePickerProps) => {
   const [gallery, setGallery] = useState<LocalAssetRecord[]>([]);
   const [loading, setLoading] = useState(false);
-  const createScrollableComponent = useBottomSheetScrollableCreator();
-  const snapPoints = useMemo(() => ["70%"], []);
   const lastAssetId = useRef<string>(undefined);
   const { colorScheme } = useColorScheme();
 
-  // Bottom sheet refs
+  // Bottom sheet
+  const createScrollableComponent = useBottomSheetScrollableCreator();
+  const snapPoints = useMemo(() => ["70%"], []);
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const sheetIndexRef = useRef<number>(-1);
 
