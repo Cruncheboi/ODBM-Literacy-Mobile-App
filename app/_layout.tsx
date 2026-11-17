@@ -5,18 +5,13 @@ import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
 import { useColorScheme } from "nativewind";
-import getThemeMainColor, {
-  getThemeFontColor,
-  getThemeSecondaryColor,
-} from "@/utility_functions/themeColor";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Provider } from "react-redux";
 import store from "../redux/store";
 import { PersistGate } from "redux-persist/integration/react";
 import { persistStore } from "redux-persist";
-import { auth, isSignedIn } from "@/firebaseConfig";
-import { useAppDispatch } from "@/redux/hooks";
+import { auth } from "@/firebaseConfig";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { ToastContainer } from "@ncrft/native-toast";
 import {
@@ -24,7 +19,6 @@ import {
   DefaultTheme,
   ThemeProvider,
 } from "@react-navigation/native";
-// import * as SystemUI from "expo-system-ui";
 import { cssInterop } from "nativewind";
 import { Image } from "expo-image";
 
@@ -59,7 +53,7 @@ export default function RootLayout() {
     ...DefaultTheme,
     colors: {
       ...DefaultTheme.colors,
-      background: "##f5f5f5", // Match your dark grey background
+      background: "#f5f5f5", // Match your dark grey background
       card: "#f5f5f5", // Match your tab bar background
     },
   };

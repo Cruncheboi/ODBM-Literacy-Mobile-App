@@ -1,41 +1,30 @@
 import { ImageInfo } from "@/definitions/media";
-import {
-  FlashList,
-  FlashListRef,
-  ListRenderItemInfo,
-} from "@shopify/flash-list";
-import StyledImage from "./styledImage";
-import {
-  BackHandler,
-  FlatList,
-  ListRenderItem,
-  Modal,
-  Pressable,
-  useWindowDimensions,
-  View,
-} from "react-native";
+import { BackHandler, useWindowDimensions, View } from "react-native";
 import { Image } from "expo-image";
 import {
   GestureTrigger,
   GestureViewer,
-  GestureViewerRenderItemInfo,
   useGestureViewerController,
   useGestureViewerState,
 } from "react-native-gesture-image-viewer";
 import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import CustomBottomSheetBackdrop from "../bottom_sheet/general/backdrop";
-import CustomBackground, {
-  CustomTransparentBackground,
-} from "../customBackground";
-import { Galeria } from "@nandorojo/galeria";
+import { CustomTransparentBackground } from "../customBackground";
 import { Gallery, type VerticalPullOptions } from "react-native-zoom-toolkit";
 import { scheduleOnRN } from "react-native-worklets";
 import Animated, {
+  Easing,
   useAnimatedStyle,
   useSharedValue,
+  withTiming,
 } from "react-native-reanimated";
 import LoopingZoomGallery from "./loopingZoomGallery";
+import { DataSaverImage } from "./DataSaverImage";
+import StyledButton from "../styledButton";
+import StyledLabel from "../styledLabel";
+import { useDataSaverCache } from "@/hooks/useDataSaverCache";
+import ImageCounter from "./imageCounter";
 
 interface ImageDisplayProps {
   images: ImageInfo[];
@@ -45,34 +34,28 @@ const DISMISS_DISTANCE = 120;
 const DISMISS_VELOCITY = 800;
 
 const ImageDisplay = ({ images }: ImageDisplayProps) => {
+  const { currentIndex } = useGestureViewerState();
+  const { currentIndex: currentIndexModalViewer } =
+    useGestureViewerState("modalImageViewer");
+  const latestModalViewerIndex = useRef(0);
   const { goToIndex } = useGestureViewerController();
-  // const { currentIndex, totalCount } = useGestureViewerState();
-  const flashListRef = useRef<FlashListRef<string>>(null);
-  const imageRef = useRef<Image>(null);
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
-  const [imageHeight, setImageHeight] = useState(windowWidth);
   const [imageWidth, setImageWidth] = useState(windowWidth);
+  const imageHeight = windowWidth;
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const [maxGestureHeight, setMaxGestureHeight] = useState(windowWidth);
-
-  const imageUrls = useMemo(() => images.map(({ url }) => url), [images]);
-  // const [displayedImage, setDisplayedImage] = useState(imageUrls[0])
-  const [curImageIndex, setCurImageIndex] = useState(0);
-  console.log(imageUrls);
-
-  // const goToIndex = (targetIndex: number) => {
-  //   flashListRef.current?.scrollToIndex({
-  //     index: targetIndex,
-  //     animated: false,
-  //   });
-  // };
-
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const imageUrls = useMemo(() => images.map(({ url }) => url), [images]);
+  const windowSize = 5;
 
+  const { isReady, unlockedKeys, unlockKey } = useDataSaverCache(
+    imageUrls,
+    true,
+  );
+  // console.log(unlockedKeys);
+  console.log("current modal index", currentIndexModalViewer);
   useEffect(() => {
     if (!isModalOpen) return;
-
+    // Handle returning back to post from modal when user preforms device back navigation
     const backSubscription = BackHandler.addEventListener(
       "hardwareBackPress",
       () => {
@@ -84,105 +67,38 @@ const ImageDisplay = ({ images }: ImageDisplayProps) => {
     return () => backSubscription.remove();
   }, [isModalOpen]);
 
-  // useEffect(() => {}, [imageHeight]);
-
-  const renderImage = (
-    item: ImageInfo,
-    index: number,
-    info: GestureViewerRenderItemInfo,
-  ) => {
-    return (
-      <Image
-        className="aspect-square h-full w-full"
-        // height={imageHeight}
-        // width={imageWidth}
-        source={{ uri: item.url }}
-        // contentFit="contain"
-        // onLoad={({ nativeEvent }) => {
-        //   const { height, width } = nativeEvent.source;
-        //   const layoutHeight = (height / width) * (windowWidth - 32);
-        //   console.log(height, width, layoutHeight, windowWidth);
-        //   const { setItemDimensions } = info;
-        //   // setItemDimensions({ height: layoutHeight, width: windowWidth - 32 });
-        //   // setImageHeight(layoutHeight);
-        //   // setImageWidth(windowWidth - 32);
-        //   console.log(`height: ${layoutHeight}, width: ${windowWidth - 32}`);
-        // }}
-      />
-    );
-  };
-  // const renderImage = (
-  //   item: ImageInfo,
-  //   index: number,
-  //   info: GestureViewerRenderItemInfo,
-  // ) => {
-  //   return <StyledImage url={item.url} itemInfo={info} />;
-  // };
-
-  // Bottom sheet
+  // BOTTOM SHEET MODAL
   const snapPoints = useMemo(() => ["100%"], []);
   const bottomSheetRef = useRef<BottomSheetModal>(null);
-  const sheetIndexRef = useRef<number>(-1);
-
-  const onPickImagesPress = () => {
-    if (sheetIndexRef.current < 0) {
-      bottomSheetRef.current?.present();
-    } else {
-      bottomSheetRef.current?.dismiss();
-    }
-  };
-
-  // Modal
-  const [isModalVisible, setIsModalVisible] = useState(false);
+  const backdropOpacity = useSharedValue(1);
+  const imageCounterOpacity = useSharedValue(1);
+  const isModalOpenRef = useRef(false);
 
   const onImagePressed = (index: number) => {
-    console.log("image pressed");
     setSelectedIndex(index);
+    imageCounterOpacity.value = withTiming(1, {
+      duration: 1500,
+    });
     bottomSheetRef.current?.present();
-    console.log(bottomSheetRef.current);
   };
 
-  // const renderItem = useCallback(({}: ListRenderItem<string>) => {
-  //   return (
-  //     <Image
-  //       id={item}
-  //       // className="h-full w-full"
-  //       style={{ width: 100, height: 100 }}
-  //       contentFit="contain"
-  //       // resizeMode="contain"
-  //       // source={imageUrls[curImageIndex]}
-  //       source={{ uri: item }}
-  //     />
-  //   );
-  // }, []);
-
-  const renderImageItem = ({ item }: ListRenderItemInfo<ImageInfo>) => {
-    return (
-      <Image
-        className="aspect-square h-full w-full"
-        // height={imageHeight}
-        // width={imageWidth}
-        source={{ uri: item.url }}
-        resizeMode="contain"
-        // onLoad={({ nativeEvent }) => {
-        //   const { height, width } = nativeEvent.source;
-        //   const layoutHeight = (height / width) * (windowWidth - 32);
-        //   console.log(height, width, layoutHeight, windowWidth);
-        //   const { setItemDimensions } = info;
-        //   // setItemDimensions({ height: layoutHeight, width: windowWidth - 32 });
-        //   // setImageHeight(layoutHeight);
-        //   // setImageWidth(windowWidth - 32);
-        //   console.log(`height: ${layoutHeight}, width: ${windowWidth - 32}`);
-        // }}
-      />
-    );
-  };
-  const backdropOpacity = useSharedValue(1);
-
+  if (isModalOpenRef.current) {
+    latestModalViewerIndex.current = currentIndexModalViewer;
+  }
   const dismissModal = useCallback(() => {
+    // goToIndex(currentIndexModalViewer);
+    // latestModalViewerIndex.current = currentIndexModalViewer;
+    // console.log("setting index to:", latestModalViewerIndex.current);
+    // isModalOpenRef.current = false;
+    // goToIndex(latestModalViewerIndex.current);
     bottomSheetRef.current?.forceClose();
   }, []);
 
+  const imageCounterAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: imageCounterOpacity.value,
+  }));
+
+  // Fades background
   const containerAnimatedStyle = useAnimatedStyle(() => ({
     flex: 1,
     backgroundColor: `rgba(0, 0, 0, ${backdropOpacity.value})`,
@@ -192,9 +108,12 @@ const ImageDisplay = ({ images }: ImageDisplayProps) => {
     ({ translateY, released, velocityY }: VerticalPullOptions) => {
       "worklet";
 
-      // Optional: fade the modal background smoothly as the user pulls vertically
+      // Fade the modal background smoothly as the user pulls vertically
       const progress = Math.min(Math.abs(translateY) / 250, 1);
       backdropOpacity.value = 1 - progress;
+
+      const counterProgress = Math.min(Math.abs(translateY) / 100, 1);
+      imageCounterOpacity.value = 1 - counterProgress;
 
       if (released) {
         const shouldDismiss =
@@ -203,17 +122,57 @@ const ImageDisplay = ({ images }: ImageDisplayProps) => {
 
         if (shouldDismiss) {
           scheduleOnRN(dismissModal);
-          // scheduleOnRN(() => goToIndex(selectedIndex));
         } else {
           backdropOpacity.value = 1;
+          imageCounterOpacity.value = 1;
         }
       }
     },
-    [backdropOpacity, dismissModal],
+    [backdropOpacity, imageCounterOpacity, dismissModal],
+  );
+
+  const handleDismissalStart = useCallback(() => {
+    "worklet";
+
+    // Fade the modal background
+    imageCounterOpacity.value = 0;
+  }, [imageCounterOpacity]);
+
+  const handleSheetAnimate = useCallback(
+    (fromIndex: number, toIndex: number) => {
+      // toIndex === -1 means the bottom sheet has started closing
+      if (toIndex === -1) {
+        isModalOpenRef.current = false;
+      } else if (toIndex >= 0) {
+        isModalOpenRef.current = true;
+      }
+    },
+    [],
+  );
+
+  const renderModalContainer = useCallback(
+    (children: React.ReactNode) => (
+      <View className="relative flex-1">
+        {children}
+        {
+          <Animated.View
+            style={imageCounterAnimatedStyle}
+            className="pointer-events-none absolute inset-0 z-10 items-center justify-center"
+          >
+            <ImageCounter
+              // selectedIndex={selectedIndex}
+              selectedIndex={currentIndexModalViewer}
+              totalCount={imageUrls.length}
+              className="top-safe-offset-5"
+            />
+          </Animated.View>
+        }
+      </View>
+    ),
+    [currentIndexModalViewer, imageUrls],
   );
 
   return (
-    // <View className="w-full border border-borderColor-primary">
     <>
       <View
         className="w-full"
@@ -222,313 +181,205 @@ const ImageDisplay = ({ images }: ImageDisplayProps) => {
             setImageWidth(e.nativeEvent.layout.width);
         }}
       >
-        <View className="overflow-hidden rounded-lg border border-borderColor-primary">
-          <GestureViewer
-            data={imageUrls}
-            width={imageWidth}
-            height={imageHeight}
-            enableLoop
-            enableDoubleTapZoom={false}
-            enablePanWhenZoomed={false}
-            enablePinchZoom={false}
-            initialIndex={selectedIndex}
-            dismiss={{ enabled: false }}
-            pageSpacing={16}
-            onSingleTap={({ index }) => onImagePressed(index)}
-            renderItem={(item, index) => {
-              return (
-                // <GestureTrigger
-                //   id="modalViewer"
-                //   index={index}
-                //   // onPress={() => onImagePressed(index)}
-                // >
-                // <Pressable onPress={() => onImagePressed(index)}>
-                <Image
-                  className=""
-                  // id={item}
-                  style={{ width: imageWidth, height: imageHeight }}
-                  contentFit="cover"
-                  source={{ uri: item }}
-                />
-                // </Pressable>
-                // </GestureTrigger>
-              );
-            }}
-          />
-        </View>
-        {/* <Modal visible={isModalVisible} transparent animationType="fade">
-          <GestureViewer
-            id="modalViewer"
-            data={imageUrls}
-            initialIndex={selectedIndex}
-            enableLoop
-            enablePanWhenZoomed
-            enableDoubleTapZoom
-            enablePinchZoom
-            maxZoomScale={3}
-            width={windowWidth}
-            height={windowHeight}
-            renderItem={(item, index, info) => {
-              return (
-                <Image
-                  // className="w-full"
-                  // id={item}
-                  style={{ height: windowHeight, width: windowWidth }}
-                  contentFit="contain"
-                  source={{ uri: item }}
-                  onLoad={(e) => {
-                    const { height, width } = e.source;
-                    // info.setItemDimensions({ height, width });
-                  }}
-                />
-              );
-            }}
-            onDismiss={() => {
-              // bottomSheetRef.current?.dismiss();
-              setIsModalVisible(false);
-            }}
-          />
-        </Modal> */}
-        {/* <Gallery
-          data={imageUrls}
-          renderItem={(item, index) => {
-            return (
-              <Image
-                // className="w-full"
-                // id={item}
-                style={{ height: windowHeight, width: windowWidth }}
-                contentFit="contain"
-                source={{ uri: item }}
-                onLoad={(e) => {
-                  const { height, width } = e.source;
-                  // info.setItemDimensions({ height, width });
-                }}
-              />
+        <StyledButton
+          label={<StyledLabel label="Reset Image Cache" />}
+          onPress={async () => {
+            await Image.clearMemoryCache();
+            await Image.clearDiskCache();
+          }}
+        />
+        <StyledButton
+          label={<StyledLabel label="Log if current image is a cache-hit" />}
+          onPress={async () => {
+            const imagePath = await Image.getCachePathAsync(
+              imageUrls[currentIndex],
             );
+            console.log(imagePath);
           }}
-        /> */}
-        <BottomSheetModal
-          ref={bottomSheetRef}
-          snapPoints={snapPoints}
-          backdropComponent={CustomBottomSheetBackdrop}
-          backgroundComponent={CustomTransparentBackground}
-          handleComponent={null}
-          enableOverDrag={false}
-          enableDynamicSizing={false}
-          enablePanDownToClose={false}
-          enableContentPanningGesture={false}
-          enableHandlePanningGesture={false}
-          onDismiss={dismissModal}
-          onChange={(index) => setIsModalOpen(index >= 0)}
-        >
-          <BottomSheetView className="h-full w-full">
-            {/* <GestureViewer
-              id="modalViewer"
-              data={imageUrls}
-              initialIndex={selectedIndex}
-              enableLoop
-              enablePanWhenZoomed
-              enableDoubleTapZoom
-              enablePinchZoom
-              maxZoomScale={3}
-              width={windowWidth}
-              height={windowHeight}
-              renderItem={(item, index, info) => {
-                return (
-                  <Image
-                    // className="w-full"
-                    // id={item}
-                    style={{ height: windowHeight, width: windowWidth }}
-                    contentFit="contain"
-                    source={{ uri: item }}
-                    onLoad={(e) => {
-                      const { height, width } = e.source;
-                      // info.setItemDimensions({ height, width });
-                    }}
-                  />
-                );
-              }}
-              onDismiss={() => bottomSheetRef.current?.dismiss()}
-            /> */}
-            <Animated.View style={containerAnimatedStyle}>
-              <LoopingZoomGallery
-                imageUrls={imageUrls}
-                handleVerticalPull={handleVerticalPull}
-                selectedIndex={selectedIndex}
-                setSelectedIndex={setSelectedIndex}
+        />
+        {isReady && (
+          <>
+            <View className="overflow-hidden rounded-lg border border-borderColor-primary">
+              <ImageCounter
+                selectedIndex={currentIndex} // use gesture viewer index state
+                totalCount={imageUrls.length}
+              />
+              <GestureViewer
+                key={"inlineViewer"}
+                data={imageUrls}
+                width={imageWidth}
+                height={imageHeight}
+                enableLoop
+                enableDoubleTapZoom={false}
+                enablePanWhenZoomed={false}
+                enablePinchZoom={false}
+                initialIndex={latestModalViewerIndex.current}
+                // initialIndex={selectedIndex}
+                dismiss={{ enabled: false }}
+                windowSize={windowSize}
+                pageSpacing={16}
+                // horizontalSwipe={{ enabled: true, velocityThreshold: 300 }}
+                onSingleTap={({ index }) => onImagePressed(index)}
                 renderItem={(item, index) => {
                   return (
-                    <Image
-                      style={{ height: windowHeight, width: windowWidth }}
-                      contentFit="contain"
-                      source={{ uri: item }}
+                    // <GestureTrigger id="modalImageViewer" index={index}>
+                    <DataSaverImage
+                      cacheKey={item}
+                      isUnlocked={unlockedKeys.has(item)}
+                      onUnlock={unlockKey}
+                      style={{ width: imageWidth, height: imageHeight }}
+                      uri={item}
+                      contentFit="cover"
+                      // onPress={() => onImagePressed(index)}
+                      // containerStyle={{
+                      //   width: imageWidth,
+                      //   height: imageHeight,
+                      //   backgroundColor: "white",
+                      // }}
                     />
+                    // </GestureTrigger>
+                    // <Image
+                    //   style={{ width: imageWidth, height: imageHeight }}
+                    //   contentFit="cover"
+                    //   source={{ uri: item }}
+                    // />
                   );
                 }}
               />
-              {/* <Gallery
-                onVerticalPull={handleVerticalPull}
-                pinchMode="free"
-                allowPinchPanning
-                data={imageUrls}
-                onIndexChange={(index) => {
-                  setSelectedIndex(index);
-                }}
-                initialIndex={selectedIndex}
-                renderItem={(item, index) => {
-                  return (
-                    <Image
-                      // className="w-full"
-                      // id={item}
-                      style={{ height: windowHeight, width: windowWidth }}
-                      contentFit="contain"
-                      source={{ uri: item }}
-                      onLoad={(e) => {
-                        const { height, width } = e.source;
-                        // info.setItemDimensions({ height, width });
-                      }}
-                    />
-                  );
-                }}
-              /> */}
-            </Animated.View>
-          </BottomSheetView>
-        </BottomSheetModal>
-        {/* <Galeria urls={imageUrls} theme="dark">
-          <FlashList
-            ref={flashListRef}
-            data={imageUrls}
-            className="w-full rounded-lg border border-borderColor-primary"
-            horizontal
-            pagingEnabled
-            renderItem={({ item, index }) => {
-              return (
-                <Galeria.Image
-                  index={index}
-                  key={item}
-                  // onDismiss={(e) => {
-                  //   console.log("going to index:", index);
-                  //   goToIndex(index);
-                  // }}
-                  onIndexChange={(e) => {
-                    console.log("indexed changed", e.nativeEvent.currentIndex);
-                    goToIndex(e.nativeEvent.currentIndex);
-                  }}
+            </View>
+            <BottomSheetModal
+              ref={bottomSheetRef}
+              snapPoints={snapPoints}
+              backdropComponent={CustomBottomSheetBackdrop}
+              backgroundComponent={CustomTransparentBackground}
+              handleComponent={null}
+              enableOverDrag={false}
+              enableDynamicSizing={false}
+              enablePanDownToClose={false}
+              enableContentPanningGesture={false}
+              enableHandlePanningGesture={false}
+              // onDismiss={dismissModal}
+              onAnimate={handleSheetAnimate}
+              onChange={(index) => setIsModalOpen(index >= 0)}
+            >
+              <BottomSheetView className="h-full w-full">
+                {/* <Animated.View style={containerAnimatedStyle}> */}
+                {/* <View className="relative h-full w-full"> */}
+                {/* <Animated.View
+                  style={imageCounterAnimatedStyle}
+                  className="pointer-events-none absolute inset-0 z-10 items-center justify-center"
                 >
-                  <Image
-                    className=""
-                    // id={item}
-                    style={{ width: imageWidth, height: imageHeight }}
-                    contentFit="cover"
-                    source={{ uri: item }}
-                    transition={3000}
+                  <ImageCounter
+                    // selectedIndex={selectedIndex}
+                    selectedIndex={currentIndexModalViewer}
+                    totalCount={imageUrls.length}
+                    safePadding
                   />
-                </Galeria.Image>
-              );
-            }}
-          />
-        </Galeria> */}
+                </Animated.View> */}
+                {/* <Gallery
+                    onVerticalPull={handleVerticalPull}
+                    pinchMode="free"
+                    data={imageUrls}
+                    initialIndex={selectedIndex}
+                    onIndexChange={(curIndex) => setSelectedIndex(curIndex)}
+                    windowSize={windowSize}
+                    // onTap={(e, index) => unlockKey(imageUrls[index])}
+                    onTap={undefined}
+                    keyExtractor={(item, index) => `${item}`}
+                    renderItem={(item, index) => (
+                      <DataSaverImage
+                        cacheKey={item}
+                        isUnlocked={unlockedKeys.has(item)}
+                        onUnlock={(key) => unlockKey(imageUrls[index])}
+                        style={{ width: windowWidth, height: windowHeight }}
+                        uri={item}
+                        contentFit="contain"
+                        // containerStyle={{
+                        //   width: imageWidth,
+                        //   height: imageHeight,
+                        //   backgroundColor: "white",
+                        // }}
+                      />
+                    )}
+                  /> */}
+                {/* </View> */}
+                <GestureViewer
+                  key={"modalViewer"}
+                  id="modalImageViewer"
+                  data={imageUrls}
+                  width={windowWidth}
+                  height={windowHeight}
+                  enableLoop
+                  initialIndex={currentIndex}
+                  dismiss={{ enabled: true, direction: "both" }}
+                  onDismiss={dismissModal}
+                  onDismissStart={handleDismissalStart}
+                  windowSize={windowSize}
+                  pageSpacing={16}
+                  // onSingleTap={({ index }) => onImagePressed(index)}
+                  renderContainer={renderModalContainer}
+                  // onDismissStart={handleDismissalStart}
+                  renderItem={(item, index) => {
+                    return (
+                      <DataSaverImage
+                        cacheKey={item}
+                        isUnlocked={unlockedKeys.has(item)}
+                        onUnlock={(key) => unlockKey(imageUrls[index])}
+                        style={{ width: windowWidth, height: windowHeight }}
+                        uri={item}
+                        contentFit="contain"
+                        // onPress={() => onImagePressed(index)}
+                        // containerStyle={{
+                        //   width: imageWidth,
+                        //   height: imageHeight,
+                        //   backgroundColor: "white",
+                        // }}
+                      />
+                      // <Image
+                      //   style={{ width: imageWidth, height: imageHeight }}
+                      //   contentFit="cover"
+                      //   source={{ uri: item }}
+                      // />
+                    );
+                  }}
+                />
+                {/* <LoopingZoomGallery
+                    imageUrls={imageUrls}
+                    handleVerticalPull={handleVerticalPull}
+                    selectedIndex={selectedIndex}
+                    setSelectedIndex={setSelectedIndex}
+                    windowSize={windowSize}
+                    onTap={unlockKey}
+                    renderItem={(item) => {
+                      return (
+                        <DataSaverImage
+                          cacheKey={item}
+                          isUnlocked={unlockedKeys.has(item)}
+                          onUnlock={(key) => {}}
+                          style={{ width: windowWidth, height: windowHeight }}
+                          uri={item}
+                          contentFit="contain"
+                          // containerStyle={{
+                          //   width: imageWidth,
+                          //   height: imageHeight,
+                          //   backgroundColor: "white",
+                          // }}
+                        />
+                        // <Image
+                        //   style={{ height: windowHeight, width: windowWidth }}
+                        //   contentFit="contain"
+                        //   source={{ uri: item }}
+                        // />
+                      );
+                    }}
+                  /> */}
+                {/* </Animated.View> */}
+              </BottomSheetView>
+            </BottomSheetModal>
+          </>
+        )}
       </View>
-      {/* <FlashList
-        className=""
-        data={images}
-        renderItem={renderImageItem}
-        horizontal
-        // horizontal
-        // pagingEnabled={true}
-      /> */}
-      {/* <Image
-        height={imageHeight}
-        width={imageWidth}
-        className="bg-white"
-        source={{ uri: images[0]?.url }}
-        resizeMode="contain"
-        onLoad={({ nativeEvent }) => {
-          const { height, width } = nativeEvent.source;
-          const layoutHeight = (height / width) * windowWidth;
-          
-          setImageHeight(layoutHeight);
-          setImageWidth(windowWidth);
-          console.log(`height: ${layoutHeight}, width: ${windowWidth}`);
-        }}
-      /> */}
-      {/* <View className="bg-pop">
-        <GestureViewer
-          containerStyle={{
-            // alignContent: "center",
-            alignItems: "center",
-            justifyContent: "center",
-            // backgroundColor: "transparent",
-            display: "flex",
-            borderWidth: 3,
-            borderColor: "red",
-            // height: imageHeight,
-            backgroundColor: "pink",
-            maxWidth: 200,
-            maxHeight: 384,
-          }}
-          backdropStyle={{
-            backgroundColor: "white",
-            // height: imageHeight,
-            // height: 400,
-            // width: "100%",
-          }}
-          data={images}
-          // height={imageHeight}
-          // width={imageWidth}
-          renderItem={renderImage}
-          enablePinchZoom={false}
-          enablePanWhenZoomed={false}
-          enableDoubleTapZoom={false}
-          pageSpacing={16}
-          enableLoop
-          dismiss={{
-            enabled: false,
-          }}
-          // onDismiss={() => setVisible(false)}
-        />
-      </View> */}
     </>
-    /* {images.map((val) => (
-        <Image
-          key={val.id}
-          className="h-full w-full flex-1 self-center bg-transparent"
-          source={{ uri: val.url }}
-          resizeMode="contain"
-        />
-      ))} */
-    /* <BottomSheetModal
-        ref={bottomSheetRef}
-        snapPoints={snapPoints}
-        backdropComponent={CustomBottomSheetBackdrop}
-        backgroundComponent={CustomBackground}
-        enableOverDrag={true}
-        enableDynamicSizing={false}
-      >
-        <GestureViewer
-          data={images}
-          initialIndex={selectedIndex}
-          renderItem={renderImage}
-          onDismiss={() => setVisible(false)}
-        />
-        <View>
-          <Button title="Prev" onPress={goToPrevious} />
-          <Button title="Jump to index 2" onPress={() => goToIndex(2)} />
-          <Button title="Next" onPress={goToNext} />
-          <Text>{`${currentIndex + 1} / ${totalCount}`}</Text>
-        </View>
-      </BottomSheetModal> */
-    // </View>
-    // <View className="">
-    //   <GestureViewer data={images}  />
-    /* <FlashList
-        contentContainerClassName="h-[21.5rem]"
-        className="w-full rounded-lg border-2 border-borderColor-primary bg-bgColor-spotlight"
-        horizontal
-        data={images}
-        renderItem={renderListItem}
-      /> */
-    // </View>
   );
 };
 export default ImageDisplay;

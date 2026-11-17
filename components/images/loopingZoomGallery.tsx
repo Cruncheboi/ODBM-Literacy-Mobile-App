@@ -5,15 +5,10 @@ import {
   type GalleryRefType,
 } from "react-native-zoom-toolkit";
 
-export const LoopingZoomGallery = ({
-  imageUrls,
-  selectedIndex,
-  renderItem,
-  setSelectedIndex,
-  handleVerticalPull,
-}: {
+interface LoopingZoomGalleryProps {
   imageUrls: string[];
   selectedIndex: number;
+  windowSize?: number;
   renderItem: (
     item: string,
     index: number,
@@ -24,7 +19,18 @@ export const LoopingZoomGallery = ({
     released,
     velocityY,
   }: VerticalPullOptions) => void;
-}) => {
+  onTap?: (cacheKey: string) => void;
+}
+
+export const LoopingZoomGallery = ({
+  imageUrls,
+  selectedIndex,
+  windowSize = 5,
+  renderItem,
+  setSelectedIndex,
+  handleVerticalPull,
+  onTap,
+}: LoopingZoomGalleryProps) => {
   const galleryRef = useRef<GalleryRefType>(null);
   const canLoop = imageUrls.length > 1;
 
@@ -42,14 +48,18 @@ export const LoopingZoomGallery = ({
       if (!canLoop) return;
 
       if (index === 0) {
-        galleryRef.current?.setIndex(imageUrls.length);
+        setTimeout(() => {
+          galleryRef.current?.setIndex(imageUrls.length);
+        }, 220);
       } else if (index === loopedData.length - 1) {
-        galleryRef.current?.setIndex(1);
+        setTimeout(() => {
+          galleryRef.current?.setIndex(1);
+        }, 220);
       }
     },
     [canLoop, imageUrls.length, loopedData.length],
   );
-
+  console.log(galleryRef.current?.reset);
   return (
     <Gallery
       ref={galleryRef}
@@ -59,6 +69,11 @@ export const LoopingZoomGallery = ({
       data={loopedData}
       initialIndex={canLoop ? selectedIndex + 1 : selectedIndex}
       onIndexChange={handleIndexChange}
+      windowSize={loopedData.length + 2}
+      onTap={(e, index) =>
+        onTap ? onTap(imageUrls[loopToNormalIndex(index)]) : undefined
+      }
+      // keyExtractor={(item, index) => `${item}`}
       renderItem={renderItem}
     />
   );
