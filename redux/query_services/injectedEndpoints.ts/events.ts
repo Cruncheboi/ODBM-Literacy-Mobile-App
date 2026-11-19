@@ -107,15 +107,6 @@ const eventsApi = databaseApi.injectEndpoints({
         { type: "Post", id: arg.postId },
       ],
     }),
-    deleteEvent: builder.mutation<void, Pick<EventPost, "postId">>({
-      query: ({ postId }) => ({
-        url: `/posts/event/${postId}/delete`,
-        method: "PUT",
-      }),
-      invalidatesTags: (result, error, arg) => [
-        { type: "Post", id: arg.postId },
-      ],
-    }),
   }),
 
   overrideExisting: true,
@@ -126,5 +117,4 @@ export const {
   useGetEventQuery,
   useCreateEventMutation,
   useUpdateEventMutation,
-  useDeleteEventMutation,
 } = eventsApi;

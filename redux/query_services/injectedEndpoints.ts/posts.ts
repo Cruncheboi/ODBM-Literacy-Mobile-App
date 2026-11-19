@@ -1,5 +1,6 @@
 import { MasterPostRecord } from "@/definitions/posts";
 import { databaseApi } from "../databaseApi";
+import { InitializeImageInfo } from "@/definitions/media";
 
 const postsApi = databaseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -10,7 +11,7 @@ const postsApi = databaseApi.injectEndpoints({
       },
       Pick<MasterPostRecord, "postType" | "title" | "body"> & {
         youtubeUrl?: string | null;
-        imageMimeTypes: string[];
+        contentInfo: InitializeImageInfo[];
       }
     >({
       query: (body) => ({
@@ -33,8 +34,23 @@ const postsApi = databaseApi.injectEndpoints({
       invalidatesTags: (result, error, arg) =>
         arg.postType === "event" ? ["Events"] : ["Testimonies"],
     }),
+    deletePost: builder.mutation<
+      { message: string },
+      Pick<MasterPostRecord, "postType" | "postId">
+    >({
+      query: ({ postId }) => ({
+        url: `posts/${postId}/delete`,
+        method: "PUT",
+      }),
+      invalidatesTags: (result, error, arg) =>
+        arg.postType === "event" ? ["Events"] : ["Testimonies"],
+    }),
   }),
   overrideExisting: true,
 });
 
-export const { useInitializePostMutation, useActivatePostMutation } = postsApi;
+export const {
+  useInitializePostMutation,
+  useActivatePostMutation,
+  useDeletePostMutation,
+} = postsApi;

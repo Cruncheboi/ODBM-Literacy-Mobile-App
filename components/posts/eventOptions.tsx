@@ -4,9 +4,9 @@ import DeleteOptionButton from "../bottom_sheet/buttons/deleteOptionButton";
 import ReportOptionButton from "../bottom_sheet/buttons/reportOptionButton";
 import { router } from "expo-router";
 import { CreateReportSearchParams } from "@/app/postActions/createReport";
-import { useDeleteEventMutation } from "@/redux/query_services/injectedEndpoints.ts/events";
 import { EditEventPostSearchParams } from "@/app/postActions/editEventPost";
 import { ContentOptionsProps } from "./testimonyOptions";
+import { useDeletePostMutation } from "@/redux/query_services/injectedEndpoints.ts/posts";
 
 interface EventOptionsProps extends ContentOptionsProps {
   content: EventPost;
@@ -19,7 +19,7 @@ const EventOptions = ({
   setShowDeleteConfirmation,
   showDeleteConfirmation,
 }: EventOptionsProps) => {
-  const [deleteEventMutation] = useDeleteEventMutation();
+  const [deleteEventMutation] = useDeletePostMutation();
   const { postId } = content;
   const strPostId = String(postId);
 
@@ -31,9 +31,15 @@ const EventOptions = ({
   };
 
   const onDelete = async () => {
-    await deleteEventMutation({
-      postId,
-    });
+    try {
+      await deleteEventMutation({
+        postId,
+        postType: "event",
+      }).unwrap();
+      router.dismissTo("/(tabs)/posts/events");
+    } catch (error) {
+      console.warn(error);
+    }
   };
 
   const onReport = async () => {

@@ -31,7 +31,6 @@ export function useDataSaverCache(
 
       if (isMounted) {
         setUnlockedKeys((prev) => new Set([...prev, ...cached]));
-        // await Image.prefetch([...cached], { cachePolicy: "memory-disk" });
         setIsReady(true);
       }
     };

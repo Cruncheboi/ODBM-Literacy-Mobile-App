@@ -107,15 +107,6 @@ const testimoniesApi = databaseApi.injectEndpoints({
         { type: "Post", id: arg.postId },
       ],
     }),
-    deleteTestimony: builder.mutation<void, Pick<TestimonyPost, "postId">>({
-      query: ({ postId }) => ({
-        url: `/posts/testimony/${postId}/delete`,
-        method: "PUT",
-      }),
-      invalidatesTags: (result, error, arg) => [
-        { type: "Post", id: arg.postId },
-      ],
-    }),
   }),
   overrideExisting: true,
 });
@@ -125,5 +116,4 @@ export const {
   useGetTestimonyQuery,
   useCreateTestimonyMutation,
   useUpdateTestimonyMutation,
-  useDeleteTestimonyMutation,
 } = testimoniesApi;

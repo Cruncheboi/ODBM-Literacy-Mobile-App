@@ -14,7 +14,7 @@ import {
   useUpdateTestimonyMutation,
 } from "@/redux/query_services/injectedEndpoints.ts/testimonies";
 import { router, useLocalSearchParams } from "expo-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { View, ScrollView } from "react-native";
 
 export type EditTestimonyPostSearchParams = {
@@ -69,6 +69,11 @@ const EditTestimonyPost = () => {
   // Body state
   const [body, setBody] = useState(oldBody);
   const hasValidBody = body.length > 0 && body.trim() !== "";
+
+  const hasChanged = useMemo(
+    () => oldTitle.trim() !== title.trim() || oldBody.trim() !== body.trim(),
+    [body, title],
+  );
 
   const onPostSubmit = async () => {
     if (status === "submitting") return;
@@ -142,7 +147,10 @@ const EditTestimonyPost = () => {
             title="Update Post"
             onPress={onPostSubmit}
             disabled={
-              status === "submitting" || !hasValidBody || !hasValidTitle
+              status === "submitting" ||
+              !hasValidBody ||
+              !hasValidTitle ||
+              !hasChanged
             }
           />
         </View>

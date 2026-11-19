@@ -1,12 +1,5 @@
-import React, { useEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  StyleProp,
-  Text,
-  TouchableOpacity,
-  View,
-  ViewStyle,
-} from "react-native";
+import React from "react";
+import { ActivityIndicator, StyleProp, View, ViewStyle } from "react-native";
 import { Image, ImageContentFit, ImageStyle } from "expo-image";
 import StyledLabel from "../styledLabel";
 import { Pressable } from "react-native-gesture-handler";
@@ -24,9 +17,15 @@ interface DataSaverImageProps {
   containerStyle?: StyleProp<ViewStyle>;
   contentFit?: ImageContentFit;
   fileSizeLabel?: string;
+  imageHash: string;
 }
 
-export function DataSaverImage({
+interface DataSaverImagePlaceholderProps {
+  style: StyleProp<ImageStyle>;
+  containerStyle?: StyleProp<ViewStyle>;
+}
+
+export const DataSaverImage = ({
   uri,
   cacheKey,
   isUnlocked,
@@ -36,20 +35,13 @@ export function DataSaverImage({
   contentFit = "cover",
   fileSizeLabel,
   onPress,
-}: DataSaverImageProps) {
+  imageHash,
+}: DataSaverImageProps) => {
   if (!isUnlocked) {
     return (
       <View
-        style={[
-          style,
-          containerStyle,
-          {
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: "#0f0f0f",
-          },
-        ]}
-        className=""
+        style={[style, containerStyle]}
+        className="items-center justify-center bg-bgColor-primary"
       >
         <Pressable
           className="flex"
@@ -77,9 +69,25 @@ export function DataSaverImage({
         style={style}
         contentFit={contentFit}
         cachePolicy="memory-disk"
-        transition={0}
+        transition={300}
         recyclingKey={uri}
+        placeholder={{ thumbhash: imageHash }}
+        placeholderContentFit={contentFit}
       />
     </Pressable>
   );
-}
+};
+
+export const DataSaverImagePlaceholder = ({
+  style,
+  containerStyle,
+}: DataSaverImagePlaceholderProps) => {
+  return (
+    <View
+      style={[style, containerStyle]}
+      className="items-center justify-center bg-bgColor-primary"
+    >
+      <ActivityIndicator size="large" className="color-highlight" />
+    </View>
+  );
+};

@@ -12,6 +12,7 @@ import {
 } from "@/components/posts/styledEditPostContent";
 import {
   CompressedImagePayload,
+  InitializeImageInfo,
   MAX_FILE_SIZE_BYTES,
   MAX_PHOTOS_LIMIT,
 } from "@/definitions/media";
@@ -24,6 +25,8 @@ import { LocalAssetRecord } from "@/utility_functions/images/mediaLoader";
 import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
 import { File } from "expo-file-system";
 import { toast } from "@ncrft/native-toast";
+import { Image } from "expo-image";
+import { formatFileSize } from "@/utility_functions/images/converter";
 
 export type CreatePostSearchParams = {
   type: PostType;
@@ -88,14 +91,24 @@ const CreatePost = () => {
       /**
        * Initialize Post and get presigned assets
        */
-      const imageMimeTypes = selectedImages.map((img) => img.type);
+      const contentInfo: InitializeImageInfo[] = selectedImages.map(
+        ({ width, height, contentLength, imageHash, mimeType }) => ({
+          width,
+          height,
+          contentLength,
+          imageHash,
+          mimeType,
+        }),
+      );
+
+      console.log(contentInfo);
 
       const initResponse = await initializePost({
         postType,
         title,
         body,
         youtubeUrl: postType === "event" ? youtubeUrl : null,
-        imageMimeTypes,
+        contentInfo,
       }).unwrap();
 
       const { postId, presignedAssets } = initResponse;
@@ -123,7 +136,7 @@ const CreatePost = () => {
             const cloudUploadResponse = await fetch(cloudTicket.uploadUrl, {
               method: "PUT",
               body: rawFileBlob,
-              headers: { "Content-Type": localImage.type },
+              headers: { "Content-Type": localImage.mimeType },
             });
 
             console.log(cloudUploadResponse);
@@ -197,7 +210,11 @@ const CreatePost = () => {
           localAssetId: placeholderId,
           uri: "",
           name: "",
-          type: "image/jpeg",
+          mimeType: "image/jpeg",
+          height: 0,
+          width: 0,
+          contentLength: 0,
+          imageHash: "",
           isCompressing: true,
         },
       ]);
@@ -226,14 +243,9 @@ const CreatePost = () => {
           fileInfo.size &&
           fileInfo.size > MAX_FILE_SIZE_BYTES
         ) {
-          // Toast.show({
-          //   text1: "File Too Large",
-          //   text2: `An image exceeds our ${MAX_FILE_SIZE_BYTES / (1024 * 1024)}MB limit even after compression.`,
-          //   type: "error",
-          // });
           Alert.alert(
             "File Too Large",
-            `An image exceeds our ${MAX_FILE_SIZE_BYTES / (1024 * 1024)}MB limit even after compression.`,
+            `An image exceeds our ${formatFileSize(MAX_FILE_SIZE_BYTES)}MB limit even after compression.`,
           );
           setSelectedImages((prev) =>
             prev.filter((item) => item.localAssetId !== placeholderId),
@@ -246,11 +258,16 @@ const CreatePost = () => {
             fileInfo.size ? fileInfo.size / (1024 * 1024) : fileInfo.exists,
             fileInfo.size,
           );
-          console.log("Dimensions:", imageRef.height, imageRef.width);
+          console.log(
+            "Dimensions:",
+            finalCompressedResult.height,
+            finalCompressedResult.width,
+          );
         }
 
         const fileUri = finalCompressedResult.uri;
         const fileName = fileUri.split("/").pop() || `upload_${Date.now()}.jpg`;
+        const thumbhash = await Image.generateThumbhashAsync(fileUri);
 
         // Append asset directly to the structural order array queue
         setSelectedImages((prev) =>
@@ -260,7 +277,11 @@ const CreatePost = () => {
                   localAssetId: placeholderId,
                   uri: fileUri,
                   name: fileName,
-                  type: "image/jpeg",
+                  mimeType: "image/jpeg",
+                  height: finalCompressedResult.height,
+                  width: finalCompressedResult.width,
+                  contentLength: fileInfo.size ?? 0,
+                  imageHash: thumbhash,
                   isCompressing: false,
                 }
               : item,

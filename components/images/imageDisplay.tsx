@@ -15,11 +15,15 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
-import { DataSaverImage } from "./DataSaverImage";
+import { DataSaverImage, DataSaverImagePlaceholder } from "./DataSaverImage";
 import StyledButton from "../styledButton";
 import StyledLabel from "../styledLabel";
 import { useDataSaverCache } from "@/hooks/useDataSaverCache";
 import ImageCounter from "./imageCounter";
+import {
+  formatFileSize,
+  getContainedDimensions,
+} from "@/utility_functions/images/converter";
 
 interface ImageDisplayProps {
   images: ImageInfo[];
@@ -151,9 +155,17 @@ const ImageDisplay = ({ images }: ImageDisplayProps) => {
             console.log(imagePath);
           }}
         />
-        {isReady && (
-          <>
-            <View className="overflow-hidden rounded-lg border border-borderColor-primary">
+        <View className="items-center overflow-hidden rounded-lg border border-borderColor-primary">
+          {!isReady && (
+            <DataSaverImagePlaceholder
+              style={{
+                width: imageWidth,
+                height: imageHeight,
+              }}
+            />
+          )}
+          {isReady && (
+            <>
               <ImageCounter
                 selectedIndex={currentIndex} // use gesture viewer index state
                 totalCount={imageUrls.length}
@@ -178,14 +190,25 @@ const ImageDisplay = ({ images }: ImageDisplayProps) => {
                       cacheKey={item}
                       isUnlocked={unlockedKeys.has(item)}
                       onUnlock={unlockKey}
-                      style={{ width: imageWidth, height: imageHeight }}
+                      style={{
+                        width: imageWidth,
+                        height: imageHeight,
+                      }}
                       uri={item}
                       contentFit="cover"
+                      imageHash={images[index].imageHash}
+                      fileSizeLabel={formatFileSize(
+                        images[index].contentLength,
+                      )}
                     />
                   );
                 }}
               />
-            </View>
+            </>
+          )}
+        </View>
+        {isReady && (
+          <>
             <BottomSheetModal
               ref={bottomSheetRef}
               snapPoints={snapPoints}
@@ -213,6 +236,13 @@ const ImageDisplay = ({ images }: ImageDisplayProps) => {
                   onDismiss={dismissModal}
                   onDismissStart={handleDismissalStart}
                   windowSize={windowSize}
+                  panInertia={{
+                    enabled: true,
+                    deceleration: 0.99,
+                    rubberBandEffect: true,
+                    velocityFactor: 0.6,
+                    rubberBandFactor: 3,
+                  }}
                   pageSpacing={16}
                   renderContainer={renderModalContainer}
                   renderItem={(item, index) => {
@@ -220,10 +250,22 @@ const ImageDisplay = ({ images }: ImageDisplayProps) => {
                       <DataSaverImage
                         cacheKey={item}
                         isUnlocked={unlockedKeys.has(item)}
-                        onUnlock={(key) => unlockKey(imageUrls[index])}
-                        style={{ width: windowWidth, height: windowHeight }}
+                        onUnlock={unlockKey}
+                        style={{
+                          ...getContainedDimensions(
+                            { height: windowHeight, width: windowWidth },
+                            {
+                              height: images[index].height,
+                              width: images[index].width,
+                            },
+                          ),
+                        }}
                         uri={item}
                         contentFit="contain"
+                        imageHash={images[index].imageHash}
+                        fileSizeLabel={formatFileSize(
+                          images[index].contentLength,
+                        )}
                       />
                     );
                   }}

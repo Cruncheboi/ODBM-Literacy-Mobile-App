@@ -16,7 +16,7 @@ const ImageCounter = ({
   return (
     <View
       className={clsx(
-        "absolute right-5 top-5 z-10 items-center justify-center rounded-full bg-black/65 px-3",
+        "absolute right-5 top-5 z-10 items-center justify-center rounded-full bg-slate-400/65 px-3 dark:bg-black/65",
         className,
       )}
       pointerEvents="none"

@@ -1,8 +1,11 @@
-export interface ImageInfo {
+export type ImageInfo = {
   id: number;
   url: string;
   order: number;
-}
+} & Pick<
+  CompressedImagePayload,
+  "height" | "width" | "mimeType" | "contentLength" | "imageHash"
+>;
 
 export interface ImageUpdate {
   imagesToInsert?: ImageInfo[];
@@ -19,15 +22,18 @@ export interface CompressedImagePayload {
   localAssetId: string;
   uri: string;
   name: string;
-  type: string;
+  width: number;
+  height: number;
+  imageHash: string;
+  mimeType: string;
+  contentLength: number;
   isCompressing: boolean;
 }
 
-export interface PickedImagePayload {
-  uri: string;
-  width: number;
-  height: number;
-}
+export type InitializeImageInfo = Pick<
+  CompressedImagePayload,
+  "height" | "width" | "mimeType" | "contentLength" | "imageHash"
+>;
 
 export const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB upload limit
 export const MAX_PHOTOS_LIMIT = 5;
