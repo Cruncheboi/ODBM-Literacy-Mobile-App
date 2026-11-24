@@ -1,28 +1,29 @@
-import { Image } from "react-native";
-import type { GestureViewerRenderItemInfo } from "react-native-gesture-image-viewer";
+import { Image, ImageContentFit, ImageStyle } from "expo-image";
+import { StyleProp } from "react-native";
 
 interface StyledImageProps {
-  url: string;
-  itemInfo?: GestureViewerRenderItemInfo;
+  uri: string;
+  imageHash: string;
+  style: StyleProp<ImageStyle>;
+  contentFit?: ImageContentFit;
 }
 
-const StyledImage = ({ url, itemInfo }: StyledImageProps) => {
+const StyledImage = ({
+  uri,
+  imageHash,
+  style,
+  contentFit,
+}: StyledImageProps) => {
   return (
     <Image
-      className="h-full w-full border"
-      source={{ uri: url }}
-      resizeMode="contain"
-      onLoad={({ nativeEvent }) => {
-        if (!itemInfo) return;
-        const { setItemDimensions } = itemInfo;
-        console.log(
-          `width: ${nativeEvent.source.width}, height: ${nativeEvent.source.height}`,
-        );
-        setItemDimensions({
-          width: nativeEvent.source.width,
-          height: nativeEvent.source.height,
-        });
-      }}
+      source={{ uri }}
+      style={style}
+      contentFit={contentFit}
+      cachePolicy="memory-disk"
+      transition={300}
+      recyclingKey={uri}
+      placeholder={{ thumbhash: imageHash }}
+      placeholderContentFit={contentFit}
     />
   );
 };

@@ -40,7 +40,7 @@ const ContentOptionsBottomSheetView = ({
   }, []);
 
   return (
-    <BottomSheetView className="items-center justify-center gap-4 p-4">
+    <BottomSheetView className="mb-safe items-center justify-center gap-4 px-4 py-8">
       {/** Testimony Options */}
       {contentType === "testimony" && (
         <TestimonyOptions

@@ -34,7 +34,7 @@ export const LinkToParentPostButton = ({
     className="border-borderColor-primary bg-bgColor-primary"
     label={<StyledLabel label="View parent post" />}
     onPress={() => {
-      router.push({
+      router.navigate({
         pathname: "/postActions/viewPost",
         params: {
           postId,

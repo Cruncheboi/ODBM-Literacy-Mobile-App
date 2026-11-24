@@ -3,7 +3,7 @@ import CustomOpacityButton from "@/components/customOpacityButton";
 import StyledLabel from "@/components/styledLabel";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { View, ScrollView, Alert } from "react-native";
+import { View, ScrollView } from "react-native";
 import { PostType } from "@/definitions/posts";
 import {
   StyledBodyInput,
@@ -13,23 +13,17 @@ import {
 import {
   CompressedImagePayload,
   InitializeImageInfo,
-  MAX_FILE_SIZE_BYTES,
-  MAX_PHOTOS_LIMIT,
 } from "@/definitions/media";
 import {
   useActivatePostMutation,
   useInitializePostMutation,
 } from "@/redux/query_services/injectedEndpoints.ts/posts";
 import { ImagePicker } from "@/components/bottom_sheet/media/imagePicker";
-import { LocalAssetRecord } from "@/utility_functions/images/mediaLoader";
-import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
-import { File } from "expo-file-system";
-import { toast } from "@ncrft/native-toast";
-import { Image } from "expo-image";
-import { formatFileSize } from "@/utility_functions/images/converter";
+import { selectAndCompress } from "@/utility_functions/images/compression";
+import { uploadImagesToBackblaze } from "@/utility_functions/images/upload";
 
 export type CreatePostSearchParams = {
-  type: PostType;
+  postType: PostType;
 };
 
 type Status = "submitting" | "typing";
@@ -52,7 +46,7 @@ const CreatePost = () => {
 
   // Post state
   const [status, setStatus] = useState<Status>("typing");
-  const { type: postType } = useLocalSearchParams<CreatePostSearchParams>();
+  const { postType } = useLocalSearchParams<CreatePostSearchParams>();
   const [hasTouched, setHasTouched] = useState({
     title: false,
     body: false,
@@ -88,9 +82,7 @@ const CreatePost = () => {
 
     setStatus("submitting");
     try {
-      /**
-       * Initialize Post and get presigned assets
-       */
+      //Initialize Post and get presigned assets
       const contentInfo: InitializeImageInfo[] = selectedImages.map(
         ({ width, height, contentLength, imageHash, mimeType }) => ({
           width,
@@ -112,56 +104,12 @@ const CreatePost = () => {
       }).unwrap();
 
       const { postId, presignedAssets } = initResponse;
-      const successfulUploadIds: number[] = [];
+      const successfulUploadIds = await uploadImagesToBackblaze(
+        selectedImages,
+        presignedAssets,
+      );
 
-      /**
-       * Upload selectedImages directly to cloud
-       */
-      if (
-        selectedImages.length > 0 &&
-        presignedAssets &&
-        presignedAssets.length > 0
-      ) {
-        // Upload selectedImages sequentially
-        for (let i = 0; i < selectedImages.length; i++) {
-          const localImage = selectedImages[i];
-          const cloudTicket = presignedAssets[i];
-
-          try {
-            // Fetch the physical raw file blob out of the phone's local cache URI
-            const fileBlobResponse = await fetch(localImage.uri);
-            const rawFileBlob = await fileBlobResponse.blob();
-            console.log(cloudTicket.uploadUrl);
-            // Stream the binary chunk straight to Backblaze B2
-            const cloudUploadResponse = await fetch(cloudTicket.uploadUrl, {
-              method: "PUT",
-              body: rawFileBlob,
-              headers: { "Content-Type": localImage.mimeType },
-            });
-
-            console.log(cloudUploadResponse);
-
-            if (cloudUploadResponse.ok) {
-              // If Backblaze responds 200 OK, track the successful image record primary key ID
-              successfulUploadIds.push(cloudTicket.imageId);
-            } else {
-              console.warn(
-                `Direct-to-cloud file drop occurred on asset row ID: ${cloudTicket.imageId}`,
-              );
-            }
-          } catch (fileUploadError) {
-            // Individual upload failed (e.g. network blip), log it and allow the loop to continue
-            console.error(
-              `Network dropped transit on file position index ${i}:`,
-              fileUploadError,
-            );
-          }
-        }
-      }
-
-      /**
-       * Activate post and its content to show up on feeds
-       */
+      // Activate post and its content to show up on feeds
       const activationResponse = await activatePost({
         postId,
         postType,
@@ -182,118 +130,6 @@ const CreatePost = () => {
     } finally {
       // Release UI interface screen lock inputs
       setStatus("typing");
-    }
-  };
-
-  //
-  const handleToggleAsset = async (tappedAsset: LocalAssetRecord) => {
-    const existingIndex = selectedImages.findIndex(
-      (item) => item.localAssetId === tappedAsset.localAssetId,
-    );
-
-    if (existingIndex !== -1) {
-      // Deselection logic
-      setSelectedImages((prev) =>
-        prev.filter((item) => item.localAssetId !== tappedAsset.localAssetId),
-      );
-    } else {
-      // Apply Selection limit
-      if (selectedImages.length >= MAX_PHOTOS_LIMIT) {
-        toast.error(`You can attach a maximum of ${MAX_PHOTOS_LIMIT} images.`);
-        return;
-      }
-
-      const placeholderId = tappedAsset.localAssetId;
-      setSelectedImages((prev) => [
-        ...prev,
-        {
-          localAssetId: placeholderId,
-          uri: "",
-          name: "",
-          mimeType: "image/jpeg",
-          height: 0,
-          width: 0,
-          contentLength: 0,
-          imageHash: "",
-          isCompressing: true,
-        },
-      ]);
-
-      // Start compression process
-      try {
-        const targetWidth = tappedAsset.width > 1200 ? 1200 : tappedAsset.width;
-
-        // Create the Object-Oriented context tracker handle
-        const manipulatorContext = ImageManipulator.manipulate(tappedAsset.uri);
-
-        // Invoke the async hardware renderer
-        const imageRef = await manipulatorContext
-          .resize({ width: targetWidth })
-          .renderAsync();
-
-        const finalCompressedResult = await imageRef.saveAsync({
-          compress: 0.7, // Target 70% quality compression
-          format: SaveFormat.JPEG,
-        });
-
-        // Enforce production file size boundaries on the compressed file
-        const fileInfo = new File(finalCompressedResult.uri).info();
-        if (
-          fileInfo.exists &&
-          fileInfo.size &&
-          fileInfo.size > MAX_FILE_SIZE_BYTES
-        ) {
-          Alert.alert(
-            "File Too Large",
-            `An image exceeds our ${formatFileSize(MAX_FILE_SIZE_BYTES)}MB limit even after compression.`,
-          );
-          setSelectedImages((prev) =>
-            prev.filter((item) => item.localAssetId !== placeholderId),
-          );
-          return;
-        }
-
-        if (fileInfo.exists) {
-          console.log(
-            fileInfo.size ? fileInfo.size / (1024 * 1024) : fileInfo.exists,
-            fileInfo.size,
-          );
-          console.log(
-            "Dimensions:",
-            finalCompressedResult.height,
-            finalCompressedResult.width,
-          );
-        }
-
-        const fileUri = finalCompressedResult.uri;
-        const fileName = fileUri.split("/").pop() || `upload_${Date.now()}.jpg`;
-        const thumbhash = await Image.generateThumbhashAsync(fileUri);
-
-        // Append asset directly to the structural order array queue
-        setSelectedImages((prev) =>
-          prev.map((item) =>
-            item.localAssetId === placeholderId
-              ? {
-                  localAssetId: placeholderId,
-                  uri: fileUri,
-                  name: fileName,
-                  mimeType: "image/jpeg",
-                  height: finalCompressedResult.height,
-                  width: finalCompressedResult.width,
-                  contentLength: fileInfo.size ?? 0,
-                  imageHash: thumbhash,
-                  isCompressing: false,
-                }
-              : item,
-          ),
-        );
-      } catch (e) {
-        console.error("Modern image manipulation processing broke down:", e);
-        setSelectedImages((prev) =>
-          prev.filter((item) => item.localAssetId !== placeholderId),
-        );
-        toast.error("Failed to compress selected image.");
-      }
     }
   };
 
@@ -334,20 +170,21 @@ const CreatePost = () => {
         )}
         <ImagePicker
           selectedImages={selectedImages}
-          onToggleAsset={handleToggleAsset}
+          onToggleAsset={(asset) =>
+            selectAndCompress(asset, selectedImages, setSelectedImages)
+          }
+          disabled={status === "submitting"}
         />
-        <View>
-          <CustomOpacityButton
-            title="Create Post"
-            onPress={onPostSubmit}
-            disabled={
-              status === "submitting" ||
-              !hasValidBody ||
-              !hasValidTitle ||
-              !allImagesCompressed
-            }
-          />
-        </View>
+        <CustomOpacityButton
+          title="Create Post"
+          onPress={onPostSubmit}
+          disabled={
+            status === "submitting" ||
+            !hasValidBody ||
+            !hasValidTitle ||
+            !allImagesCompressed
+          }
+        />
       </ScrollView>
     </CustomHeader>
   );

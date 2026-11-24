@@ -8,7 +8,7 @@ import BottomSheet, {
   BottomSheetBackdropProps,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
-import CustomBackground from "@/components/customBackground";
+import CustomBackground from "@/components/bottom_sheet/general/customBackground";
 import ReportedContentList from "@/components/reports/reportedContentList";
 import { Filter, ReportStatus, SortType } from "@/definitions/moderation";
 import ContentTypeRadioSelector from "@/components/bottom_sheet/selectors/contentTypeRadioSelector";

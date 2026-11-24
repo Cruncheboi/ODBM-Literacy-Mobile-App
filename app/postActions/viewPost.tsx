@@ -25,7 +25,7 @@ import BottomSheet, {
   BottomSheetBackdropProps,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
-import CustomBackground from "@/components/customBackground";
+import CustomBackground from "@/components/bottom_sheet/general/customBackground";
 import ContentOptionsBottomSheetView from "@/components/contentOptionsBottomSheetView";
 import { useGetCommentsFeedInfiniteQuery } from "@/redux/query_services/injectedEndpoints.ts/comments";
 import { useGetTestimonyQuery } from "@/redux/query_services/injectedEndpoints.ts/testimonies";
@@ -127,7 +127,7 @@ const ViewPost = () => {
   };
 
   const onAddCommentPressed = () => {
-    router.push({
+    router.navigate({
       pathname: "/postActions/createComment",
       params: {
         postId,
@@ -266,7 +266,7 @@ const ViewPost = () => {
 };
 export default ViewPost;
 
-const useGetPostQuery = (postType: PostType, postId: number) => {
+export const useGetPostQuery = (postType: PostType, postId: number) => {
   if (postType === "testimony") {
     return useGetTestimonyQuery({ postId, userAuthId: auth.currentUser?.uid });
   }

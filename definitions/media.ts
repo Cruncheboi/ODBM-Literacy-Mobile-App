@@ -35,5 +35,13 @@ export type InitializeImageInfo = Pick<
   "height" | "width" | "mimeType" | "contentLength" | "imageHash"
 >;
 
+export type ExistingImage = {
+  isExisting: true;
+} & ImageInfo;
+
+export type NonExistingImage = { isExisting: false } & CompressedImagePayload;
+
+export type ImageInfoEditable = ExistingImage | NonExistingImage;
+
 export const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB upload limit
 export const MAX_PHOTOS_LIMIT = 5;

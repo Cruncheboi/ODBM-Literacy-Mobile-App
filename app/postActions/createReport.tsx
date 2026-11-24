@@ -1,4 +1,4 @@
-import CustomBackground from "@/components/customBackground";
+import CustomBackground from "@/components/bottom_sheet/general/customBackground";
 import CustomHeader from "@/components/customHeader";
 import CustomOpacityButton from "@/components/customOpacityButton";
 import ErrorText from "@/components/errorText";

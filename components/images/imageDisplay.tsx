@@ -9,7 +9,7 @@ import {
 import { BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import CustomBottomSheetBackdrop from "../bottom_sheet/general/backdrop";
-import { CustomTransparentBackground } from "../customBackground";
+import { CustomTransparentBackground } from "../bottom_sheet/general/customBackground";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,

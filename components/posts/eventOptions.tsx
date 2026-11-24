@@ -4,9 +4,9 @@ import DeleteOptionButton from "../bottom_sheet/buttons/deleteOptionButton";
 import ReportOptionButton from "../bottom_sheet/buttons/reportOptionButton";
 import { router } from "expo-router";
 import { CreateReportSearchParams } from "@/app/postActions/createReport";
-import { EditEventPostSearchParams } from "@/app/postActions/editEventPost";
 import { ContentOptionsProps } from "./testimonyOptions";
 import { useDeletePostMutation } from "@/redux/query_services/injectedEndpoints.ts/posts";
+import { EditPostSearchParams } from "@/app/postActions/editPost";
 
 interface EventOptionsProps extends ContentOptionsProps {
   content: EventPost;
@@ -24,9 +24,9 @@ const EventOptions = ({
   const strPostId = String(postId);
 
   const onEdit = () => {
-    router.push({
-      pathname: "/postActions/editEventPost",
-      params: { postId: strPostId } as EditEventPostSearchParams,
+    router.navigate({
+      pathname: "/postActions/editPost",
+      params: { postId: strPostId, postType: "event" } as EditPostSearchParams,
     });
   };
 
@@ -43,7 +43,7 @@ const EventOptions = ({
   };
 
   const onReport = async () => {
-    router.push({
+    router.navigate({
       pathname: "/postActions/createReport",
       params: { postId: strPostId } as CreateReportSearchParams,
     });

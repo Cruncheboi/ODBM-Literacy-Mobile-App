@@ -53,14 +53,16 @@ const Index = () => {
   };
 
   const onRefresh = async () => {
-    refetch();
+    if (!isFetching) {
+      refetch();
+    }
   };
 
   const onAddPostPressed = () => {
-    router.push({
+    router.navigate({
       pathname: "/postActions/createPost",
       params: {
-        type: "testimony",
+        postType: "testimony",
       } as CreatePostSearchParams,
     });
   };

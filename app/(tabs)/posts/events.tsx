@@ -54,14 +54,16 @@ const Events = () => {
   };
 
   const onRefresh = async () => {
-    refetch();
+    if (!isFetching) {
+      refetch();
+    }
   };
 
   const onAddPostPressed = () => {
-    router.push({
+    router.navigate({
       pathname: "/postActions/createPost",
       params: {
-        type: "event",
+        postType: "event",
       } as CreatePostSearchParams,
     });
   };

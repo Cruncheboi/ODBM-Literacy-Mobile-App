@@ -21,7 +21,7 @@ import BottomSheet, {
   BottomSheetBackdropProps,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
-import CustomBackground from "@/components/customBackground";
+import CustomBackground from "@/components/bottom_sheet/general/customBackground";
 import ContentOptionsBottomSheetView from "@/components/contentOptionsBottomSheetView";
 import {
   useGetAdminSingleCommentQuery,

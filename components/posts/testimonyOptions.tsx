@@ -5,10 +5,10 @@ import DeleteOptionButton, {
 } from "../bottom_sheet/buttons/deleteOptionButton";
 import ReportOptionButton from "../bottom_sheet/buttons/reportOptionButton";
 import { router } from "expo-router";
-import { EditTestimonyPostSearchParams } from "@/app/postActions/editTestimonyPost";
 import { CreateReportSearchParams } from "@/app/postActions/createReport";
 import { StrictOmit } from "@/definitions/api";
 import { useDeletePostMutation } from "@/redux/query_services/injectedEndpoints.ts/posts";
+import { EditPostSearchParams } from "@/app/postActions/editPost";
 
 export interface ContentOptionsProps extends StrictOmit<
   DeleteOptionsProps,
@@ -34,9 +34,12 @@ const TestimonyOptions = ({
   const strPostId = String(postId);
 
   const onEdit = () => {
-    router.push({
-      pathname: "/postActions/editTestimonyPost",
-      params: { postId: strPostId } as EditTestimonyPostSearchParams,
+    router.navigate({
+      pathname: "/postActions/editPost",
+      params: {
+        postId: strPostId,
+        postType: "testimony",
+      } as EditPostSearchParams,
     });
   };
 
@@ -53,7 +56,7 @@ const TestimonyOptions = ({
   };
 
   const onReport = async () => {
-    router.push({
+    router.navigate({
       pathname: "/postActions/createReport",
       params: { postId: strPostId } as CreateReportSearchParams,
     });

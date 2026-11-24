@@ -21,13 +21,14 @@ import {
   ActivityIndicator,
 } from "react-native";
 import CustomBottomSheetBackdrop from "../general/backdrop";
-import CustomBackground from "@/components/customBackground";
+import CustomBackground from "@/components/bottom_sheet/general/customBackground";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { getThemeHighlightColor } from "@/utility_functions/themeColor";
 
 interface ImagePickerProps {
   selectedImages: CompressedImagePayload[]; // Controlled state tracking active checked IDs
   onToggleAsset: (asset: LocalAssetRecord) => void;
+  disabled?: boolean;
 }
 
 const { width } = Dimensions.get("window");
@@ -36,6 +37,7 @@ const COLUMN_SIZE = width / 3 - 6; // Perfectly fits 3 items across a responsive
 export const ImagePicker = ({
   selectedImages,
   onToggleAsset,
+  disabled = false,
 }: ImagePickerProps) => {
   const [gallery, setGallery] = useState<LocalAssetRecord[]>([]);
   const [loading, setLoading] = useState(false);
@@ -141,6 +143,7 @@ export const ImagePicker = ({
   return (
     <>
       <StyledButton
+        disabled={disabled}
         label={
           <StyledLabel
             label={`Pick Images (${selectedImages.length}/${MAX_PHOTOS_LIMIT})`}

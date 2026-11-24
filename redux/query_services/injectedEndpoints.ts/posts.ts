@@ -2,12 +2,17 @@ import { MasterPostRecord } from "@/definitions/posts";
 import { databaseApi } from "../databaseApi";
 import { InitializeImageInfo } from "@/definitions/media";
 
+export type PresignedAsset = {
+  imageId: number;
+  uploadUrl: string;
+};
+
 const postsApi = databaseApi.injectEndpoints({
   endpoints: (builder) => ({
     initializePost: builder.mutation<
       {
         postId: number;
-        presignedAssets: { imageId: number; uploadUrl: string }[];
+        presignedAssets: PresignedAsset[];
       },
       Pick<MasterPostRecord, "postType" | "title" | "body"> & {
         youtubeUrl?: string | null;
@@ -45,6 +50,39 @@ const postsApi = databaseApi.injectEndpoints({
       invalidatesTags: (result, error, arg) =>
         arg.postType === "event" ? ["Events"] : ["Testimonies"],
     }),
+    updatePost: builder.mutation<
+      { message: string },
+      Pick<
+        MasterPostRecord,
+        "postType" | "postId" | "title" | "body" | "images"
+      > &
+        Partial<Pick<MasterPostRecord, "youtubeId">> & {
+          imagesToDelete?: number[];
+          successfulNewImageIds?: number[];
+          orderedImageIds?: number[];
+        }
+    >({
+      query: ({ postId, postType, ...body }) => ({
+        url: `posts/${postId}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: (result, error, arg) =>
+        arg.postType === "event" ? ["Events"] : ["Testimonies"],
+    }),
+    presignEditPostImages: builder.mutation<
+      { presignedAssets: PresignedAsset[] },
+      Pick<MasterPostRecord, "postId"> & {
+        contentInfo: InitializeImageInfo[];
+        imagesToDeleteCount?: number;
+      }
+    >({
+      query: ({ postId, ...body }) => ({
+        url: `posts/${postId}/images/presign`,
+        method: "POST",
+        body,
+      }),
+    }),
   }),
   overrideExisting: true,
 });
@@ -53,4 +91,6 @@ export const {
   useInitializePostMutation,
   useActivatePostMutation,
   useDeletePostMutation,
+  useUpdatePostMutation,
+  usePresignEditPostImagesMutation,
 } = postsApi;

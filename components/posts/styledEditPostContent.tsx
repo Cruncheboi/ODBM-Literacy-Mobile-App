@@ -143,7 +143,7 @@ export const CharsRemainingDisplay = ({
 };
 
 export const StyledYoutubeUrlInput = ({
-  youtubeUrl,
+  youtubeUrl = "",
   setYoutubeUrl,
   isEditable,
 }: YoutubeUrlInputProps) => {

@@ -24,7 +24,7 @@ const CommentOptions = ({
   const strCommentId = String(commentId);
 
   const onEdit = () => {
-    router.push({
+    router.navigate({
       pathname: "/postActions/editComment",
       params: {
         commentId: strCommentId,
@@ -42,7 +42,7 @@ const CommentOptions = ({
   };
 
   const onReport = async () => {
-    router.push({
+    router.navigate({
       pathname: "/postActions/createReport",
       params: { commentId: strCommentId } as CreateReportSearchParams,
     });

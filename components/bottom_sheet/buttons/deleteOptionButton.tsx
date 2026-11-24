@@ -22,7 +22,9 @@ const DeleteOptionButton = ({
       <>
         <StyledButton
           className="bg-red-700"
-          label={<StyledLabel label="Confirm Deletion" />}
+          label={
+            <StyledLabel label="Confirm Deletion" className="text-white" />
+          }
           onPress={async () => {
             await onDelete();
             setShowDeleteConfirmation(false);
