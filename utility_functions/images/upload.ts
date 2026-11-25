@@ -1,4 +1,4 @@
-import { CompressedImagePayload } from "@/definitions/media";
+import { ImageInfoEditable } from "@/definitions/media";
 import { PresignedAsset } from "@/redux/query_services/injectedEndpoints.ts/posts";
 
 /**
@@ -6,7 +6,7 @@ import { PresignedAsset } from "@/redux/query_services/injectedEndpoints.ts/post
  * using presigned URLs and returns the array of confirmed database image IDs.
  */
 export async function uploadImagesToBackblaze(
-  localImages: CompressedImagePayload[],
+  localImages: ImageInfoEditable[],
   presignedAssets: PresignedAsset[],
 ): Promise<number[]> {
   const successfulUploadIds: number[] = [];
@@ -25,6 +25,7 @@ export async function uploadImagesToBackblaze(
     if (!cloudTicket) continue;
 
     try {
+      if (localImage.isExisting) continue; // Ensure Image is local
       const fileBlobResponse = await fetch(localImage.uri);
       const rawFileBlob = await fileBlobResponse.blob();
 

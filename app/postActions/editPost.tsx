@@ -8,7 +8,7 @@ import StyledEditPostBackground, {
 import StyledLabel from "@/components/styledLabel";
 import { PostType } from "@/definitions/posts";
 import { router, useLocalSearchParams } from "expo-router";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { View, ScrollView } from "react-native";
 import { useGetPostQuery } from "./viewPost";
 import {
@@ -16,13 +16,7 @@ import {
   useUpdatePostMutation,
 } from "@/redux/query_services/injectedEndpoints.ts/posts";
 import { ImagePicker } from "@/components/bottom_sheet/media/imagePicker";
-import {
-  CompressedImagePayload,
-  ExistingImage,
-  ImageInfo,
-  ImageInfoEditable,
-  NonExistingImage,
-} from "@/definitions/media";
+import { ExistingImage, ImageInfoEditable } from "@/definitions/media";
 import { selectAndCompress } from "@/utility_functions/images/compression";
 import ImageManager from "@/components/images/imageManager";
 
@@ -69,13 +63,14 @@ const EditPost = () => {
 
   // Post info and actions
   const { title: oldTitle, body: oldBody, images: oldImages } = post;
-  const oldYoutubeUrl =
-    post.postType === "event" && post.youtubeId ? post.youtubeId : "";
-  const existingImages: ExistingImage[] = useMemo(
+  const oldYoutubeUrl = useMemo(
+    () => (post.postType === "event" && post.youtubeId ? post.youtubeId : ""),
+    [post],
+  );
+  const initialImages: ExistingImage[] = useMemo(
     () => oldImages?.map((image) => ({ isExisting: true, ...image })) ?? [],
     [oldImages],
   );
-
   const [updatePost] = useUpdatePostMutation();
   const [presignEditPostImages] = usePresignEditPostImagesMutation();
 
@@ -83,28 +78,42 @@ const EditPost = () => {
   const [title, setTitle] = useState(oldTitle);
   const [body, setBody] = useState(oldBody);
   const [youtubeUrl, setYoutubeUrl] = useState(oldYoutubeUrl);
-  const [newSelectedImages, setNewSelectedImages] = useState<
-    CompressedImagePayload[]
-  >([]);
-  const nonExistingImages: NonExistingImage[] = useMemo(
-    () =>
-      newSelectedImages.map((image) => ({ isExisting: false, ...image })) ?? [],
-    [newSelectedImages],
-  );
 
-  const [allSelectedImages, setAllSelectedImages] =
-    useState<ImageInfoEditable[]>(existingImages);
+  const [selectedImages, setSelectedImages] =
+    useState<ImageInfoEditable[]>(initialImages);
 
   // Validation
-  const hasValidTitle = title.length > 0 && title.trim() !== "";
-  const hasValidBody = body.length > 0 && body.trim() !== "";
+  const hasValidTitle = useMemo(
+    () => title.length > 0 && title.trim() !== "",
+    [title],
+  );
+  const hasValidBody = useMemo(
+    () => body.length > 0 && body.trim() !== "",
+    [body],
+  );
+  const hasChangedTitle = useMemo(
+    () => oldTitle.trim() !== title.trim(),
+    [title],
+  );
+  const hasChangedBody = useMemo(() => oldBody.trim() !== body.trim(), [body]);
+  const hasChangedYtUrl = useMemo(
+    () => oldYoutubeUrl.trim() !== youtubeUrl.trim(),
+    [oldYoutubeUrl],
+  );
+  const hasModifiedImages = useMemo(() => {
+    if (!oldImages) return selectedImages.length > 0;
+
+    return !selectedImages.every(
+      (image, index) => image.isExisting && image.id === oldImages[index].id,
+    );
+  }, [selectedImages, oldImages]);
+  const hasModifiedPost =
+    hasChangedTitle || hasChangedBody || hasChangedYtUrl || hasModifiedImages;
   const isEditable = status !== "submitting" && !postResult.isFetching;
   const allImagesCompressed =
-    newSelectedImages.findIndex((image) => image.isCompressing === true) === -1;
-  const hasChanged = useMemo(
-    () => oldTitle.trim() !== title.trim() || oldBody.trim() !== body.trim(),
-    [body, title],
-  );
+    selectedImages.findIndex(
+      (image) => !image.isExisting && image.isCompressing,
+    ) === -1;
 
   const onPostSubmit = async () => {
     if (status === "submitting") return;
@@ -119,17 +128,18 @@ const EditPost = () => {
     }
   };
 
-  const onTitleInputBlur = () => {
+  const onTitleInputBlur = useCallback(() => {
     if (!hasTouched.title) {
       setHasTouched((prev) => ({ ...prev, title: true }));
     }
-  };
+  }, [hasTouched]);
 
-  const onBodyInputBlur = () => {
+  const onBodyInputBlur = useCallback(() => {
     if (!hasTouched.body) {
       setHasTouched((prev) => ({ ...prev, body: true }));
     }
-  };
+  }, [hasTouched]);
+  console.log(hasModifiedImages);
 
   return (
     <CustomHeader title="Edit Your Post">
@@ -166,33 +176,33 @@ const EditPost = () => {
             isEditable={isEditable}
           />
         )}
-        {/** New Images */}
+        {/** Add New Images */}
         <ImagePicker
-          selectedImages={newSelectedImages}
-          onToggleAsset={(asset) =>
-            selectAndCompress(asset, newSelectedImages, setNewSelectedImages)
-          }
+          selectedImages={selectedImages}
+          onToggleAsset={(asset) => {
+            selectAndCompress(asset, selectedImages, setSelectedImages);
+          }}
           disabled={status === "submitting"}
         />
+        {/** Manage Images */}
         <ImageManager
-          images={allSelectedImages}
-          setImages={setAllSelectedImages}
+          images={selectedImages}
+          setImages={setSelectedImages}
+          initialImages={initialImages}
           disabled={status === "submitting" && !isEditable}
         />
         {/** Submit Button */}
-        <View>
-          <CustomOpacityButton
-            title="Update Post"
-            onPress={onPostSubmit}
-            disabled={
-              status === "submitting" ||
-              !hasValidBody ||
-              !hasValidTitle ||
-              !hasChanged ||
-              !allImagesCompressed
-            }
-          />
-        </View>
+        <CustomOpacityButton
+          title="Update Post"
+          onPress={onPostSubmit}
+          disabled={
+            status === "submitting" ||
+            !hasValidBody ||
+            !hasValidTitle ||
+            !allImagesCompressed ||
+            !hasModifiedPost
+          }
+        />
       </ScrollView>
     </CustomHeader>
   );

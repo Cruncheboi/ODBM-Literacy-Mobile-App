@@ -59,64 +59,6 @@ export default function RootLayout() {
   };
   const currentTheme = colorScheme === "dark" ? darkTheme : lightTheme;
 
-  // const toastConfig = {
-  //   success: (props: ToastProps) => {
-  //     return (
-  //       <BaseToast
-  //         {...props}
-  //         style={{ borderLeftColor: "green" }}
-  //         contentContainerStyle={{
-  //           borderTopWidth: 1,
-  //           borderBottomWidth: 1,
-  //           borderRightWidth: 1,
-  //           borderTopRightRadius: 6,
-  //           borderBottomRightRadius: 6,
-  //           borderColor: "#58595B",
-  //           backgroundColor: getThemeSecondaryColor(colorScheme),
-  //         }}
-  //         text1Style={{ color: getThemeFontColor(colorScheme) }}
-  //       />
-  //     );
-  //   },
-  //   info: (props: ToastProps) => {
-  //     return (
-  //       <BaseToast
-  //         {...props}
-  //         style={{ borderLeftColor: "yellow" }}
-  //         contentContainerStyle={{
-  //           borderTopWidth: 1,
-  //           borderBottomWidth: 1,
-  //           borderRightWidth: 1,
-  //           borderTopRightRadius: 6,
-  //           borderBottomRightRadius: 6,
-  //           borderColor: "#58595B",
-  //           backgroundColor: getThemeSecondaryColor(colorScheme),
-  //         }}
-  //         text1Style={{ color: getThemeFontColor(colorScheme) }}
-  //       />
-  //     );
-  //   },
-  //   error: (props: ToastProps) => {
-  //     return (
-  //       <BaseToast
-  //         {...props}
-  //         style={{ borderLeftColor: "red" }}
-  //         contentContainerStyle={{
-  //           borderTopWidth: 1,
-  //           borderBottomWidth: 1,
-  //           borderRightWidth: 1,
-  //           borderTopRightRadius: 6,
-  //           borderBottomRightRadius: 6,
-  //           borderColor: "#58595B",
-  //           backgroundColor: getThemeSecondaryColor(colorScheme),
-  //         }}
-  //         text1Style={{ color: getThemeFontColor(colorScheme) }}
-  //         activeOpacity={8000}
-  //       />
-  //     );
-  //   },
-  // };
-
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
@@ -127,10 +69,6 @@ export default function RootLayout() {
         console.log("redirecting to sign in...");
       }
     });
-    // (async () => {
-    //   const color = await SystemUI.getBackgroundColorAsync();
-    //   console.log(`ColorValue: ${color?.toString()}`);
-    // })();
 
     return () => unsubscribe();
   }, []);
@@ -143,22 +81,14 @@ export default function RootLayout() {
     <>
       <Provider store={store}>
         <PersistGate loading={null} persistor={persistor}>
-          <GestureHandlerRootView>
-            <BottomSheetModalProvider>
-              <SafeAreaProvider
-              // className="color-black"
-              // style={{
-              //   backgroundColor: ,
-              // }}
-              >
+          <SafeAreaProvider>
+            <GestureHandlerRootView>
+              <BottomSheetModalProvider>
                 <StatusBar style="auto" />
                 <ThemeProvider value={currentTheme}>
                   <Stack
                     screenOptions={{
                       animation: "fade",
-                      // presentation: "fullScreenModal",
-                      // animationTypeForReplace: "pop",
-                      // navigationBarColor: getThemeMainColor(colorScheme),
                       headerShown: false,
                     }}
                     initialRouteName="index"
@@ -170,10 +100,10 @@ export default function RootLayout() {
                     <Stack.Screen name="postActions" />
                   </Stack>
                 </ThemeProvider>
-                <ToastContainer theme={colorScheme ?? "dark"} />
-              </SafeAreaProvider>
-            </BottomSheetModalProvider>
-          </GestureHandlerRootView>
+              </BottomSheetModalProvider>
+            </GestureHandlerRootView>
+            <ToastContainer theme={colorScheme ?? "dark"} />
+          </SafeAreaProvider>
         </PersistGate>
       </Provider>
     </>

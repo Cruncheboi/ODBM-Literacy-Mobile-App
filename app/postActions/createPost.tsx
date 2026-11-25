@@ -10,10 +10,7 @@ import {
   StyledTitleInput,
   StyledYoutubeUrlInput,
 } from "@/components/posts/styledEditPostContent";
-import {
-  CompressedImagePayload,
-  InitializeImageInfo,
-} from "@/definitions/media";
+import { ImageInfoEditable, InitializeImageInfo } from "@/definitions/media";
 import {
   useActivatePostMutation,
   useInitializePostMutation,
@@ -21,6 +18,7 @@ import {
 import { ImagePicker } from "@/components/bottom_sheet/media/imagePicker";
 import { selectAndCompress } from "@/utility_functions/images/compression";
 import { uploadImagesToBackblaze } from "@/utility_functions/images/upload";
+import ImageManager from "@/components/images/imageManager";
 
 export type CreatePostSearchParams = {
   postType: PostType;
@@ -33,12 +31,13 @@ const CreatePost = () => {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [youtubeUrl, setYoutubeUrl] = useState("");
-  const [selectedImages, setSelectedImages] = useState<
-    CompressedImagePayload[]
-  >([]);
-  // find if an image is currently compressing
+  const [selectedImages, setSelectedImages] = useState<ImageInfoEditable[]>([]);
+  // const local?
   const allImagesCompressed =
-    selectedImages.findIndex((image) => image.isCompressing === true) === -1;
+    // find if an image is currently compressing
+    selectedImages.findIndex(
+      (image) => !image.isExisting && image.isCompressing === true,
+    ) === -1;
 
   //Input validation
   const hasValidTitle = title.length > 0 && title.trim() !== "";
@@ -173,6 +172,12 @@ const CreatePost = () => {
           onToggleAsset={(asset) =>
             selectAndCompress(asset, selectedImages, setSelectedImages)
           }
+          disabled={status === "submitting"}
+        />
+        <ImageManager
+          images={selectedImages}
+          setImages={setSelectedImages}
+          initialImages={[]}
           disabled={status === "submitting"}
         />
         <CustomOpacityButton

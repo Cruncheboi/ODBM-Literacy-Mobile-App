@@ -2,13 +2,17 @@ import { ScrollView, View } from "react-native";
 import CustomHeader from "../customHeader";
 import StyledLabel from "../styledLabel";
 import StyledTextInput from "../styledTextInput";
-import { TouchedFields } from "@/app/postActions/editTestimonyPost";
 import ErrorText from "../errorText";
 import {
   BODY_CHAR_LIMIT,
   TITLE_CHAR_LIMIT,
   YT_URL_CHAR_LIMIT,
 } from "@/definitions/posts";
+
+export type TouchedFields = {
+  title: boolean;
+  body: boolean;
+};
 
 interface EditPostProps {
   children: React.ReactNode;

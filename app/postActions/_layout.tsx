@@ -7,13 +7,13 @@ const Layout = () => {
         headerShown: false,
       }}
     >
-      <Stack.Screen name="createPost" />
       <Stack.Screen name="createComment" />
+      <Stack.Screen name="createPost" />
       <Stack.Screen name="createReport" />
+      <Stack.Screen name="editComment" />
+      <Stack.Screen name="editPost" />
       <Stack.Screen name="viewPost" />
       <Stack.Screen name="viewReport" />
-      <Stack.Screen name="editTestimonyPost" />
-      <Stack.Screen name="editEventPost" />
     </Stack>
   );
 };

@@ -1,5 +1,5 @@
 import {
-  CompressedImagePayload,
+  ImageInfoEditable,
   MAX_FILE_SIZE_BYTES,
   MAX_PHOTOS_LIMIT,
 } from "@/definitions/media";
@@ -16,19 +16,22 @@ import { formatFileSize } from "./converter";
  */
 export const selectAndCompress = async (
   tappedAsset: LocalAssetRecord,
-  selectedImages: CompressedImagePayload[],
-  setSelectedImages: (
-    value: React.SetStateAction<CompressedImagePayload[]>,
-  ) => void,
+  selectedImages: ImageInfoEditable[],
+  setSelectedImages: (value: React.SetStateAction<ImageInfoEditable[]>) => void,
 ) => {
   const existingIndex = selectedImages.findIndex(
-    (item) => item.localAssetId === tappedAsset.localAssetId,
+    (item) =>
+      !item.isExisting && item.localAssetId === tappedAsset.localAssetId,
   );
 
   if (existingIndex !== -1) {
     // Deselection logic
     setSelectedImages((prev) =>
-      prev.filter((item) => item.localAssetId !== tappedAsset.localAssetId),
+      prev.filter(
+        (item) =>
+          item.isExisting ||
+          (!item.isExisting && item.localAssetId !== tappedAsset.localAssetId),
+      ),
     );
   } else {
     // Apply Selection limit
@@ -41,6 +44,7 @@ export const selectAndCompress = async (
     setSelectedImages((prev) => [
       ...prev,
       {
+        isExisting: false,
         localAssetId: placeholderId,
         uri: "",
         name: "",
@@ -79,10 +83,14 @@ export const selectAndCompress = async (
       ) {
         Alert.alert(
           "File Too Large",
-          `An image exceeds our ${formatFileSize(MAX_FILE_SIZE_BYTES)}MB limit even after compression.`,
+          `An image exceeds our ${formatFileSize(MAX_FILE_SIZE_BYTES)} limit even after compression.`,
         );
         setSelectedImages((prev) =>
-          prev.filter((item) => item.localAssetId !== placeholderId),
+          prev.filter(
+            (item) =>
+              item.isExisting ||
+              (!item.isExisting && item.localAssetId !== placeholderId),
+          ),
         );
         return;
       }
@@ -106,8 +114,9 @@ export const selectAndCompress = async (
       // Append asset directly to the structural order array queue
       setSelectedImages((prev) =>
         prev.map((item) =>
-          item.localAssetId === placeholderId
+          !item.isExisting && item.localAssetId === placeholderId
             ? {
+                isExisting: false,
                 localAssetId: placeholderId,
                 uri: fileUri,
                 name: fileName,
@@ -124,7 +133,11 @@ export const selectAndCompress = async (
     } catch (e) {
       console.error("Modern image manipulation processing broke down:", e);
       setSelectedImages((prev) =>
-        prev.filter((item) => item.localAssetId !== placeholderId),
+        prev.filter(
+          (item) =>
+            item.isExisting ||
+            (!item.isExisting && item.localAssetId !== placeholderId),
+        ),
       );
       toast.error("Failed to compress selected image.");
     }

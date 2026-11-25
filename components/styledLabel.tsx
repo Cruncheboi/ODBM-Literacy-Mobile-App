@@ -4,7 +4,7 @@ import { Text } from "react-native";
 interface Props {
   label: string;
   className?: string;
-  children?: React.ReactElement<Props>[];
+  children?: React.ReactElement<Props> | React.ReactElement<Props>[];
 }
 
 const StyledLabel = ({ label, className, children }: Props) => {

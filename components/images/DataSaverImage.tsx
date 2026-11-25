@@ -1,6 +1,6 @@
 import React from "react";
 import { ActivityIndicator, StyleProp, View, ViewStyle } from "react-native";
-import { Image, ImageContentFit, ImageStyle } from "expo-image";
+import { ImageContentFit, ImageStyle } from "expo-image";
 import StyledLabel from "../styledLabel";
 import { Pressable } from "react-native-gesture-handler";
 import clsx from "clsx";
@@ -23,7 +23,7 @@ interface DataSaverImageProps {
 }
 
 interface DataSaverImagePlaceholderProps {
-  style: StyleProp<ImageStyle>;
+  style?: StyleProp<ImageStyle>;
   containerStyle?: StyleProp<ViewStyle>;
   className?: string;
 }
@@ -46,18 +46,12 @@ export const DataSaverImage = ({
         style={[style, containerStyle]}
         className="items-center justify-center bg-bgColor-primary"
       >
-        <Pressable
-          className="flex"
-          onPress={() => {
-            console.log("Pressed to view image.");
-            onUnlock(uri);
-          }}
-        >
-          <View className="rounded-full border-4 border-borderColor-primary bg-bgColor-spotlight px-5 py-3">
+        <Pressable className="flex" onPress={() => onUnlock(uri)}>
+          <View className="items-center rounded-full border-4 border-borderColor-primary bg-bgColor-spotlight px-5 py-3">
+            <StyledLabel label="View Image" className="p-0" />
             <StyledLabel
-              label={
-                fileSizeLabel ? `View Image (${fileSizeLabel})` : "View Image"
-              }
+              label={fileSizeLabel ? `(${fileSizeLabel})` : ""}
+              className="p-0"
             />
           </View>
         </Pressable>

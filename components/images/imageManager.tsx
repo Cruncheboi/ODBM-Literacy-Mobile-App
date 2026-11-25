@@ -22,18 +22,19 @@ import { TopBarNavigation } from "../bottom_sheet/general/topBarNavigation";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { getThemeFontColor } from "@/utility_functions/themeColor";
 import { useColorScheme } from "nativewind";
+import StyledBottomSheetView from "../bottom_sheet/general/styledBottomSheetView";
 
 interface ImageManagerProps {
   images: ImageInfoEditable[];
   setImages: (value: React.SetStateAction<ImageInfoEditable[]>) => void;
   initialImages: ImageInfoEditable[];
-
   disabled: boolean;
 }
 
 const ImageManager = ({
   images,
   setImages,
+  initialImages,
   disabled = false,
 }: ImageManagerProps) => {
   // Image Data
@@ -54,6 +55,7 @@ const ImageManager = ({
 
   // other state
   const { colorScheme } = useColorScheme();
+  const imageIndexToDeleteRef = useRef<number>(-1);
 
   // Bottom sheet
   const snapPoints = useMemo(() => ["100%"], []);
@@ -61,6 +63,8 @@ const ImageManager = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const deleteBottomSheetRef = useRef<BottomSheetModal>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const restoreBottomSheetRef = useRef<BottomSheetModal>(null);
+  const [isRestoreModalOpen, setIsRestoreModalOpen] = useState(false);
 
   useEffect(() => {
     if (!isModalOpen) return;
@@ -70,6 +74,8 @@ const ImageManager = ({
       () => {
         if (isDeleteModalOpen) {
           deleteBottomSheetRef.current?.dismiss();
+        } else if (isRestoreModalOpen) {
+          restoreBottomSheetRef.current?.dismiss();
         } else {
           bottomSheetRef.current?.dismiss();
         }
@@ -78,19 +84,23 @@ const ImageManager = ({
     );
 
     return () => backSubscription.remove();
-  }, [isModalOpen, isDeleteModalOpen]);
+  }, [isModalOpen, isDeleteModalOpen, isRestoreModalOpen]);
 
   const handleDeleteImage = () => {
-    console.log("deleting image... SIKE");
+    if (imageIndexToDeleteRef.current >= 0) {
+      setImages((prev) => prev.toSpliced(imageIndexToDeleteRef.current, 1));
+    }
     deleteBottomSheetRef.current?.dismiss();
+  };
+
+  const handleRestorePress = () => {
+    setImages(initialImages);
+    restoreBottomSheetRef.current?.dismiss();
   };
 
   const renderItem = useCallback<SortableGridRenderItem<ImageInfoEditable>>(
     ({ item, index }) => {
       const url = item.isExisting ? item.url : item.uri;
-
-      const showCompressedImage =
-        !item.isExisting && item.isCompressing === false;
       const sharedStyle = { height: itemHeight };
 
       return (
@@ -112,6 +122,7 @@ const ImageManager = ({
                     size={30}
                     color={getThemeFontColor(colorScheme)}
                     onPress={() => {
+                      imageIndexToDeleteRef.current = index;
                       deleteBottomSheetRef.current?.present();
                     }}
                   />
@@ -131,7 +142,7 @@ const ImageManager = ({
                 />
               )}
               {/** Newly Added Compressed Local Images */}
-              {showCompressedImage && (
+              {!item.isExisting && !item.isCompressing && (
                 <StyledImage
                   uri={item.uri}
                   imageHash=""
@@ -140,7 +151,7 @@ const ImageManager = ({
                 />
               )}
               {/** Local Image Still Compressing */}
-              {showCompressedImage && (
+              {!item.isExisting && item.isCompressing && (
                 <DataSaverImagePlaceholder style={sharedStyle} />
               )}
             </View>
@@ -150,6 +161,9 @@ const ImageManager = ({
     },
     [unlockedKeys, colorScheme],
   );
+
+  const gridKeyExtractor = (item: ImageInfoEditable) =>
+    item.isExisting ? item.url : item.localAssetId;
 
   return (
     <>
@@ -175,21 +189,21 @@ const ImageManager = ({
       >
         <BottomSheetView className="py-safe h-full w-full bg-bgColor-primary">
           <BottomSheetScrollView className="px-3" disableScrollViewPanResponder>
-            <TopBarNavigation />
-            <View className="flex-1 bg-bgColor-primary">
-              {!isReady && (
-                <DataSaverImagePlaceholder
-                  className="w-full"
-                  style={{
-                    height: itemHeight,
-                  }}
-                />
+            <TopBarNavigation
+              onRestorePressed={() => restoreBottomSheetRef.current?.present()}
+              disabled={images.length === 0}
+            />
+            <View className="flex-1 items-center bg-bgColor-primary">
+              {images.length === 0 && (
+                <StyledLabel label="No images to manage." className="mt-8" />
               )}
+              {!isReady && <DataSaverImagePlaceholder className="w-full" />}
               {isReady && (
                 <Sortable.Grid
                   columns={2}
                   data={images}
                   renderItem={renderItem}
+                  keyExtractor={gridKeyExtractor}
                   columnGap={4}
                   rowGap={4}
                   onDragEnd={(sortedImages) => setImages(sortedImages.data)}
@@ -202,10 +216,9 @@ const ImageManager = ({
               backdropComponent={CustomBottomSheetBackdrop}
               backgroundComponent={CustomBackground}
               stackBehavior="push"
-              name="delete-modal"
               onChange={(index) => setIsDeleteModalOpen(index >= 0)}
             >
-              <BottomSheetView className="mb-safe flex items-center justify-center gap-4 bg-primary px-4 py-8">
+              <StyledBottomSheetView>
                 <StyledLabel label="This image will be deleted from the post">
                   <StyledLabel label=" ONLY " className="text-highlight" />
                   <StyledLabel label="when you finish updating the post. Do you wish to proceed?" />
@@ -224,7 +237,32 @@ const ImageManager = ({
                   label={<StyledLabel label="Go Back" />}
                   onPress={() => deleteBottomSheetRef.current?.close()}
                 />
-              </BottomSheetView>
+              </StyledBottomSheetView>
+            </BottomSheetModal>
+            <BottomSheetModal
+              ref={restoreBottomSheetRef}
+              backdropComponent={CustomBottomSheetBackdrop}
+              backgroundComponent={CustomBackground}
+              stackBehavior="push"
+              onChange={(index) => setIsRestoreModalOpen(index >= 0)}
+            >
+              <StyledBottomSheetView>
+                <StyledLabel label="All changes to images will be reverted. (Including removing newly added photos)" />
+                <StyledButton
+                  className="bg-red-700"
+                  label={
+                    <StyledLabel
+                      label="Revert Changes"
+                      className="text-white"
+                    />
+                  }
+                  onPress={handleRestorePress}
+                />
+                <StyledButton
+                  label={<StyledLabel label="Go Back" />}
+                  onPress={() => restoreBottomSheetRef.current?.close()}
+                />
+              </StyledBottomSheetView>
             </BottomSheetModal>
           </BottomSheetScrollView>
         </BottomSheetView>

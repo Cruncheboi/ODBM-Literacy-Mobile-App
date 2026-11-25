@@ -1,6 +1,11 @@
 import StyledButton from "@/components/styledButton";
 import StyledLabel from "@/components/styledLabel";
-import { CompressedImagePayload, MAX_PHOTOS_LIMIT } from "@/definitions/media";
+import {
+  CompressedImagePayload,
+  ImageInfoEditable,
+  MAX_PHOTOS_LIMIT,
+  NonExistingImage,
+} from "@/definitions/media";
 import {
   fetchCameraRollImagesInfo,
   LocalAssetRecord,
@@ -26,7 +31,7 @@ import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { getThemeHighlightColor } from "@/utility_functions/themeColor";
 
 interface ImagePickerProps {
-  selectedImages: CompressedImagePayload[]; // Controlled state tracking active checked IDs
+  selectedImages: ImageInfoEditable[]; // Controlled state tracking active checked IDs
   onToggleAsset: (asset: LocalAssetRecord) => void;
   disabled?: boolean;
 }
@@ -80,10 +85,13 @@ export const ImagePicker = ({
 
   const renderItem = ({ item }: ListRenderItemInfo<LocalAssetRecord>) => {
     const selectedIndex = selectedImages.findIndex(
-      (val) => val.localAssetId === item.localAssetId,
+      (val) => !val.isExisting && val.localAssetId === item.localAssetId,
     );
     const isChecked = selectedIndex !== -1;
-    const isCompressing = selectedImages[selectedIndex]?.isCompressing ?? false;
+    const isCompressing =
+      selectedImages[selectedIndex] &&
+      !selectedImages[selectedIndex].isExisting &&
+      selectedImages[selectedIndex].isCompressing;
 
     return (
       <View className="relative aspect-square flex-1 items-center justify-center">
