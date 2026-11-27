@@ -103,16 +103,17 @@ const CreatePost = () => {
       }).unwrap();
 
       const { postId, presignedAssets } = initResponse;
-      const successfulUploadIds = await uploadImagesToBackblaze(
+      const uploadedImageIds = await uploadImagesToBackblaze(
         selectedImages,
         presignedAssets,
       );
+      const successfulImageIds = uploadedImageIds.filter((id) => id > 0);
 
       // Activate post and its content to show up on feeds
       const activationResponse = await activatePost({
         postId,
         postType,
-        successfulImageIds: successfulUploadIds,
+        successfulImageIds,
       }).unwrap();
 
       router.back();
@@ -168,7 +169,9 @@ const CreatePost = () => {
           />
         )}
         <ImagePicker
+          initialImages={[]}
           selectedImages={selectedImages}
+          setSelectedImages={setSelectedImages}
           onToggleAsset={(asset) =>
             selectAndCompress(asset, selectedImages, setSelectedImages)
           }

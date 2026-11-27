@@ -47,28 +47,33 @@ const postsApi = databaseApi.injectEndpoints({
         url: `posts/${postId}/delete`,
         method: "PUT",
       }),
-      invalidatesTags: (result, error, arg) =>
-        arg.postType === "event" ? ["Events"] : ["Testimonies"],
+      invalidatesTags: (result, error, arg) => {
+        const singlePostTag = { type: "Post" as const, id: arg.postId };
+        return arg.postType === "event"
+          ? ["Events", singlePostTag]
+          : ["Testimonies", singlePostTag];
+      },
     }),
     updatePost: builder.mutation<
       { message: string },
-      Pick<
-        MasterPostRecord,
-        "postType" | "postId" | "title" | "body" | "images"
-      > &
-        Partial<Pick<MasterPostRecord, "youtubeId">> & {
-          imagesToDelete?: number[];
-          successfulNewImageIds?: number[];
-          orderedImageIds?: number[];
-        }
+      Pick<MasterPostRecord, "postType" | "postId" | "title" | "body"> & {
+        youtubeUrl?: string | null;
+        imagesToDelete?: number[];
+        successfulNewImageIds?: number[];
+        orderedImageIds?: number[];
+      }
     >({
       query: ({ postId, postType, ...body }) => ({
         url: `posts/${postId}`,
         method: "PUT",
         body,
       }),
-      invalidatesTags: (result, error, arg) =>
-        arg.postType === "event" ? ["Events"] : ["Testimonies"],
+      invalidatesTags: (result, error, arg) => {
+        const singlePostTag = { type: "Post" as const, id: arg.postId };
+        return arg.postType === "event"
+          ? ["Events", singlePostTag]
+          : ["Testimonies", singlePostTag];
+      },
     }),
     presignEditPostImages: builder.mutation<
       { presignedAssets: PresignedAsset[] },

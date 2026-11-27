@@ -68,52 +68,9 @@ const testimoniesApi = databaseApi.injectEndpoints({
         return camelCasedData;
       },
     }),
-    createTestimony: builder.mutation<
-      Pick<TestimonyPost, "postId">,
-      Pick<TestimonyPost, "title" | "body"> &
-        Partial<Pick<TestimonyPost, "images">>
-    >({
-      query: (newPostData) => ({
-        url: "posts/testimony",
-        method: "POST",
-        body: newPostData,
-      }),
-      invalidatesTags: ["Testimonies"],
-      transformResponse: (res: any) => {
-        return keysToCamel(res) as Pick<TestimonyPost, "postId">;
-      },
-    }),
-    updateTestimony: builder.mutation<
-      void,
-      Pick<TestimonyPost, "postId"> &
-        Partial<Pick<TestimonyPost, "title" | "body">> &
-        ImageUpdate & {
-          youtubeUrl?: string;
-        }
-    >({
-      query: ({
-        postId,
-        title,
-        body,
-        imagesToDelete,
-        imagesToInsert,
-        youtubeUrl,
-      }) => ({
-        url: `/posts/testimony/${postId}`,
-        method: "PUT",
-        body: { title, body, imagesToDelete, imagesToInsert, youtubeUrl },
-      }),
-      invalidatesTags: (result, error, arg) => [
-        { type: "Post", id: arg.postId },
-      ],
-    }),
   }),
   overrideExisting: true,
 });
 
-export const {
-  useGetTestimoniesFeedInfiniteQuery,
-  useGetTestimonyQuery,
-  useCreateTestimonyMutation,
-  useUpdateTestimonyMutation,
-} = testimoniesApi;
+export const { useGetTestimoniesFeedInfiniteQuery, useGetTestimonyQuery } =
+  testimoniesApi;

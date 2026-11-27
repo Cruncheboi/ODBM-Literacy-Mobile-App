@@ -1,11 +1,6 @@
 import StyledButton from "@/components/styledButton";
 import StyledLabel from "@/components/styledLabel";
-import {
-  CompressedImagePayload,
-  ImageInfoEditable,
-  MAX_PHOTOS_LIMIT,
-  NonExistingImage,
-} from "@/definitions/media";
+import { ImageInfoEditable, MAX_PHOTOS_LIMIT } from "@/definitions/media";
 import {
   fetchCameraRollImagesInfo,
   LocalAssetRecord,
@@ -28,10 +23,17 @@ import {
 import CustomBottomSheetBackdrop from "../general/backdrop";
 import CustomBackground from "@/components/bottom_sheet/general/customBackground";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { getThemeHighlightColor } from "@/utility_functions/themeColor";
+import {
+  getThemeFontColor,
+  getThemeHighlightColor,
+} from "@/utility_functions/themeColor";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import ImageManager from "@/components/images/imageManager";
 
 interface ImagePickerProps {
+  initialImages: ImageInfoEditable[];
   selectedImages: ImageInfoEditable[]; // Controlled state tracking active checked IDs
+  setSelectedImages: (value: React.SetStateAction<ImageInfoEditable[]>) => void;
   onToggleAsset: (asset: LocalAssetRecord) => void;
   disabled?: boolean;
 }
@@ -40,7 +42,9 @@ const { width } = Dimensions.get("window");
 const COLUMN_SIZE = width / 3 - 6; // Perfectly fits 3 items across a responsive row with room for padding
 
 export const ImagePicker = ({
+  initialImages,
   selectedImages,
+  setSelectedImages,
   onToggleAsset,
   disabled = false,
 }: ImagePickerProps) => {
@@ -73,15 +77,15 @@ export const ImagePicker = ({
     });
   }, [createScrollableComponent]);
 
-  async function loadInitialGallery() {
-    if (gallery.length !== 0 || loading) return;
+  const loadInitialGallery = async (refresh: boolean = false) => {
+    if (!refresh && (gallery.length !== 0 || loading)) return;
     console.log("Getting initial images", gallery);
     setLoading(true);
     const initialImages = await fetchCameraRollImagesInfo();
     lastAssetId.current = initialImages.endCursor;
     setGallery(initialImages.assets);
     setLoading(false);
-  }
+  };
 
   const renderItem = ({ item }: ListRenderItemInfo<LocalAssetRecord>) => {
     const selectedIndex = selectedImages.findIndex(
@@ -170,8 +174,29 @@ export const ImagePicker = ({
         enableOverDrag={true}
         enableDynamicSizing={false}
       >
-        {loading && <ActivityIndicator />}
         {!loading && gallery.length === 0 && emptyGalleryComponent()}
+        <View className="min-h-14 flex-row items-center justify-start px-4">
+          <MaterialIcons
+            name="close"
+            size={35}
+            color={getThemeFontColor(colorScheme)}
+            onPress={() => bottomSheetRef.current?.dismiss()}
+          />
+          <View className="mx-3 flex-1 items-center justify-center">
+            <ImageManager
+              disabled={disabled}
+              initialImages={initialImages}
+              images={selectedImages}
+              setImages={setSelectedImages}
+            />
+          </View>
+          <MaterialIcons
+            name="refresh"
+            size={30}
+            color={getThemeFontColor(colorScheme)}
+            onPress={() => loadInitialGallery(true)}
+          />
+        </View>
         <FlashList
           numColumns={3}
           data={gallery}
@@ -179,6 +204,15 @@ export const ImagePicker = ({
           renderScrollComponent={CustomScrollComponent}
           extraData={selectedImages}
           onEndReached={handleEndReached}
+          ListFooterComponent={
+            loading ? (
+              <ActivityIndicator
+                size="large"
+                color={getThemeFontColor(colorScheme)}
+                className="pb-safe"
+              />
+            ) : undefined
+          }
         />
       </BottomSheetModal>
     </>

@@ -68,53 +68,9 @@ const eventsApi = databaseApi.injectEndpoints({
         return camelCasedData;
       },
     }),
-    createEvent: builder.mutation<
-      Pick<EventPost, "postId">,
-      Pick<EventPost, "title" | "body"> &
-        Partial<Pick<EventPost, "images"> & { youtubeUrl: string }>
-    >({
-      query: (newPostData) => ({
-        url: "posts/event",
-        method: "POST",
-        body: newPostData,
-      }),
-      invalidatesTags: ["Events"],
-      transformResponse: (res: any) => {
-        return keysToCamel(res) as Pick<EventPost, "postId">;
-      },
-    }),
-    updateEvent: builder.mutation<
-      void,
-      Pick<EventPost, "postId"> &
-        Partial<Pick<EventPost, "title" | "body">> &
-        ImageUpdate & {
-          youtubeUrl?: string;
-        }
-    >({
-      query: ({
-        postId,
-        title,
-        body,
-        imagesToDelete,
-        imagesToInsert,
-        youtubeUrl,
-      }) => ({
-        url: `/posts/event/${postId}`,
-        method: "PUT",
-        body: { title, body, imagesToDelete, imagesToInsert, youtubeUrl },
-      }),
-      invalidatesTags: (result, error, arg) => [
-        { type: "Post", id: arg.postId },
-      ],
-    }),
   }),
 
   overrideExisting: true,
 });
 
-export const {
-  useGetEventsFeedInfiniteQuery,
-  useGetEventQuery,
-  useCreateEventMutation,
-  useUpdateEventMutation,
-} = eventsApi;
+export const { useGetEventsFeedInfiniteQuery, useGetEventQuery } = eventsApi;

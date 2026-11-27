@@ -3,20 +3,20 @@ import { PresignedAsset } from "@/redux/query_services/injectedEndpoints.ts/post
 
 /**
  * Sequentially uploads local compressed images directly to Backblaze B2
- * using presigned URLs and returns the array of confirmed database image IDs.
+ * using presigned URLs and returns the array of confirmed database image IDs (or -1 if failure).
  */
 export async function uploadImagesToBackblaze(
   localImages: ImageInfoEditable[],
   presignedAssets: PresignedAsset[],
 ): Promise<number[]> {
-  const successfulUploadIds: number[] = [];
+  const uploadedIds: number[] = [];
 
   if (
     localImages.length === 0 ||
     !presignedAssets ||
     presignedAssets.length === 0
   ) {
-    return successfulUploadIds;
+    return uploadedIds;
   }
 
   for (let i = 0; i < localImages.length; i++) {
@@ -36,13 +36,15 @@ export async function uploadImagesToBackblaze(
       });
 
       if (cloudUploadResponse.ok) {
-        successfulUploadIds.push(cloudTicket.imageId);
+        uploadedIds.push(cloudTicket.imageId);
       } else {
+        uploadedIds.push(-1);
         console.warn(
           `Direct-to-cloud file drop occurred on asset row ID: ${cloudTicket.imageId}`,
         );
       }
     } catch (fileUploadError) {
+      uploadedIds.push(-1);
       console.error(
         `Network dropped transit on file position index ${i}:`,
         fileUploadError,
@@ -50,5 +52,5 @@ export async function uploadImagesToBackblaze(
     }
   }
 
-  return successfulUploadIds;
+  return uploadedIds;
 }

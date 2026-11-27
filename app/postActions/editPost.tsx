@@ -16,9 +16,14 @@ import {
   useUpdatePostMutation,
 } from "@/redux/query_services/injectedEndpoints.ts/posts";
 import { ImagePicker } from "@/components/bottom_sheet/media/imagePicker";
-import { ExistingImage, ImageInfoEditable } from "@/definitions/media";
+import {
+  ExistingImage,
+  ImageInfoEditable,
+  InitializeImageInfo,
+} from "@/definitions/media";
 import { selectAndCompress } from "@/utility_functions/images/compression";
 import ImageManager from "@/components/images/imageManager";
+import { uploadImagesToBackblaze } from "@/utility_functions/images/upload";
 
 export type EditPostSearchParams = {
   postId: string;
@@ -42,6 +47,8 @@ const EditPost = () => {
     body: false,
   });
 
+  const [updatePost] = useUpdatePostMutation();
+  const [presignEditPostImages] = usePresignEditPostImagesMutation();
   const postResult = useGetPostQuery(postType, numericPostId);
   const post = postResult.data;
   // Handle when there is no post to display
@@ -71,8 +78,6 @@ const EditPost = () => {
     () => oldImages?.map((image) => ({ isExisting: true, ...image })) ?? [],
     [oldImages],
   );
-  const [updatePost] = useUpdatePostMutation();
-  const [presignEditPostImages] = usePresignEditPostImagesMutation();
 
   // Input state
   const [title, setTitle] = useState(oldTitle);
@@ -98,10 +103,11 @@ const EditPost = () => {
   const hasChangedBody = useMemo(() => oldBody.trim() !== body.trim(), [body]);
   const hasChangedYtUrl = useMemo(
     () => oldYoutubeUrl.trim() !== youtubeUrl.trim(),
-    [oldYoutubeUrl],
+    [oldYoutubeUrl, youtubeUrl],
   );
   const hasModifiedImages = useMemo(() => {
     if (!oldImages) return selectedImages.length > 0;
+    if (selectedImages.length !== oldImages.length) return true;
 
     return !selectedImages.every(
       (image, index) => image.isExisting && image.id === oldImages[index].id,
@@ -116,15 +122,101 @@ const EditPost = () => {
     ) === -1;
 
   const onPostSubmit = async () => {
-    if (status === "submitting") return;
-    if (hasValidTitle && hasValidBody) {
-      setStatus("submitting");
-      try {
-        router.back();
-      } catch (error) {
-        console.error("An error occurred on Post Update:", error);
-        setStatus("typing");
+    if (
+      status === "submitting" ||
+      !hasValidTitle ||
+      !hasValidBody ||
+      !allImagesCompressed
+    )
+      return;
+
+    setStatus("submitting");
+
+    // Prepare new images for presign
+    const localImages = selectedImages.filter((image) => !image.isExisting);
+    console.log("local:", localImages);
+    const contentInfo: InitializeImageInfo[] = localImages.map(
+      ({ width, height, contentLength, imageHash, mimeType }) => ({
+        width,
+        height,
+        contentLength,
+        imageHash,
+        mimeType,
+      }),
+    );
+    console.log("info:", contentInfo);
+
+    // Filter images by checking if the selected images do not contain
+    // an existing initial image.
+    const imagesToDelete = initialImages.filter(
+      (initialImage) =>
+        selectedImages.findIndex(
+          (image) => image.isExisting && image.id === initialImage.id,
+        ) === -1,
+    );
+    console.log("to delete:", imagesToDelete);
+
+    try {
+      // Get presigned links to upload images
+      let uploadedImageIds: number[] = [];
+      if (contentInfo.length > 0) {
+        console.log("starting presign");
+        const presignResponse = await presignEditPostImages({
+          contentInfo,
+          postId: numericPostId,
+          imagesToDeleteCount: imagesToDelete.length,
+        }).unwrap();
+        console.log("presign:", presignResponse);
+
+        // Upload images with presigned links
+        const { presignedAssets } = presignResponse;
+        uploadedImageIds = await uploadImagesToBackblaze(
+          localImages,
+          presignedAssets,
+        );
       }
+      console.log("uploaded", uploadedImageIds);
+      // Prepare data to update post
+      const successfulNewImageIds = uploadedImageIds.filter((id) => id > 0);
+      const imagesToDeleteIds = imagesToDelete.map((image) => image.id);
+
+      // Create an array of ordered image ids
+      let uploadedImageIndex = 0;
+      const orderedImageIds: number[] = [];
+      selectedImages.forEach((image) => {
+        if (image.isExisting) {
+          orderedImageIds.push(image.id);
+          // Add only successful uploaded images to the ordered array
+        } else if (uploadedImageIds[uploadedImageIndex] > 0) {
+          orderedImageIds.push(uploadedImageIds[uploadedImageIndex]);
+          uploadedImageIndex++;
+          // ignore unsuccessful upload ids
+        } else {
+          uploadedImageIndex++;
+        }
+      });
+      console.log(
+        "extra data:",
+        successfulNewImageIds,
+        imagesToDelete,
+        orderedImageIds,
+      );
+
+      const editResponse = await updatePost({
+        title,
+        body,
+        youtubeUrl,
+        postId: numericPostId,
+        postType,
+        imagesToDelete: imagesToDeleteIds,
+        successfulNewImageIds,
+        orderedImageIds,
+      }).unwrap();
+      console.log("Res:", editResponse);
+      router.back();
+    } catch (error) {
+      console.error("An error occurred on Post Update:", error);
+      setStatus("typing");
     }
   };
 
@@ -139,7 +231,6 @@ const EditPost = () => {
       setHasTouched((prev) => ({ ...prev, body: true }));
     }
   }, [hasTouched]);
-  console.log(hasModifiedImages);
 
   return (
     <CustomHeader title="Edit Your Post">
@@ -178,7 +269,9 @@ const EditPost = () => {
         )}
         {/** Add New Images */}
         <ImagePicker
+          initialImages={initialImages}
           selectedImages={selectedImages}
+          setSelectedImages={setSelectedImages}
           onToggleAsset={(asset) => {
             selectAndCompress(asset, selectedImages, setSelectedImages);
           }}

@@ -46,6 +46,18 @@ const ImageManager = ({
     () => existingImagesInUse.map((image) => image.url),
     [existingImagesInUse],
   );
+  const isUnchanged = useMemo(
+    () =>
+      images.length === initialImages.length &&
+      images.every(
+        (img, idx) =>
+          img.isExisting &&
+          initialImages[idx].isExisting &&
+          img.id === initialImages[idx].id,
+      ),
+    [initialImages, images],
+  );
+
   const { isReady, unlockKey, unlockedKeys } = useDataSaverCache(
     existingImagesUrl,
     true,
@@ -169,7 +181,7 @@ const ImageManager = ({
     <>
       <StyledButton
         disabled={disabled}
-        label={<StyledLabel label="Manage your images" />}
+        label={<StyledLabel label="Manage Images" />}
         onPress={() => {
           bottomSheetRef.current?.present();
         }}
@@ -186,12 +198,13 @@ const ImageManager = ({
         enableContentPanningGesture={false}
         enableHandlePanningGesture={false}
         onChange={(index) => setIsModalOpen(index >= 0)}
+        stackBehavior="push"
       >
         <BottomSheetView className="py-safe h-full w-full bg-bgColor-primary">
           <BottomSheetScrollView className="px-3" disableScrollViewPanResponder>
             <TopBarNavigation
               onRestorePressed={() => restoreBottomSheetRef.current?.present()}
-              disabled={images.length === 0}
+              disabled={images.length === 0 || isUnchanged}
             />
             <View className="flex-1 items-center bg-bgColor-primary">
               {images.length === 0 && (
